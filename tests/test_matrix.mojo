@@ -1,7 +1,8 @@
-from std.testing import assert_equal, TestSuite
+from std.testing import assert_equal, assert_true, assert_raises, TestSuite
 from strata import (
     Matrix,
     CSRMatrix,
+    CSCMatrix,
     gemm,
     spmv,
     spmm,
@@ -165,6 +166,49 @@ def test_csc_matrix_ops_and_conversion() raises:
     assert_equal(C[0, 0], 10.0)
     assert_equal(C[1, 0], 20.0)
     assert_equal(C[2, 0], 30.0)
+
+
+def test_csc_dot_vec_wide_accumulation() raises:
+    var n = 1000
+    var data = List[Scalar[DType.float32]](capacity=n)
+    var indices = List[Int](capacity=n)
+    var indptr = List[Int](capacity=n + 1)
+    indptr.append(0)
+    for i in range(n):
+        data.append(0.1)
+        indices.append(0)
+        indptr.append(i + 1)
+
+    var wide = CSCMatrix[DType.float32](1, n, data^, indices^, indptr^)
+    var ones = List[Scalar[DType.float32]](capacity=n)
+    for _ in range(n):
+        ones.append(1.0)
+
+    var y = wide.dot_vec(ones)
+    var err = Float64(y[0]) - 100.0
+    if err < 0.0:
+        err = -err
+    assert_true(err < 1e-8)
+
+
+def test_sparse_allows_empty_dimensions() raises:
+    var empty_csr = CSRMatrix[DType.float64].empty(0, 4)
+    assert_equal(empty_csr.nnz(), 0)
+    assert_equal(empty_csr.shape()[0], 0)
+    assert_equal(empty_csr.shape()[1], 4)
+
+    var empty_csc = CSCMatrix[DType.float64].from_dense(
+        Matrix[DType.float64](0, 3, 0)
+    )
+    assert_equal(empty_csc.nnz(), 0)
+
+
+def test_sparse_rejects_negative_dimensions() raises:
+    var data = List[Scalar[DType.float64]]()
+    var indices = List[Int]()
+    var indptr: List[Int] = [0]
+    with assert_raises():
+        _ = CSRMatrix[DType.float64](-1, 2, data^, indices^, indptr^)
 
 
 def main() raises:

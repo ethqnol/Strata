@@ -83,8 +83,6 @@ struct CSRMatrix[dtype: DType = DType.float64](
         return res^
 
     def to_csc(self) raises -> CSCMatrix[Self.dtype]:
-        from .csc_matrix import CSCMatrix
-
         var csc_indptr = List[Int](capacity=self.cols + 1)
         for _ in range(self.cols + 1):
             csc_indptr.append(0)

@@ -62,8 +62,6 @@ struct CSCMatrix[dtype: DType = DType.float64](
         return res^
 
     def to_csr(self) raises -> CSRMatrix[Self.dtype]:
-        from .csr_matrix import CSRMatrix
-
         var csr_indptr = List[Int](capacity=self.rows + 1)
         for _ in range(self.rows + 1):
             csr_indptr.append(0)
@@ -105,9 +103,9 @@ struct CSCMatrix[dtype: DType = DType.float64](
                 String(len(vec)),
                 "CSCMatrix.dot_vec",
             )
-        var res = List[Scalar[Self.dtype]](capacity=self.rows)
+        var acc = List[Float64](capacity=self.rows)
         for _ in range(self.rows):
-            res.append(0)
+            acc.append(0.0)
         for c in range(self.cols):
             var x_c = Float64(vec[c])
             if x_c == 0:
@@ -116,7 +114,10 @@ struct CSCMatrix[dtype: DType = DType.float64](
             var end = self.indptr[c + 1]
             for idx in range(start, end):
                 var r = self.indices[idx]
-                res[r] += Scalar[Self.dtype](Float64(self.data[idx]) * x_c)
+                acc[r] += Float64(self.data[idx]) * x_c
+        var res = List[Scalar[Self.dtype]](capacity=self.rows)
+        for r in range(self.rows):
+            res.append(Scalar[Self.dtype](acc[r]))
         return res^
 
     def dot_dense(self, dense: Matrix[Self.dtype]) raises -> Matrix[Self.dtype]:

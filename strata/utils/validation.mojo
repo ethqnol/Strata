@@ -66,11 +66,18 @@ def check_sparse[
     indptr: List[Int],
     is_csr: Bool = True,
     caller: String = "SparseMatrix.__init__",
+    allow_empty: Bool = True,
 ) raises:
     """Validates CSR/CSC sparse matrix format invariants."""
-    if rows <= 0 or cols <= 0:
+    if rows < 0 or cols < 0:
         raise DimensionMismatchError.error(
-            "rows > 0 and cols > 0",
+            "rows >= 0 and cols >= 0",
+            "rows=" + String(rows) + ", cols=" + String(cols),
+            caller,
+        )
+    if not allow_empty and (rows == 0 or cols == 0):
+        raise DimensionMismatchError.error(
+            "non-empty sparse matrix",
             "rows=" + String(rows) + ", cols=" + String(cols),
             caller,
         )
