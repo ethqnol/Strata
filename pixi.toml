@@ -13,15 +13,15 @@ scipy = "*"
 
 [tasks]
 build = "mojo precompile strata -o strata.mojoc"
-test-matrix = "mojo run -I . tests/test_matrix.mojo"
-test-core = "mojo run -I . tests/test_traits_and_errors.mojo"
-test-interop = "mojo run -I . tests/test_interop.mojo"
-test-view = "mojo run -I . tests/test_view.mojo"
-test-large = "mojo run -I . tests/test_large_matrix.mojo"
-test-preprocessing = "mojo run -I . tests/test_preprocessing.mojo"
-test-split = "mojo run -I . tests/test_model_selection.mojo"
+test-matrix = "mojo run -D ASSERT=all -I . tests/test_matrix.mojo"
+test-core = "mojo run -D ASSERT=all -I . tests/test_traits_and_errors.mojo"
+test-interop = "mojo run -D ASSERT=all -I . tests/test_interop.mojo"
+test-view = "mojo run -D ASSERT=all -I . tests/test_view.mojo"
+test-large = "mojo run -D ASSERT=all -I . tests/test_large_matrix.mojo"
+test-preprocessing = "mojo run -D ASSERT=all -I . tests/test_preprocessing.mojo"
+test-split = "mojo run -D ASSERT=all -I . tests/test_model_selection.mojo"
 test-all = { depends-on = ["test-matrix", "test-core", "test-view", "test-interop", "test-large", "test-preprocessing", "test-split"] }
-test = "mojo test -I ."
+test = "mojo test -D ASSERT=all -I ."
 format = "mojo format strata tests"
 format-check = "mojo format --check strata tests"
 
