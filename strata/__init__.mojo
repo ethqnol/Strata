@@ -67,7 +67,13 @@ from .utils import (
     shuffle,
     PRNG,
 )
-from .preprocessing import StandardScaler
+from .preprocessing import (
+    StandardScaler,
+    MinMaxScaler,
+    RobustScaler,
+    Binarizer,
+    OneHotEncoder,
+)
 from .model_selection import (
     train_test_split,
     KFold,

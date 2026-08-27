@@ -28,7 +28,7 @@ We have established a robust, thoroughly tested core engine:
   - Domain exceptions: `DimensionMismatchError`, `NotFittedError`, `InvalidParameterError`, `DataConversionError`
   - Structural validators: `check_array`, `check_X_y`, `check_sparse`, `check_is_fitted`
 - **Test Coverage**:
-  - 13 modular test suites (129 passing tests) verifying mathematical invariants, LAPACK decompositions, strided slicing, and edge cases.
+  - 16 modular test suites verifying mathematical invariants, LAPACK decompositions, strided slicing, and edge cases.
 
 ---
 
@@ -54,11 +54,12 @@ We have established a robust, thoroughly tested core engine:
   - [x] `LinearRegression` (Ordinary Least Squares with multi-solver support: `lstsq`, `qr`, `cholesky`, `solve`)
   - [x] `Ridge` ($L_2$-regularized closed-form solver: `auto`, `cholesky`, `svd`, `solve`)
   - [x] `LogisticRegression` (Binary and multinomial softmax classification with $L_2$ / unregularized optimization)
-- [ ] **Preprocessing (`strata.preprocessing`)**:
-  - `MinMaxScaler`
-  - `RobustScaler`
-  - `OneHotEncoder`
-  - `Binarizer`
+- [x] **Preprocessing (`strata.preprocessing`)**:
+  - [x] `StandardScaler` (Zero mean, unit variance standardization)
+  - [x] `MinMaxScaler` (Configurable feature range with optional clipping)
+  - [x] `RobustScaler` (Median centering and quantile-range scaling)
+  - [x] `OneHotEncoder` (Dense indicator expansion with `drop` and `handle_unknown` policies)
+  - [x] `Binarizer` (Threshold-based 0/1 mapping)
 - [x] **Model Selection (`strata.model_selection`)**:
   - [x] `KFold` and `StratifiedKFold`
   - [x] `cross_val_score`

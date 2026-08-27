@@ -83,7 +83,7 @@ To format automatically on save, add this to your `settings.json`:
 We keep our test suites modular. You can run all tests or target specific subsystems:
 
 ```bash
-# Run the full test suite (13 test suites, 129 tests)
+# Run the full test suite (16 test suites)
 pixi run test-all
 
 # Run specific test modules
@@ -94,12 +94,15 @@ pixi run test-math            # Numerically stable sigmoid, softmax, log_sum_exp
 pixi run test-dataset         # Dataset containers, splitting invariants, edge cases
 pixi run test-pipelines       # Composable N-step transformer, regressor, classifier pipelines
 pixi run test-view            # Strided MatrixView, 2D zero-copy slicing, bounds checks
-pixi run test-preprocessing   # StandardScaler, fit/transform, configuration options
+pixi run test-preprocessing   # StandardScaler, MinMaxScaler, RobustScaler, OneHotEncoder, Binarizer
 pixi run test-split           # Train/test split, shuffling reproducibility
 pixi run test-metrics         # Regression & classification metrics, averaging strategies
 pixi run test-interop         # NumPy / SciPy conversion roundtrips
 pixi run test-large           # Large matrix benchmarks & stress tests
 pixi run test-core            # Error types, validation routines, base traits
+pixi run test-linear-regression   # OLS solvers, dtype flexibility, degenerate designs
+pixi run test-ridge               # L2 closed-form solvers, regularization paths
+pixi run test-logistic-regression # Binary & multinomial softmax classification
 ```
 
 ---
@@ -125,7 +128,7 @@ Strata/
 │   ├── core/             # Matrix, MatrixView, CSRMatrix, CSCMatrix, linalg, sparse_ops, dataset, interop
 │   ├── exceptions/       # Domain errors (DimensionMismatchError, NotFittedError, InvalidParameterError, etc.)
 │   ├── utils/            # Validation helpers (check_X_y, check_sparse), math (softmax), random (PRNG, shuffle)
-│   ├── preprocessing/    # Data transformers (StandardScaler)
+│   ├── preprocessing/    # Data transformers (StandardScaler, MinMaxScaler, RobustScaler, OneHotEncoder, Binarizer)
 │   ├── model_selection/  # Data splitting (train_test_split)
 │   ├── metrics/          # Evaluation metrics (MSE, R2, Accuracy, F1)
 │   ├── linear_model/     # Linear regression, Ridge, Logistic regression
