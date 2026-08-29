@@ -54,10 +54,10 @@ Strata is a native machine learning library for Mojo designed around familiar sc
 - [x] `MinMaxScaler` & `RobustScaler`
 - [x] `Normalizer` (L1, L2, Max row-wise normalization)
 - [x] `OneHotEncoder` (Dense category expansion with `drop` and `handle_unknown` policies)
-- [ ] `OrdinalEncoder` & `LabelEncoder`
-- [ ] `SimpleImputer` (mean, median, most_frequent, constant)
+- [x] `OrdinalEncoder` & `LabelEncoder`
+- [x] `SimpleImputer` (mean, median, most_frequent, constant)
 - [x] `Binarizer` (threshold-based indicator mapping)
-- [ ] `PolynomialFeatures` (interaction and degree expansion)
+- [x] `PolynomialFeatures` (interaction and degree expansion)
 
 ### Linear Models
 - [x] `LinearRegression` (Ordinary Least Squares via QR, SVD, Cholesky, Solve)
