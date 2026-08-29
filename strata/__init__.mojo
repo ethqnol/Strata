@@ -123,4 +123,12 @@ from .neighbors import (
     minkowski_distance,
     cosine_distance,
     pairwise_distances,
+    NearestNeighbors,
+    KNeighborsClassifier,
+    KNeighborsRegressor,
+    KDTree,
 )
+
+
+
+

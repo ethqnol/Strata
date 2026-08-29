@@ -90,6 +90,10 @@ MODULE_METADATA = {
         "description": "Distance metrics (Euclidean, Manhattan, Chebyshev, Minkowski, Cosine), nearest neighbors search, and k-NN classification and regression.",
         "files": [
             "neighbors/distance.mojo",
+            "neighbors/base.mojo",
+            "neighbors/classification.mojo",
+            "neighbors/regression.mojo",
+            "neighbors/kd_tree.mojo",
         ]
     },
     "model_selection": {

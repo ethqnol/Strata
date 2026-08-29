@@ -5,8 +5,9 @@ from ..exceptions.errors import InvalidParameterError, DimensionMismatchError
 
 
 def sqeuclidean_distance[
-    dtype: DType
-](X: Matrix[dtype], row_x: Int, Y: Matrix[dtype], row_y: Int) -> Scalar[dtype]:
+    dtype_x: DType,
+    dtype_y: DType = dtype_x,
+](X: Matrix[dtype_x], row_x: Int, Y: Matrix[dtype_y], row_y: Int) -> Float64:
     """Compute the squared Euclidean distance between row X[row_x] and row Y[row_y].
 
     $$
@@ -20,19 +21,20 @@ def sqeuclidean_distance[
         row_y: Row index in matrix Y.
 
     Returns:
-        Scalar[dtype]: Squared Euclidean distance.
+        Float64: Squared Euclidean distance.
     """
     var d = X.cols
     var sum_sq: Float64 = 0.0
     for j in range(d):
-        var diff = Float64(X[row_x, j] - Y[row_y, j])
+        var diff = Float64(X[row_x, j]) - Float64(Y[row_y, j])
         sum_sq += diff * diff
-    return Scalar[dtype](sum_sq)
+    return sum_sq
 
 
 def euclidean_distance[
-    dtype: DType
-](X: Matrix[dtype], row_x: Int, Y: Matrix[dtype], row_y: Int) -> Scalar[dtype]:
+    dtype_x: DType,
+    dtype_y: DType = dtype_x,
+](X: Matrix[dtype_x], row_x: Int, Y: Matrix[dtype_y], row_y: Int) -> Float64:
     """Compute the Euclidean ($L_2$) distance between row X[row_x] and row Y[row_y].
 
     $$
@@ -46,14 +48,15 @@ def euclidean_distance[
         row_y: Row index in matrix Y.
 
     Returns:
-        Scalar[dtype]: Euclidean distance.
+        Float64: Euclidean distance.
     """
     return sqrt(sqeuclidean_distance(X, row_x, Y, row_y))
 
 
 def manhattan_distance[
-    dtype: DType
-](X: Matrix[dtype], row_x: Int, Y: Matrix[dtype], row_y: Int) -> Scalar[dtype]:
+    dtype_x: DType,
+    dtype_y: DType = dtype_x,
+](X: Matrix[dtype_x], row_x: Int, Y: Matrix[dtype_y], row_y: Int) -> Float64:
     """Compute the Manhattan ($L_1$ / taxicab / cityblock) distance between row X[row_x] and row Y[row_y].
 
     $$
@@ -67,18 +70,19 @@ def manhattan_distance[
         row_y: Row index in matrix Y.
 
     Returns:
-        Scalar[dtype]: Manhattan distance.
+        Float64: Manhattan distance.
     """
     var d = X.cols
     var sum_abs: Float64 = 0.0
     for j in range(d):
-        sum_abs += Float64(abs(X[row_x, j] - Y[row_y, j]))
-    return Scalar[dtype](sum_abs)
+        sum_abs += abs(Float64(X[row_x, j]) - Float64(Y[row_y, j]))
+    return sum_abs
 
 
 def chebyshev_distance[
-    dtype: DType
-](X: Matrix[dtype], row_x: Int, Y: Matrix[dtype], row_y: Int) -> Scalar[dtype]:
+    dtype_x: DType,
+    dtype_y: DType = dtype_x,
+](X: Matrix[dtype_x], row_x: Int, Y: Matrix[dtype_y], row_y: Int) -> Float64:
     """Compute the Chebyshev ($L_\\infty$ / max) distance between row X[row_x] and row Y[row_y].
 
     $$
@@ -92,26 +96,27 @@ def chebyshev_distance[
         row_y: Row index in matrix Y.
 
     Returns:
-        Scalar[dtype]: Chebyshev distance.
+        Float64: Chebyshev distance.
     """
     var d = X.cols
     var max_val: Float64 = 0.0
     for j in range(d):
-        var diff = Float64(abs(X[row_x, j] - Y[row_y, j]))
+        var diff = abs(Float64(X[row_x, j]) - Float64(Y[row_y, j]))
         if diff > max_val:
             max_val = diff
-    return Scalar[dtype](max_val)
+    return max_val
 
 
 def minkowski_distance[
-    dtype: DType
+    dtype_x: DType,
+    dtype_y: DType = dtype_x,
 ](
-    X: Matrix[dtype],
+    X: Matrix[dtype_x],
     row_x: Int,
-    Y: Matrix[dtype],
+    Y: Matrix[dtype_y],
     row_y: Int,
     p: Float64 = 2.0,
-) raises -> Scalar[dtype]:
+) raises -> Float64:
     """Compute the Minkowski ($L_p$) distance between row X[row_x] and row Y[row_y].
 
     $$
@@ -126,7 +131,7 @@ def minkowski_distance[
         p: Minkowski norm order ($p \\ge 1.0$). Default 2.0.
 
     Returns:
-        Scalar[dtype]: Minkowski distance.
+        Float64: Minkowski distance.
 
     Raises:
         InvalidParameterError: If p < 1.0.
@@ -143,14 +148,15 @@ def minkowski_distance[
     var d = X.cols
     var sum_pow: Float64 = 0.0
     for j in range(d):
-        var diff = Float64(abs(X[row_x, j] - Y[row_y, j]))
+        var diff = abs(Float64(X[row_x, j]) - Float64(Y[row_y, j]))
         sum_pow += pow(diff, p)
-    return Scalar[dtype](pow(sum_pow, 1.0 / p))
+    return pow(sum_pow, 1.0 / p)
 
 
 def cosine_distance[
-    dtype: DType
-](X: Matrix[dtype], row_x: Int, Y: Matrix[dtype], row_y: Int) -> Scalar[dtype]:
+    dtype_x: DType,
+    dtype_y: DType = dtype_x,
+](X: Matrix[dtype_x], row_x: Int, Y: Matrix[dtype_y], row_y: Int) -> Float64:
     """Compute the Cosine distance between row X[row_x] and row Y[row_y].
 
     $$
@@ -164,7 +170,7 @@ def cosine_distance[
         row_y: Row index in matrix Y.
 
     Returns:
-        Scalar[dtype]: Cosine distance in range $[0, 2]$.
+        Float64: Cosine distance in range $[0, 2]$.
     """
     var d = X.cols
     var dot_val: Float64 = 0.0
@@ -179,16 +185,17 @@ def cosine_distance[
         norm_y_sq += vy * vy
 
     if norm_x_sq <= 0.0 and norm_y_sq <= 0.0:
-        return Scalar[dtype](0.0)
+        return 0.0
     if norm_x_sq <= 0.0 or norm_y_sq <= 0.0:
-        return Scalar[dtype](1.0)
+        return 1.0
 
     var sim = dot_val / (sqrt(norm_x_sq) * sqrt(norm_y_sq))
     if sim > 1.0:
         sim = 1.0
     elif sim < -1.0:
         sim = -1.0
-    return Scalar[dtype](1.0 - sim)
+    return 1.0 - sim
+
 
 
 def _validate_metric_and_p(metric: String, p: Float64) raises:
@@ -255,17 +262,25 @@ def row_distance[
     _validate_metric_and_p(metric, p)
 
     if metric == "euclidean" or metric == "l2":
-        return euclidean_distance(X, row_x, Y, row_y)
+        return Scalar[dtype](euclidean_distance(X, row_x, Y, row_y))
     elif metric == "sqeuclidean":
-        return sqeuclidean_distance(X, row_x, Y, row_y)
-    elif metric == "manhattan" or metric == "cityblock" or metric == "l1":
-        return manhattan_distance(X, row_x, Y, row_y)
-    elif metric == "chebyshev" or metric == "infinity" or metric == "max":
-        return chebyshev_distance(X, row_x, Y, row_y)
+        return Scalar[dtype](sqeuclidean_distance(X, row_x, Y, row_y))
+    elif (
+        metric == "manhattan"
+        or metric == "cityblock"
+        or metric == "l1"
+    ):
+        return Scalar[dtype](manhattan_distance(X, row_x, Y, row_y))
+    elif (
+        metric == "chebyshev"
+        or metric == "infinity"
+        or metric == "max"
+    ):
+        return Scalar[dtype](chebyshev_distance(X, row_x, Y, row_y))
     elif metric == "minkowski":
-        return minkowski_distance(X, row_x, Y, row_y, p)
+        return Scalar[dtype](minkowski_distance(X, row_x, Y, row_y, p))
     else:  # "cosine"
-        return cosine_distance(X, row_x, Y, row_y)
+        return Scalar[dtype](cosine_distance(X, row_x, Y, row_y))
 
 
 def pairwise_distances[
@@ -310,27 +325,37 @@ def pairwise_distances[
     if metric == "euclidean" or metric == "l2":
         for i in range(nx):
             for j in range(ny):
-                D[i, j] = euclidean_distance(X, i, Y, j)
+                D[i, j] = Scalar[dtype](euclidean_distance(X, i, Y, j))
     elif metric == "sqeuclidean":
         for i in range(nx):
             for j in range(ny):
-                D[i, j] = sqeuclidean_distance(X, i, Y, j)
-    elif metric == "manhattan" or metric == "cityblock" or metric == "l1":
+                D[i, j] = Scalar[dtype](sqeuclidean_distance(X, i, Y, j))
+    elif (
+        metric == "manhattan"
+        or metric == "cityblock"
+        or metric == "l1"
+    ):
         for i in range(nx):
             for j in range(ny):
-                D[i, j] = manhattan_distance(X, i, Y, j)
-    elif metric == "chebyshev" or metric == "infinity" or metric == "max":
+                D[i, j] = Scalar[dtype](manhattan_distance(X, i, Y, j))
+    elif (
+        metric == "chebyshev"
+        or metric == "infinity"
+        or metric == "max"
+    ):
         for i in range(nx):
             for j in range(ny):
-                D[i, j] = chebyshev_distance(X, i, Y, j)
+                D[i, j] = Scalar[dtype](chebyshev_distance(X, i, Y, j))
     elif metric == "minkowski":
         for i in range(nx):
             for j in range(ny):
-                D[i, j] = minkowski_distance(X, i, Y, j, p)
+                D[i, j] = Scalar[dtype](
+                    minkowski_distance(X, i, Y, j, p)
+                )
     elif metric == "cosine":
         for i in range(nx):
             for j in range(ny):
-                D[i, j] = cosine_distance(X, i, Y, j)
+                D[i, j] = Scalar[dtype](cosine_distance(X, i, Y, j))
 
     return D^
 
@@ -369,42 +394,52 @@ def pairwise_distances[
         for i in range(n):
             D[i, i] = Scalar[dtype](0)
             for j in range(i + 1, n):
-                var dist = euclidean_distance(X, i, X, j)
+                var dist = Scalar[dtype](euclidean_distance(X, i, X, j))
                 D[i, j] = dist
                 D[j, i] = dist
     elif metric == "sqeuclidean":
         for i in range(n):
             D[i, i] = Scalar[dtype](0)
             for j in range(i + 1, n):
-                var dist = sqeuclidean_distance(X, i, X, j)
+                var dist = Scalar[dtype](sqeuclidean_distance(X, i, X, j))
                 D[i, j] = dist
                 D[j, i] = dist
-    elif metric == "manhattan" or metric == "cityblock" or metric == "l1":
+    elif (
+        metric == "manhattan"
+        or metric == "cityblock"
+        or metric == "l1"
+    ):
         for i in range(n):
             D[i, i] = Scalar[dtype](0)
             for j in range(i + 1, n):
-                var dist = manhattan_distance(X, i, X, j)
+                var dist = Scalar[dtype](manhattan_distance(X, i, X, j))
                 D[i, j] = dist
                 D[j, i] = dist
-    elif metric == "chebyshev" or metric == "infinity" or metric == "max":
+    elif (
+        metric == "chebyshev"
+        or metric == "infinity"
+        or metric == "max"
+    ):
         for i in range(n):
             D[i, i] = Scalar[dtype](0)
             for j in range(i + 1, n):
-                var dist = chebyshev_distance(X, i, X, j)
+                var dist = Scalar[dtype](chebyshev_distance(X, i, X, j))
                 D[i, j] = dist
                 D[j, i] = dist
     elif metric == "minkowski":
         for i in range(n):
             D[i, i] = Scalar[dtype](0)
             for j in range(i + 1, n):
-                var dist = minkowski_distance(X, i, X, j, p)
+                var dist = Scalar[dtype](
+                    minkowski_distance(X, i, X, j, p)
+                )
                 D[i, j] = dist
                 D[j, i] = dist
     elif metric == "cosine":
         for i in range(n):
             D[i, i] = Scalar[dtype](0)
             for j in range(i + 1, n):
-                var dist = cosine_distance(X, i, X, j)
+                var dist = Scalar[dtype](cosine_distance(X, i, X, j))
                 D[i, j] = dist
                 D[j, i] = dist
 

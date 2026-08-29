@@ -8,3 +8,10 @@ from .distance import (
     row_distance,
     pairwise_distances,
 )
+from .base import NearestNeighbors
+from .classification import KNeighborsClassifier
+from .regression import KNeighborsRegressor
+from .kd_tree import KDTree
+
+
+
