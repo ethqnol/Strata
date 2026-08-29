@@ -103,21 +103,6 @@ struct Normalizer[compute_dtype: DType = DType.float64](
         self.fit_dtype = in_dtype
         self.is_fitted = True
 
-    def fit[
-        feat_dtype: DType,
-        target_dtype: DType,
-    ](mut self, dataset: Dataset[feat_dtype, target_dtype]) raises:
-        """Fit the transformer on Dataset records.
-
-        Args:
-            dataset: Training Dataset containing records matrix.
-
-        Raises:
-            DimensionMismatchError: If records matrix is empty.
-            InvalidParameterError: If records contain NaN or infinity.
-        """
-        self.fit[feat_dtype](dataset.records)
-
     def transform[
         in_dtype: DType
     ](self, X: Matrix[in_dtype]) raises -> Matrix[in_dtype]:
@@ -181,33 +166,6 @@ struct Normalizer[compute_dtype: DType = DType.float64](
 
         return res^
 
-    def transform[
-        feat_dtype: DType,
-        target_dtype: DType,
-    ](self, dataset: Dataset[feat_dtype, target_dtype]) raises -> Dataset[
-        feat_dtype, target_dtype
-    ]:
-        """Scale records of a Dataset to unit norm.
-
-        Args:
-            dataset: Dataset container to transform.
-
-        Returns:
-            Dataset[feat_dtype, target_dtype]: Transformed Dataset with normalized records.
-
-        Raises:
-            NotFittedError: If the transformer is not fitted.
-            DataConversionError: If feat_dtype does not match fit_dtype.
-            DimensionMismatchError: If records cols != n_features_in_.
-        """
-        var normalized_records = self.transform[feat_dtype](dataset.records)
-        return Dataset[feat_dtype, target_dtype](
-            normalized_records^,
-            dataset.targets.copy(),
-            dataset.feature_names.copy(),
-            dataset.target_names.copy(),
-        )
-
     def fit_transform[
         in_dtype: DType
     ](mut self, X: Matrix[in_dtype]) raises -> Matrix[in_dtype]:
@@ -225,24 +183,3 @@ struct Normalizer[compute_dtype: DType = DType.float64](
         """
         self.fit[in_dtype](X)
         return self.transform[in_dtype](X)
-
-    def fit_transform[
-        feat_dtype: DType,
-        target_dtype: DType,
-    ](mut self, dataset: Dataset[feat_dtype, target_dtype]) raises -> Dataset[
-        feat_dtype, target_dtype
-    ]:
-        """Fit to dataset, then transform it.
-
-        Args:
-            dataset: Input Dataset.
-
-        Returns:
-            Dataset[feat_dtype, target_dtype]: Transformed Dataset with normalized records.
-
-        Raises:
-            DimensionMismatchError: If records matrix is empty.
-            InvalidParameterError: If records contain NaN or infinity.
-        """
-        self.fit[feat_dtype, target_dtype](dataset)
-        return self.transform[feat_dtype, target_dtype](dataset)

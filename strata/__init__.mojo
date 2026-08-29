@@ -74,6 +74,9 @@ from .preprocessing import (
     Normalizer,
     Binarizer,
     OneHotEncoder,
+    OrdinalEncoder,
+    LabelEncoder,
+    SimpleImputer,
 )
 from .model_selection import (
     train_test_split,

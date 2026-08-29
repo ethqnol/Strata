@@ -1,3 +1,4 @@
+from std.math import nan
 from std.testing import (
     TestSuite,
     assert_equal,
@@ -14,6 +15,9 @@ from strata import (
     Normalizer,
     Binarizer,
     OneHotEncoder,
+    OrdinalEncoder,
+    LabelEncoder,
+    SimpleImputer,
     NotFittedError,
     DataConversionError,
 )
@@ -1734,16 +1738,12 @@ def test_normalizer_dataset() raises:
 
     var ds = Dataset[DType.float64, DType.float64](X, y, feat_names)
     var norm = Normalizer(norm="l2")
-    var ds_norm = norm.fit_transform(ds)
+    var records_norm = norm.fit_transform(ds.records)
 
-    assert_almost_equal(ds_norm.records[0, 0], 0.6, atol=1e-12)
-    assert_almost_equal(ds_norm.records[0, 1], 0.8, atol=1e-12)
-    assert_almost_equal(ds_norm.records[1, 0], 0.6, atol=1e-12)
-    assert_almost_equal(ds_norm.records[1, 1], 0.8, atol=1e-12)
-    assert_equal(ds_norm.targets[0], 0.0)
-    assert_equal(ds_norm.targets[1], 1.0)
-    assert_equal(ds_norm.feature_names[0], "feat_a")
-    assert_equal(ds_norm.feature_names[1], "feat_b")
+    assert_almost_equal(records_norm[0, 0], 0.6, atol=1e-12)
+    assert_almost_equal(records_norm[0, 1], 0.8, atol=1e-12)
+    assert_almost_equal(records_norm[1, 0], 0.6, atol=1e-12)
+    assert_almost_equal(records_norm[1, 1], 0.8, atol=1e-12)
 
 
 def test_normalizer_float32() raises:
@@ -1799,6 +1799,436 @@ def test_normalizer_invalid_parameters_and_errors() raises:
     var X_nan = Matrix[DType.float64](2, 2, nan)
     with assert_raises():
         norm.fit(X_nan)
+
+
+def test_ordinal_encoder_basic() raises:
+    var X = Matrix[DType.float64](4, 2, 0)
+    X[0, 0] = 10.0
+    X[0, 1] = 0.0
+    X[1, 0] = 20.0
+    X[1, 1] = 2.0
+    X[2, 0] = 10.0
+    X[2, 1] = 1.0
+    X[3, 0] = 30.0
+    X[3, 1] = 0.0
+
+    var enc = OrdinalEncoder()
+    var X_ord = enc.fit_transform(X)
+
+    assert_true(enc.is_fitted)
+    assert_equal(enc.n_features_in_, 2)
+    assert_equal(len(enc.categories_[0]), 3)  # [10.0, 20.0, 30.0]
+    assert_equal(len(enc.categories_[1]), 3)  # [0.0, 1.0, 2.0]
+
+    # Row 0: 10.0 -> 0.0, 0.0 -> 0.0
+    assert_equal(X_ord[0, 0], 0.0)
+    assert_equal(X_ord[0, 1], 0.0)
+    # Row 1: 20.0 -> 1.0, 2.0 -> 2.0
+    assert_equal(X_ord[1, 0], 1.0)
+    assert_equal(X_ord[1, 1], 2.0)
+    # Row 2: 10.0 -> 0.0, 1.0 -> 1.0
+    assert_equal(X_ord[2, 0], 0.0)
+    assert_equal(X_ord[2, 1], 1.0)
+    # Row 3: 30.0 -> 2.0, 0.0 -> 0.0
+    assert_equal(X_ord[3, 0], 2.0)
+    assert_equal(X_ord[3, 1], 0.0)
+
+
+def test_ordinal_encoder_inverse_transform() raises:
+    var X = Matrix[DType.float64](3, 2, 0)
+    X[0, 0] = 5.0
+    X[0, 1] = 100.0
+    X[1, 0] = 15.0
+    X[1, 1] = 200.0
+    X[2, 0] = 5.0
+    X[2, 1] = 300.0
+
+    var enc = OrdinalEncoder()
+    var X_ord = enc.fit_transform(X)
+    var X_inv = enc.inverse_transform(X_ord)
+
+    for r in range(3):
+        for c in range(2):
+            assert_equal(X_inv[r, c], X[r, c])
+
+
+def test_ordinal_encoder_handle_unknown_use_encoded_value() raises:
+    var X_train = Matrix[DType.float64](2, 2, 0)
+    X_train[0, 0] = 1.0
+    X_train[0, 1] = 10.0
+    X_train[1, 0] = 2.0
+    X_train[1, 1] = 20.0
+
+    var enc = OrdinalEncoder(
+        handle_unknown="use_encoded_value", unknown_value=-1.0
+    )
+    enc.fit(X_train)
+
+    var X_test = Matrix[DType.float64](2, 2, 0)
+    X_test[0, 0] = 1.0
+    X_test[0, 1] = 99.0  # unknown
+    X_test[1, 0] = 88.0  # unknown
+    X_test[1, 1] = 20.0
+
+    var X_trans = enc.transform(X_test)
+    assert_equal(X_trans[0, 0], 0.0)
+    assert_equal(X_trans[0, 1], -1.0)
+    assert_equal(X_trans[1, 0], -1.0)
+    assert_equal(X_trans[1, 1], 1.0)
+
+
+def test_ordinal_encoder_handle_unknown_error() raises:
+    var X_train = Matrix[DType.float64](2, 1, 0)
+    X_train[0, 0] = 1.0
+    X_train[1, 0] = 2.0
+
+    var enc = OrdinalEncoder(handle_unknown="error")
+    enc.fit(X_train)
+
+    var X_test = Matrix[DType.float64](1, 1, 3.0)
+    with assert_raises():
+        _ = enc.transform(X_test)
+
+
+def test_ordinal_encoder_dataset() raises:
+    var X = Matrix[DType.float64](2, 2, 0)
+    X[0, 0] = 10.0
+    X[0, 1] = 50.0
+    X[1, 0] = 20.0
+    X[1, 1] = 50.0
+
+    var y = List[Float64]()
+    y.append(0.0)
+    y.append(1.0)
+
+    var feat_names = List[String]()
+    feat_names.append("cat_a")
+    feat_names.append("cat_b")
+
+    var ds = Dataset[DType.float64, DType.float64](X, y, feat_names)
+    var enc = OrdinalEncoder()
+    var records_ord = enc.fit_transform(ds.records)
+
+    assert_equal(records_ord[0, 0], 0.0)
+    assert_equal(records_ord[0, 1], 0.0)
+    assert_equal(records_ord[1, 0], 1.0)
+    assert_equal(records_ord[1, 1], 0.0)
+
+    assert_equal(ds.feature_names[0], "cat_a")
+
+
+def test_ordinal_encoder_float32() raises:
+    var X = Matrix[DType.float32](2, 2, 0)
+    X[0, 0] = 1.0
+    X[0, 1] = 2.0
+    X[1, 0] = 3.0
+    X[1, 1] = 4.0
+
+    var enc = OrdinalEncoder[DType.float32]()
+    var X_ord = enc.fit_transform(X)
+    assert_equal(X_ord[0, 0], 0.0)
+    assert_equal(X_ord[1, 0], 1.0)
+
+
+def test_ordinal_encoder_copy_semantics() raises:
+    var X = Matrix[DType.float64](2, 2, 1.0)
+    var enc1 = OrdinalEncoder()
+    enc1.fit(X)
+
+    var enc2 = enc1
+    assert_true(enc2.is_fitted)
+    assert_equal(enc2.n_features_in_, 2)
+
+
+def test_ordinal_encoder_invalid_parameters_and_errors() raises:
+    with assert_raises():
+        _ = OrdinalEncoder(handle_unknown="invalid")
+
+    var enc = OrdinalEncoder()
+    var X = Matrix[DType.float64](2, 2, 1.0)
+
+    # Unfitted transform and inverse
+    with assert_raises():
+        _ = enc.transform(X)
+    with assert_raises():
+        _ = enc.inverse_transform(X)
+
+    enc.fit(X)
+
+    # Dimension mismatch
+    var X_wrong = Matrix[DType.float64](2, 3, 1.0)
+    with assert_raises():
+        _ = enc.transform(X_wrong)
+    with assert_raises():
+        _ = enc.inverse_transform(X_wrong)
+
+    # Out of bounds inversion index
+    var X_oob = Matrix[DType.float64](1, 2, 999.0)
+    with assert_raises():
+        _ = enc.inverse_transform(X_oob)
+
+
+def test_label_encoder_basic() raises:
+    var y: List[Scalar[DType.float64]] = [10.0, 50.0, 10.0, 20.0, 50.0]
+    var le = LabelEncoder()
+    var y_enc = le.fit_transform(y)
+
+    assert_true(le.is_fitted)
+    assert_equal(len(le.classes_), 3)  # [10.0, 20.0, 50.0]
+    assert_equal(le.classes_[0], 10.0)
+    assert_equal(le.classes_[1], 20.0)
+    assert_equal(le.classes_[2], 50.0)
+
+    assert_equal(y_enc[0], 0)
+    assert_equal(y_enc[1], 2)
+    assert_equal(y_enc[2], 0)
+    assert_equal(y_enc[3], 1)
+    assert_equal(y_enc[4], 2)
+
+
+def test_label_encoder_inverse_transform() raises:
+    var y: List[Scalar[DType.float64]] = [-5.0, 100.0, -5.0, 0.0]
+    var le = LabelEncoder()
+    var y_enc = le.fit_transform(y)
+    var y_inv = le.inverse_transform(y_enc)
+
+    for i in range(len(y)):
+        assert_equal(y_inv[i], y[i])
+
+
+def test_label_encoder_single_class() raises:
+    var y: List[Scalar[DType.float64]] = [7.0, 7.0, 7.0]
+    var le = LabelEncoder()
+    var y_enc = le.fit_transform(y)
+    assert_equal(len(le.classes_), 1)
+    assert_equal(y_enc[0], 0)
+    assert_equal(y_enc[1], 0)
+    assert_equal(y_enc[2], 0)
+
+
+def test_label_encoder_copy_semantics() raises:
+    var y: List[Scalar[DType.float64]] = [1.0, 2.0]
+    var le1 = LabelEncoder()
+    le1.fit(y)
+
+    var le2 = le1
+    assert_true(le2.is_fitted)
+    assert_equal(len(le2.classes_), 2)
+
+
+def test_label_encoder_invalid_inputs_and_errors() raises:
+    var le = LabelEncoder()
+    var y_valid: List[Scalar[DType.float64]] = [1.0, 2.0]
+
+    # Unfitted transform and inverse
+    with assert_raises():
+        _ = le.transform(y_valid)
+    var idxs: List[Int] = [0, 1]
+    with assert_raises():
+        _ = le.inverse_transform(idxs)
+
+    # Empty input fit
+    var empty = List[Scalar[DType.float64]]()
+    with assert_raises():
+        le.fit(empty)
+
+    # NaN in input
+    var nan = Float64(0.0) / Float64(0.0)
+    var y_nan: List[Scalar[DType.float64]] = [1.0, nan]
+    with assert_raises():
+        le.fit(y_nan)
+
+    le.fit(y_valid)
+
+    # Unseen label
+    var y_unseen: List[Scalar[DType.float64]] = [3.0]
+    with assert_raises():
+        _ = le.transform(y_unseen)
+
+    # DataConversionError on dtype mismatch
+    var y_f32: List[Scalar[DType.float32]] = [1.0, 2.0]
+    with assert_raises():
+        _ = le.transform(y_f32)
+
+    # Invert out of bounds
+    var bad_idxs: List[Int] = [5]
+    with assert_raises():
+        _ = le.inverse_transform(bad_idxs)
+
+
+def test_ordinal_encoder_non_integer_inversion_raises() raises:
+    var X_train = Matrix[DType.float64](3, 1, 0)
+    X_train[0, 0] = 10.0
+    X_train[1, 0] = 20.0
+    X_train[2, 0] = 30.0
+
+    var enc = OrdinalEncoder()
+    enc.fit(X_train)
+
+    var X_non_int = Matrix[DType.float64](1, 1, 1.8)
+    with assert_raises():
+        _ = enc.inverse_transform(X_non_int)
+
+
+def test_label_encoder_generic_inverse_transform() raises:
+    var y: List[Scalar[DType.int32]] = [100, 200, 300]
+    var le = LabelEncoder()
+    var y_enc = le.fit_transform(y)
+
+    var y_inv_int32 = le.inverse_transform[DType.int32](y_enc)
+    assert_equal(len(y_inv_int32), 3)
+    assert_equal(y_inv_int32[0], 100)
+    assert_equal(y_inv_int32[1], 200)
+    assert_equal(y_inv_int32[2], 300)
+
+
+def test_simple_imputer_mean_strategy() raises:
+    var nan_val = nan[DType.float64]()
+    var X = Matrix[DType.float64](3, 2, 0)
+    X[0, 0] = 1.0
+    X[0, 1] = 2.0
+    X[1, 0] = nan_val
+    X[1, 1] = 3.0
+    X[2, 0] = 7.0
+    X[2, 1] = 6.0
+
+    var imp = SimpleImputer(strategy="mean")
+    var X_imp = imp.fit_transform(X)
+
+    assert_true(imp.is_fitted)
+    assert_equal(imp.n_features_in_, 2)
+    assert_almost_equal(imp.statistics_[0], 4.0, atol=1e-12)
+    assert_almost_equal(imp.statistics_[1], 11.0 / 3.0, atol=1e-12)
+
+    assert_almost_equal(X_imp[0, 0], 1.0, atol=1e-12)
+    assert_almost_equal(X_imp[1, 0], 4.0, atol=1e-12)  # imputed
+    assert_almost_equal(X_imp[2, 0], 7.0, atol=1e-12)
+    assert_almost_equal(X_imp[1, 1], 3.0, atol=1e-12)
+
+
+def test_simple_imputer_median_strategy() raises:
+    var nan_val = nan[DType.float64]()
+    var X_odd = Matrix[DType.float64](4, 1, 0)
+    X_odd[0, 0] = 10.0
+    X_odd[1, 0] = nan_val
+    X_odd[2, 0] = 20.0
+    X_odd[3, 0] = 100.0
+
+    var imp_odd = SimpleImputer(strategy="median")
+    var X_imp_odd = imp_odd.fit_transform(X_odd)
+    assert_almost_equal(imp_odd.statistics_[0], 20.0, atol=1e-12)
+    assert_almost_equal(X_imp_odd[1, 0], 20.0, atol=1e-12)
+
+    var X_even = Matrix[DType.float64](5, 1, 0)
+    X_even[0, 0] = 10.0
+    X_even[1, 0] = 20.0
+    X_even[2, 0] = nan_val
+    X_even[3, 0] = 30.0
+    X_even[4, 0] = 100.0
+
+    var imp_even = SimpleImputer(strategy="median")
+    var X_imp_even = imp_even.fit_transform(X_even)
+    assert_almost_equal(imp_even.statistics_[0], 25.0, atol=1e-12)
+    assert_almost_equal(X_imp_even[2, 0], 25.0, atol=1e-12)
+
+
+def test_simple_imputer_most_frequent_strategy() raises:
+    var nan_val = nan[DType.float64]()
+    var X = Matrix[DType.float64](6, 1, 0)
+    X[0, 0] = 1.0
+    X[1, 0] = 2.0
+    X[2, 0] = nan_val
+    X[3, 0] = 2.0
+    X[4, 0] = 3.0
+    X[5, 0] = 2.0
+
+    var imp = SimpleImputer(strategy="most_frequent")
+    var X_imp = imp.fit_transform(X)
+    assert_equal(imp.statistics_[0], 2.0)
+    assert_equal(X_imp[2, 0], 2.0)
+
+
+def test_simple_imputer_constant_strategy() raises:
+    var nan_val = nan[DType.float64]()
+    var X = Matrix[DType.float64](2, 2, 0)
+    X[0, 0] = 1.0
+    X[0, 1] = nan_val
+    X[1, 0] = nan_val
+    X[1, 1] = 2.0
+
+    var imp = SimpleImputer(strategy="constant", fill_value=-999.0)
+    var X_imp = imp.fit_transform(X)
+    assert_equal(imp.statistics_[0], -999.0)
+    assert_equal(imp.statistics_[1], -999.0)
+    assert_equal(X_imp[0, 1], -999.0)
+    assert_equal(X_imp[1, 0], -999.0)
+
+
+def test_simple_imputer_custom_missing_value_sentinel() raises:
+    var X = Matrix[DType.float64](3, 1, 0)
+    X[0, 0] = 10.0
+    X[1, 0] = -1.0  # missing sentinel
+    X[2, 0] = 30.0
+
+    var imp = SimpleImputer(missing_values=-1.0, strategy="mean")
+    var X_imp = imp.fit_transform(X)
+    assert_almost_equal(imp.statistics_[0], 20.0, atol=1e-12)
+    assert_almost_equal(X_imp[1, 0], 20.0, atol=1e-12)
+
+
+def test_simple_imputer_float32() raises:
+    var nan_val = nan[DType.float32]()
+    var X = Matrix[DType.float32](2, 2, 0)
+    X[0, 0] = 10.0
+    X[0, 1] = nan_val
+    X[1, 0] = nan_val
+    X[1, 1] = 20.0
+
+    var imp = SimpleImputer[DType.float32](strategy="constant", fill_value=0.0)
+    var X_imp = imp.fit_transform(X)
+    assert_equal(X_imp[0, 1], 0.0)
+    assert_equal(X_imp[1, 0], 0.0)
+
+
+def test_simple_imputer_copy_semantics() raises:
+    var X = Matrix[DType.float64](2, 2, 1.0)
+    var imp1 = SimpleImputer(strategy="mean")
+    imp1.fit(X)
+
+    var imp2 = imp1
+    assert_true(imp2.is_fitted)
+    assert_equal(imp2.n_features_in_, 2)
+    assert_equal(len(imp2.statistics_), 2)
+
+
+def test_simple_imputer_invalid_inputs_and_errors() raises:
+    with assert_raises():
+        _ = SimpleImputer(strategy="invalid_strat")
+
+    var imp = SimpleImputer(strategy="mean")
+    var X = Matrix[DType.float64](2, 2, 1.0)
+
+    # Unfitted transform
+    with assert_raises():
+        _ = imp.transform(X)
+
+    # All missing in column under mean strategy raises
+    var nan_val = nan[DType.float64]()
+    var X_all_missing = Matrix[DType.float64](2, 2, nan_val)
+    with assert_raises():
+        imp.fit(X_all_missing)
+
+    imp.fit(X)
+
+    # Dimension mismatch
+    var X_wrong = Matrix[DType.float64](2, 3, 1.0)
+    with assert_raises():
+        _ = imp.transform(X_wrong)
+
+    # DataConversionError on dtype mismatch
+    var X_f32 = Matrix[DType.float32](2, 2, 1.0)
+    with assert_raises():
+        _ = imp.transform(X_f32)
 
 
 def main() raises:

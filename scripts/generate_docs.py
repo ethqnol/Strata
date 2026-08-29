@@ -35,12 +35,13 @@ MODULE_METADATA = {
     },
     "preprocessing": {
         "title": "Feature Preprocessing",
-        "description": "StandardScaler, MinMaxScaler, RobustScaler, Normalizer, Binarizer, and OneHotEncoder with streaming SIMD statistics.",
+        "description": "StandardScaler, MinMaxScaler, RobustScaler, Normalizer, Binarizer, OneHotEncoder, OrdinalEncoder, LabelEncoder, and SimpleImputer with streaming SIMD statistics.",
         "files": [
             "preprocessing/scaler.mojo",
             "preprocessing/normalizer.mojo",
             "preprocessing/binarizer.mojo",
             "preprocessing/encoders.mojo",
+            "preprocessing/imputer.mojo",
         ]
     },
     "linear_model": {
