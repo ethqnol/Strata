@@ -1,6 +1,6 @@
 # `strata.metrics`
 
-Regression metrics (MSE, RMSE, MAE, R²), classification metrics (Accuracy, Precision, Recall, F1, Confusion Matrix).
+Regression metrics (MSE, RMSE, MAE, R²), classification metrics (Accuracy, Precision, Recall, F1, Confusion Matrix, Log Loss, ROC AUC), and clustering metrics (Silhouette Score).
 
 ---
 
@@ -18,3 +18,6 @@ Regression metrics (MSE, RMSE, MAE, R²), classification metrics (Accuracy, Prec
 | [`precision_score`](precision_score.md) | Compute classification precision score. |
 | [`recall_score`](recall_score.md) | Compute classification recall (sensitivity) score. |
 | [`f1_score`](f1_score.md) | Compute classification F1 score (harmonic mean of precision and recall). |
+| [`log_loss`](log_loss.md) | Compute log loss (cross-entropy loss), the negative log-likelihood of true labels. |
+| [`roc_auc_score`](roc_auc_score.md) | Compute Area Under the Receiver Operating Characteristic Curve (ROC AUC). |
+| [`silhouette_score`](silhouette_score.md) | Compute the mean Silhouette Coefficient of all samples. |

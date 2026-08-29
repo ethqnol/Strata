@@ -99,10 +99,11 @@ MODULE_METADATA = {
     },
     "metrics": {
         "title": "Evaluation Metrics",
-        "description": "Regression metrics (MSE, RMSE, MAE, R²), classification metrics (Accuracy, Precision, Recall, F1, Confusion Matrix).",
+        "description": "Regression metrics (MSE, RMSE, MAE, R²), classification metrics (Accuracy, Precision, Recall, F1, Confusion Matrix, Log Loss, ROC AUC), and clustering metrics (Silhouette Score).",
         "files": [
             "metrics/regression.mojo",
             "metrics/classification.mojo",
+            "metrics/cluster.mojo",
         ]
     },
     "base": {

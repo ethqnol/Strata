@@ -4,6 +4,7 @@ from std.testing import (
     assert_equal,
     assert_almost_equal,
     assert_raises,
+    assert_true,
 )
 from strata import (
     mean_squared_error,
@@ -15,7 +16,11 @@ from strata import (
     recall_score,
     f1_score,
     confusion_matrix,
+    log_loss,
+    roc_auc_score,
+    silhouette_score,
 )
+from strata.core.matrix import Matrix
 
 
 def test_mse_sklearn_reference() raises:
@@ -977,6 +982,430 @@ def test_regression_rejects_nan() raises:
         _ = r2_score(y_true, y_pred)
     with assert_raises():
         _ = mean_absolute_error(y_pred, y_true)
+
+
+def _binary_proba() raises -> Matrix[DType.float64]:
+    var vals: List[Scalar[DType.float64]] = [
+        0.9,
+        0.1,
+        0.8,
+        0.2,
+        0.3,
+        0.7,
+        0.01,
+        0.99,
+    ]
+    return Matrix[DType.float64](4, 2, vals^)
+
+
+def test_log_loss_binary_reference() raises:
+    var y: List[Scalar[DType.float64]] = [0.0, 0.0, 1.0, 1.0]
+    assert_almost_equal(log_loss(y, _binary_proba()), 0.1738073366910675)
+
+
+def test_log_loss_single_column_matches_two_column() raises:
+    var y: List[Scalar[DType.float64]] = [0.0, 0.0, 1.0, 1.0]
+    var one: List[Scalar[DType.float64]] = [0.1, 0.2, 0.7, 0.99]
+    var P1 = Matrix[DType.float64](4, 1, one^)
+    assert_almost_equal(log_loss(y, P1), log_loss(y, _binary_proba()))
+
+
+def test_log_loss_normalize_false_returns_the_sum() raises:
+    var y: List[Scalar[DType.float64]] = [0.0, 0.0, 1.0, 1.0]
+    var P = _binary_proba()
+    assert_almost_equal(log_loss(y, P, normalize=False), 0.69522934676427)
+    assert_almost_equal(log_loss(y, P, normalize=False), log_loss(y, P) * 4.0)
+
+
+def test_log_loss_multiclass_reference() raises:
+    var y: List[Scalar[DType.float64]] = [2.0, 5.0, 5.0, 9.0]
+    var vals: List[Scalar[DType.float64]] = [
+        0.7,
+        0.2,
+        0.1,
+        0.1,
+        0.6,
+        0.3,
+        0.2,
+        0.2,
+        0.6,
+        0.05,
+        0.15,
+        0.8,
+    ]
+    var P = Matrix[DType.float64](4, 3, vals^)
+    assert_almost_equal(log_loss(y, P), 0.6750205078632583)
+
+
+def test_log_loss_columns_follow_sorted_labels() raises:
+    var y: List[Scalar[DType.float64]] = [10.0, 20.0]
+    var vals: List[Scalar[DType.float64]] = [0.9, 0.1, 0.9, 0.1]
+    var P = Matrix[DType.float64](2, 2, vals^)
+    assert_almost_equal(log_loss(y, P), 1.203972804325936)
+
+
+def test_log_loss_uniform_probabilities_is_log_two() raises:
+    var y: List[Scalar[DType.float64]] = [0.0, 1.0]
+    var P = Matrix[DType.float64](2, 2, 0.5)
+    assert_almost_equal(log_loss(y, P), 0.6931471805599453)
+
+
+def test_log_loss_clips_certain_predictions() raises:
+    var y: List[Scalar[DType.float64]] = [0.0, 1.0]
+    var best: List[Scalar[DType.float64]] = [1.0, 0.0, 0.0, 1.0]
+    var worst: List[Scalar[DType.float64]] = [0.0, 1.0, 1.0, 0.0]
+    assert_almost_equal(log_loss(y, Matrix[DType.float64](2, 2, best^)), 0.0)
+    assert_almost_equal(
+        log_loss(y, Matrix[DType.float64](2, 2, worst^)), 36.04365338911715
+    )
+
+
+def test_log_loss_renormalizes_rows() raises:
+    var y: List[Scalar[DType.float64]] = [0.0, 1.0]
+    var vals: List[Scalar[DType.float64]] = [0.45, 0.45, 0.2, 0.6]
+    var P = Matrix[DType.float64](2, 2, vals^)
+    assert_almost_equal(log_loss(y, P), 0.4904146265058632)
+
+
+def test_log_loss_dtype_variants() raises:
+    var y: List[Scalar[DType.int32]] = [0, 0, 1, 1]
+    var vals: List[Scalar[DType.float32]] = [
+        0.9,
+        0.1,
+        0.8,
+        0.2,
+        0.3,
+        0.7,
+        0.01,
+        0.99,
+    ]
+    var P = Matrix[DType.float32](4, 2, vals^)
+    assert_almost_equal(log_loss(y, P), 0.1738073366910675, atol=1e-6)
+
+
+def test_log_loss_invalid_inputs() raises:
+    var y: List[Scalar[DType.float64]] = [0.0, 1.0]
+
+    with assert_raises():
+        _ = log_loss(y, Matrix[DType.float64](3, 2, 0.5))
+
+    with assert_raises():
+        _ = log_loss(y, Matrix[DType.float64](2, 3, 0.3))
+
+    var single: List[Scalar[DType.float64]] = [1.0, 1.0]
+    with assert_raises():
+        _ = log_loss(single, Matrix[DType.float64](2, 2, 0.5))
+
+    var empty = List[Scalar[DType.float64]]()
+    with assert_raises():
+        _ = log_loss(empty, Matrix[DType.float64](0, 2, 0.5))
+
+    var nan = Float64(0.0) / Float64(0.0)
+    with assert_raises():
+        _ = log_loss(y, Matrix[DType.float64](2, 2, nan))
+
+
+def test_roc_auc_reference_value() raises:
+    var y: List[Scalar[DType.float64]] = [0.0, 0.0, 1.0, 1.0]
+    var s: List[Scalar[DType.float64]] = [0.1, 0.4, 0.35, 0.8]
+    assert_almost_equal(roc_auc_score(y, s), 0.75)
+
+
+def test_roc_auc_perfect_and_inverted_rankings() raises:
+    var y: List[Scalar[DType.float64]] = [0.0, 0.0, 1.0, 1.0]
+    var good: List[Scalar[DType.float64]] = [0.1, 0.2, 0.8, 0.9]
+    var bad: List[Scalar[DType.float64]] = [0.9, 0.8, 0.2, 0.1]
+    assert_equal(roc_auc_score(y, good), 1.0)
+    assert_equal(roc_auc_score(y, bad), 0.0)
+
+
+def test_roc_auc_ties_count_as_half() raises:
+    var y: List[Scalar[DType.float64]] = [0.0, 0.0, 1.0, 1.0]
+    var tied: List[Scalar[DType.float64]] = [0.5, 0.5, 0.5, 0.5]
+    assert_equal(roc_auc_score(y, tied), 0.5)
+
+    var y7: List[Scalar[DType.float64]] = [0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0]
+    var s7: List[Scalar[DType.float64]] = [0.3, 0.3, 0.6, 0.6, 0.9, 0.1, 0.6]
+    assert_almost_equal(roc_auc_score(y7, s7), 0.7916666666666666)
+
+
+def test_roc_auc_depends_only_on_ranking() raises:
+    var y: List[Scalar[DType.float64]] = [0.0, 0.0, 1.0, 1.0]
+    var s: List[Scalar[DType.float64]] = [0.1, 0.4, 0.35, 0.8]
+    var rescaled: List[Scalar[DType.float64]] = [15.0, 45.0, 40.0, 85.0]
+    assert_equal(roc_auc_score(y, s), roc_auc_score(y, rescaled))
+
+    var y3: List[Scalar[DType.float64]] = [1.0, 0.0, 1.0]
+    var raw: List[Scalar[DType.float64]] = [-3.0, 5.0, 12.0]
+    assert_almost_equal(roc_auc_score(y3, raw), 0.5)
+
+
+def test_roc_auc_pos_label_selects_positive_class() raises:
+    var y: List[Scalar[DType.float64]] = [1.0, 1.0, 2.0, 2.0, 2.0]
+    var s: List[Scalar[DType.float64]] = [0.2, 0.7, 0.4, 0.6, 0.9]
+    var pos_two = roc_auc_score(y, s, pos_label=2.0)
+    assert_almost_equal(pos_two, 0.6666666666666666)
+    assert_almost_equal(roc_auc_score(y, s, pos_label=1.0), 1.0 - pos_two)
+
+
+def _pairwise_auc(y: List[Float64], s: List[Float64]) -> Float64:
+    var wins: Float64 = 0.0
+    var pairs: Float64 = 0.0
+    for i in range(len(y)):
+        if y[i] != 1.0:
+            continue
+        for j in range(len(y)):
+            if y[j] != 0.0:
+                continue
+            pairs += 1.0
+            if s[i] > s[j]:
+                wins += 1.0
+            elif s[i] == s[j]:
+                wins += 0.5
+    return wins / pairs
+
+
+def test_roc_auc_matches_pairwise_definition() raises:
+    var y: List[Scalar[DType.float64]] = [
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+    ]
+    var s: List[Scalar[DType.float64]] = [
+        0.9,
+        0.9,
+        0.2,
+        0.6,
+        0.6,
+        0.1,
+        0.4,
+        0.4,
+    ]
+    assert_almost_equal(roc_auc_score(y, s), _pairwise_auc(y, s))
+
+
+def test_roc_auc_dtype_variants() raises:
+    var y: List[Scalar[DType.int32]] = [0, 0, 1, 1]
+    var s: List[Scalar[DType.float32]] = [0.1, 0.4, 0.35, 0.8]
+    assert_almost_equal(roc_auc_score(y, s), 0.75)
+
+
+def test_roc_auc_invalid_inputs() raises:
+    var y: List[Scalar[DType.float64]] = [0.0, 0.0, 1.0, 1.0]
+    var s: List[Scalar[DType.float64]] = [0.1, 0.4, 0.35, 0.8]
+
+    with assert_raises():
+        _ = roc_auc_score(y, s, pos_label=7.0)
+
+    var three: List[Scalar[DType.float64]] = [0.0, 1.0, 2.0, 1.0]
+    with assert_raises():
+        _ = roc_auc_score(three, s)
+
+    var one: List[Scalar[DType.float64]] = [1.0, 1.0, 1.0, 1.0]
+    with assert_raises():
+        _ = roc_auc_score(one, s)
+
+    var short: List[Scalar[DType.float64]] = [0.1, 0.4]
+    with assert_raises():
+        _ = roc_auc_score(y, short)
+
+    var inf = Float64(1.0) / Float64(0.0)
+    var bad: List[Scalar[DType.float64]] = [0.1, 0.4, 0.35, inf]
+    with assert_raises():
+        _ = roc_auc_score(y, bad)
+
+
+def _two_blobs() raises -> Matrix[DType.float64]:
+    var vals: List[Scalar[DType.float64]] = [
+        0.0,
+        0.0,
+        0.5,
+        0.0,
+        0.0,
+        0.5,
+        10.0,
+        10.0,
+        10.5,
+        10.0,
+        10.0,
+        10.5,
+    ]
+    return Matrix[DType.float64](6, 2, vals^)
+
+
+def test_silhouette_well_separated_clusters() raises:
+    var labels: List[Int] = [0, 0, 0, 1, 1, 1]
+    assert_almost_equal(
+        silhouette_score(_two_blobs(), labels), 0.9597751259823862
+    )
+
+
+def test_silhouette_penalises_mixed_clusters() raises:
+    var X = _two_blobs()
+    var mixed: List[Int] = [0, 1, 0, 1, 0, 1]
+    var good: List[Int] = [0, 0, 0, 1, 1, 1]
+    assert_almost_equal(silhouette_score(X, mixed), -0.05331968611082519)
+    assert_true(silhouette_score(X, mixed) < silhouette_score(X, good))
+
+
+def test_silhouette_label_values_do_not_matter() raises:
+    var X = _two_blobs()
+    var plain: List[Int] = [0, 0, 0, 1, 1, 1]
+    var odd: List[Int] = [7, 7, 7, -1, -1, -1]
+    assert_equal(silhouette_score(X, plain), silhouette_score(X, odd))
+
+
+def test_silhouette_three_clusters_and_singletons() raises:
+    var vals: List[Scalar[DType.float64]] = [1.0, 2.0, 3.0, 8.0, 9.0, 20.0]
+    var X = Matrix[DType.float64](6, 1, vals^)
+
+    var three: List[Int] = [0, 0, 0, 1, 1, 2]
+    assert_almost_equal(silhouette_score(X, three), 0.6773171273171273)
+
+    var singleton: List[Int] = [0, 0, 0, 0, 0, 1]
+    assert_almost_equal(silhouette_score(X, singleton), 0.5755181458548332)
+
+
+def test_silhouette_duplicate_points_across_clusters() raises:
+    var vals: List[Scalar[DType.float64]] = [0.0, 0.0, 0.0, 1.0]
+    var X = Matrix[DType.float64](4, 1, vals^)
+    var labels: List[Int] = [0, 0, 1, 1]
+
+    var score = silhouette_score(X, labels)
+    assert_true(not isnan(score))
+    assert_almost_equal(score, 0.25)
+
+
+def test_silhouette_all_identical_points_score_zero() raises:
+    var X = Matrix[DType.float64](4, 1, 0.0)
+    var labels: List[Int] = [0, 0, 1, 1]
+
+    var score = silhouette_score(X, labels)
+    assert_true(not isnan(score))
+    assert_equal(score, 0.0)
+
+
+def test_silhouette_dtype_variants() raises:
+    var vals: List[Scalar[DType.float32]] = [
+        0.0,
+        0.0,
+        0.5,
+        0.0,
+        0.0,
+        0.5,
+        10.0,
+        10.0,
+        10.5,
+        10.0,
+        10.0,
+        10.5,
+    ]
+    var X = Matrix[DType.float32](6, 2, vals^)
+    var labels: List[Int] = [0, 0, 0, 1, 1, 1]
+    assert_almost_equal(
+        silhouette_score(X, labels), 0.9597751259823862, atol=1e-6
+    )
+
+
+def test_silhouette_invalid_inputs() raises:
+    var X = _two_blobs()
+
+    var one_cluster: List[Int] = [0, 0, 0, 0, 0, 0]
+    with assert_raises():
+        _ = silhouette_score(X, one_cluster)
+
+    var all_singletons: List[Int] = [0, 1, 2, 3, 4, 5]
+    with assert_raises():
+        _ = silhouette_score(X, all_singletons)
+
+    var too_few: List[Int] = [0, 0, 1]
+    with assert_raises():
+        _ = silhouette_score(X, too_few)
+
+    # 2 samples with 2 clusters (k=2 > n-1=1, invalid)
+    var X2 = Matrix[DType.float64](2, 2, 1.0)
+    var labels2: List[Int] = [0, 1]
+    with assert_raises():
+        _ = silhouette_score(X2, labels2)
+
+    # NaN in feature matrix
+    var nan = Float64(0.0) / Float64(0.0)
+    var X_nan = Matrix[DType.float64](6, 2, nan)
+    var labels_valid: List[Int] = [0, 0, 0, 1, 1, 1]
+    with assert_raises():
+        _ = silhouette_score(X_nan, labels_valid)
+
+
+def test_silhouette_minimal_dataset_three_samples() raises:
+    # Minimal valid configuration: n=3, k=2 (one cluster of size 2, one singleton)
+    var vals: List[Scalar[DType.float64]] = [0.0, 0.0, 1.0, 0.0, 10.0, 10.0]
+    var X = Matrix[DType.float64](3, 2, vals^)
+    var labels: List[Int] = [0, 0, 1]
+    var score = silhouette_score(X, labels)
+    assert_true(not isnan(score))
+    assert_true(score > 0.0)
+
+
+def test_silhouette_negative_labels_match_positive() raises:
+    var X = _two_blobs()
+    var pos_labels: List[Int] = [0, 0, 0, 1, 1, 1]
+    var neg_labels: List[Int] = [-5, -5, -5, -2, -2, -2]
+    assert_equal(
+        silhouette_score(X, pos_labels), silhouette_score(X, neg_labels)
+    )
+
+
+def test_roc_auc_negative_labels() raises:
+    var y: List[Scalar[DType.float64]] = [-1.0, -1.0, 1.0, 1.0]
+    var s: List[Scalar[DType.float64]] = [-10.0, -5.0, 2.0, 8.0]
+    assert_almost_equal(roc_auc_score(y, s, pos_label=1.0), 1.0)
+    assert_almost_equal(roc_auc_score(y, s, pos_label=-1.0), 0.0)
+
+
+def test_roc_auc_all_tied_imbalanced() raises:
+    var y: List[Scalar[DType.float64]] = [0.0, 1.0, 1.0, 1.0]
+    var s: List[Scalar[DType.float64]] = [0.5, 0.5, 0.5, 0.5]
+    assert_almost_equal(roc_auc_score(y, s), 0.5)
+
+
+def test_roc_auc_nan_and_empty_rejected() raises:
+    var empty = List[Scalar[DType.float64]]()
+    with assert_raises():
+        _ = roc_auc_score(empty, empty)
+
+    var nan = Float64(0.0) / Float64(0.0)
+    var y_nan: List[Scalar[DType.float64]] = [0.0, 1.0, nan, 1.0]
+    var s_valid: List[Scalar[DType.float64]] = [0.1, 0.4, 0.5, 0.8]
+    with assert_raises():
+        _ = roc_auc_score(y_nan, s_valid)
+
+    var y_valid: List[Scalar[DType.float64]] = [0.0, 0.0, 1.0, 1.0]
+    var s_nan: List[Scalar[DType.float64]] = [0.1, nan, 0.5, 0.8]
+    with assert_raises():
+        _ = roc_auc_score(y_valid, s_nan)
+
+
+def test_log_loss_arbitrary_binary_labels() raises:
+    var y: List[Scalar[DType.float64]] = [-1.0, 1.0, 1.0, -1.0]
+    var one: List[Scalar[DType.float64]] = [0.1, 0.9, 0.8, 0.2]
+    var P1 = Matrix[DType.float64](4, 1, one^)
+    assert_true(log_loss(y, P1) < 0.25)
+
+
+def test_log_loss_column_mismatch_with_three_classes() raises:
+    var y: List[Scalar[DType.float64]] = [0.0, 1.0, 2.0]
+    var P_single = Matrix[DType.float64](3, 1, 0.5)
+    with assert_raises():
+        _ = log_loss(y, P_single)
+
+    var P_four = Matrix[DType.float64](3, 4, 0.25)
+    with assert_raises():
+        _ = log_loss(y, P_four)
 
 
 def main() raises:

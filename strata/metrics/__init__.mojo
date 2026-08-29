@@ -10,5 +10,8 @@ from .classification import (
     recall_score,
     f1_score,
     confusion_matrix,
+    log_loss,
+    roc_auc_score,
     unique_labels,
 )
+from .cluster import silhouette_score

@@ -531,6 +531,33 @@
     "file": "strata/metrics/classification.mojo"
   },
   {
+    "module": "metrics",
+    "name": "log_loss",
+    "kind": "function",
+    "summary": "Compute log loss (cross-entropy loss), the negative log-likelihood of true labels.",
+    "ref_file": "reference/metrics/log_loss",
+    "traits": "",
+    "file": "strata/metrics/classification.mojo"
+  },
+  {
+    "module": "metrics",
+    "name": "roc_auc_score",
+    "kind": "function",
+    "summary": "Compute Area Under the Receiver Operating Characteristic Curve (ROC AUC).",
+    "ref_file": "reference/metrics/roc_auc_score",
+    "traits": "",
+    "file": "strata/metrics/classification.mojo"
+  },
+  {
+    "module": "metrics",
+    "name": "silhouette_score",
+    "kind": "function",
+    "summary": "Compute the mean Silhouette Coefficient of all samples.",
+    "ref_file": "reference/metrics/silhouette_score",
+    "traits": "",
+    "file": "strata/metrics/cluster.mojo"
+  },
+  {
     "module": "base",
     "name": "Estimator",
     "kind": "trait",

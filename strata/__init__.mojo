@@ -104,6 +104,9 @@ from .metrics import (
     recall_score,
     f1_score,
     confusion_matrix,
+    log_loss,
+    roc_auc_score,
+    silhouette_score,
 )
 from .tree import DecisionTreeRegressor, DecisionTreeClassifier
 from .ensemble import RandomForestRegressor, RandomForestClassifier

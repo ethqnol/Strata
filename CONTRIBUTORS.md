@@ -78,7 +78,7 @@ pixi run test-pipelines       # Composable N-step transformer, regressor, classi
 pixi run test-view            # Strided MatrixView, 2D zero-copy slicing, bounds checks
 pixi run test-preprocessing   # StandardScaler, MinMaxScaler, RobustScaler, OneHotEncoder, Binarizer
 pixi run test-split           # Train/test split, shuffling reproducibility
-pixi run test-metrics         # Regression & classification metrics, averaging strategies
+pixi run test-metrics         # Regression, classification, ranking & clustering metrics, averaging strategies
 pixi run test-interop         # NumPy / SciPy conversion roundtrips
 pixi run test-large           # Large matrix benchmarks & stress tests
 pixi run test-core            # Error types, validation routines, base traits
@@ -108,7 +108,7 @@ Strata/
 │   ├── utils/            # Validation helpers (check_X_y, check_sparse), math (softmax), random (PRNG, shuffle)
 │   ├── preprocessing/    # Data transformers (StandardScaler, MinMaxScaler, RobustScaler, OneHotEncoder, Binarizer)
 │   ├── model_selection/  # Data splitting (train_test_split)
-│   ├── metrics/          # Evaluation metrics (MSE, R2, Accuracy, F1)
+│   ├── metrics/          # Evaluation metrics (MSE, R2, Accuracy, F1, LogLoss, ROC AUC, Silhouette)
 │   ├── linear_model/     # Linear regression, Ridge, Logistic regression
 │   ├── cluster/          # KMeans, KModes, DBSCAN
 │   ├── tree/             # Decision trees
