@@ -295,6 +295,109 @@ window.STRATA_DOCS = {
           ]
         },
         {
+          "id": "reference/neighbors/index",
+          "title": "strata.neighbors",
+          "path": "reference/neighbors/index.md",
+          "symbols": [
+            {
+              "id": "reference/neighbors/sqeuclidean_distance",
+              "title": "sqeuclidean_distance",
+              "path": "reference/neighbors/sqeuclidean_distance.md",
+              "kind": "function"
+            },
+            {
+              "id": "reference/neighbors/euclidean_distance",
+              "title": "euclidean_distance",
+              "path": "reference/neighbors/euclidean_distance.md",
+              "kind": "function"
+            },
+            {
+              "id": "reference/neighbors/manhattan_distance",
+              "title": "manhattan_distance",
+              "path": "reference/neighbors/manhattan_distance.md",
+              "kind": "function"
+            },
+            {
+              "id": "reference/neighbors/chebyshev_distance",
+              "title": "chebyshev_distance",
+              "path": "reference/neighbors/chebyshev_distance.md",
+              "kind": "function"
+            },
+            {
+              "id": "reference/neighbors/minkowski_distance",
+              "title": "minkowski_distance",
+              "path": "reference/neighbors/minkowski_distance.md",
+              "kind": "function"
+            },
+            {
+              "id": "reference/neighbors/cosine_distance",
+              "title": "cosine_distance",
+              "path": "reference/neighbors/cosine_distance.md",
+              "kind": "function"
+            },
+            {
+              "id": "reference/neighbors/row_distance",
+              "title": "row_distance",
+              "path": "reference/neighbors/row_distance.md",
+              "kind": "function"
+            },
+            {
+              "id": "reference/neighbors/pairwise_distances",
+              "title": "pairwise_distances",
+              "path": "reference/neighbors/pairwise_distances.md",
+              "kind": "function"
+            },
+            {
+              "id": "reference/neighbors/pairwise_distances",
+              "title": "pairwise_distances",
+              "path": "reference/neighbors/pairwise_distances.md",
+              "kind": "function"
+            },
+            {
+              "id": "reference/neighbors/NeighborDistIdx",
+              "title": "NeighborDistIdx",
+              "path": "reference/neighbors/NeighborDistIdx.md",
+              "kind": "struct"
+            },
+            {
+              "id": "reference/neighbors/NearestNeighbors",
+              "title": "NearestNeighbors",
+              "path": "reference/neighbors/NearestNeighbors.md",
+              "kind": "struct"
+            },
+            {
+              "id": "reference/neighbors/KNeighborsClassifier",
+              "title": "KNeighborsClassifier",
+              "path": "reference/neighbors/KNeighborsClassifier.md",
+              "kind": "struct"
+            },
+            {
+              "id": "reference/neighbors/KNeighborsRegressor",
+              "title": "KNeighborsRegressor",
+              "path": "reference/neighbors/KNeighborsRegressor.md",
+              "kind": "struct"
+            },
+            {
+              "id": "reference/neighbors/KDNode",
+              "title": "KDNode",
+              "path": "reference/neighbors/KDNode.md",
+              "kind": "struct"
+            },
+            {
+              "id": "reference/neighbors/_AxisIndexPair",
+              "title": "_AxisIndexPair",
+              "path": "reference/neighbors/_AxisIndexPair.md",
+              "kind": "struct"
+            },
+            {
+              "id": "reference/neighbors/KDTree",
+              "title": "KDTree",
+              "path": "reference/neighbors/KDTree.md",
+              "kind": "struct"
+            }
+          ]
+        },
+        {
           "id": "reference/model_selection/index",
           "title": "strata.model_selection",
           "path": "reference/model_selection/index.md",
@@ -748,6 +851,22 @@ window.STRATA_DOCS = {
     "reference/decomposition/index": "# `strata.decomposition`\n\nPrincipal Component Analysis (PCA) via exact SVD and TruncatedSVD with dense and sparse SpMM linear projection.\n\n---\n\n## Structs & Classes\n\n| Struct | Description |\n| :--- | :--- |\n| [`PCA`](PCA.md) | Principal Component Analysis (PCA). |\n| [`TruncatedSVD`](TruncatedSVD.md) | Dimensionality reduction using truncated SVD. |\n",
     "reference/decomposition/PCA": "# `PCA`\n\n**Module**: [`strata.decomposition`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable, Transformer`  \n**Source**: [`strata/decomposition/pca.mojo`](file:////home/ewu/Code/Strata/strata/decomposition/pca.mojo)\n\n```mojo\nstruct PCA[compute_dtype: DType = DType.float64](Copyable, Movable, Transformer)\n```\n\n```mojo\nfrom strata.decomposition import PCA\n```\n\n**Principal Component Analysis (PCA).**\n\nLinear dimensionality reduction using Singular Value Decomposition of the\ncentered data matrix to project it to a lower dimensional subspace:\n$$\nX_{\\text{projected}} = (X - \\mu) V_k\n$$\n\n---\n\n## Parameters (Compile-Time)\n\n| Parameter | Description |\n| :--- | :--- |\n| **`compute_dtype`** | Computational precision data type. Default DType.float64. |\n\n---\n\n## Arguments (Runtime)\n\n| Argument | Description |\n| :--- | :--- |\n| **`n_components`** | Number of components to keep. If 0, all components are kept. Default 0. |\n| **`whiten`** | When True, components vectors are divided by the singular values to ensure uncorrelated outputs with unit component-wise variances. Default False. |\n\n---\n\n## Attributes\n\n| Attribute | Description |\n| :--- | :--- |\n| **`components_`** | Principal axes in feature space, representing directions of maximum variance matrix of shape $(K, D)$. |\n| **`explained_variance_`** | Variance explained by each selected component vector of length $K$. |\n| **`explained_variance_ratio_`** | Percentage of variance explained by each component. |\n| **`singular_values_`** | Singular values corresponding to each of the selected components. |\n| **`mean_`** | Per-feature empirical mean estimated from the training set. |\n| **`n_components_`** | Estimated number of components. |\n| **`n_features_in_`** | Number of features seen during fit. |\n| **`is_fitted`** | Boolean flag indicating if estimator has been fitted. |\n\n---\n\n## Methods Overview\n\n| Method | Description |\n| :--- | :--- |\n| [`PCA.fit()`](#fit) | Fits the PCA model on matrix X. |\n| [`PCA.transform()`](#transform) | Projects matrix X onto the principal components. |\n| [`PCA.fit_transform()`](#fit_transform) | Fits PCA to X and returns the projected data. |\n| [`PCA.inverse_transform()`](#inverse_transform) | Transforms data back to its original space. |\n\n---\n\n## Method Details\n\n### `PCA.fit()`\n\n```mojo\ndef fit[in_dtype: DType](mut self, X: Matrix[in_dtype])\ndef fit[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype])\n```\n\nFits the PCA model on matrix X.\n\n| Parameter | Type | Description |\n| :--- | :--- | :--- |\n| **`X`** | `Matrix[in_dtype]` | Feature matrix. |\n| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |\n\n---\n\n### `PCA.transform()`\n\n```mojo\ndef transform[in_dtype: DType](self, X: Matrix[in_dtype]) -> Matrix[in_dtype]\ndef transform[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> Dataset[ feat_dtype, target_dtype ]\n```\n\nProjects matrix X onto the principal components.\n\n| Parameter | Type | Description |\n| :--- | :--- | :--- |\n| **`X`** | `Matrix[in_dtype]` | Feature matrix. |\n| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |\n\n**Returns**: `Matrix[in_dtype]`\n\n---\n\n### `PCA.fit_transform()`\n\n```mojo\ndef fit_transform[in_dtype: DType](mut self, X: Matrix[in_dtype]) -> Matrix[in_dtype]\ndef fit_transform[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype]) -> Dataset[ feat_dtype, target_dtype ]\n```\n\nFits PCA to X and returns the projected data.\n\n| Parameter | Type | Description |\n| :--- | :--- | :--- |\n| **`X`** | `Matrix[in_dtype]` | Feature matrix. |\n| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |\n\n**Returns**: `Matrix[in_dtype]`\n\n---\n\n### `PCA.inverse_transform()`\n\n```mojo\ndef inverse_transform[in_dtype: DType](self, X: Matrix[in_dtype]) -> Matrix[in_dtype]\n```\n\nTransforms data back to its original space.\n\n| Parameter | Type | Description |\n| :--- | :--- | :--- |\n| **`X`** | `Matrix[in_dtype]` | Feature matrix. |\n\n**Returns**: `Matrix[in_dtype]`\n---\n\n## Example\n\n```mojo\nfrom strata.decomposition import PCA\nfrom strata.core import Matrix\n\nvar pca = PCA[DType.float64](n_components=2)\npca.fit(X_train)\nvar X_proj = pca.transform(X_train)\n```\n",
     "reference/decomposition/TruncatedSVD": "# `TruncatedSVD`\n\n**Module**: [`strata.decomposition`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable, Transformer`  \n**Source**: [`strata/decomposition/truncated_svd.mojo`](file:////home/ewu/Code/Strata/strata/decomposition/truncated_svd.mojo)\n\n```mojo\nstruct TruncatedSVD[compute_dtype: DType = DType.float64](Copyable, Movable, Transformer)\n```\n\n```mojo\nfrom strata.decomposition import TruncatedSVD\n```\n\n**Dimensionality reduction using truncated SVD.**\n\n---\n\n## Methods Overview\n\n| Method | Description |\n| :--- | :--- |\n| [`TruncatedSVD.fit()`](#fit) | Fits TruncatedSVD on dense matrix X. |\n| [`TruncatedSVD.transform()`](#transform) | Projects dense matrix X onto the truncated components. |\n| [`TruncatedSVD.fit_transform()`](#fit_transform) | Fits TruncatedSVD to X and returns the projected data. |\n| [`TruncatedSVD.inverse_transform()`](#inverse_transform) | Transforms data back to its original space. |\n\n---\n\n## Method Details\n\n### `TruncatedSVD.fit()`\n\n```mojo\ndef fit[in_dtype: DType](mut self, X: Matrix[in_dtype])\ndef fit[in_dtype: DType](mut self, X: CSRMatrix[in_dtype])\ndef fit[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype])\n```\n\nFits TruncatedSVD on dense matrix X.\n\n| Parameter | Type | Description |\n| :--- | :--- | :--- |\n| **`X`** | `Matrix[in_dtype]` | Feature matrix. |\n| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |\n\n---\n\n### `TruncatedSVD.transform()`\n\n```mojo\ndef transform[in_dtype: DType](self, X: Matrix[in_dtype]) -> Matrix[in_dtype]\ndef transform[in_dtype: DType](self, X: CSRMatrix[in_dtype]) -> Matrix[in_dtype]\ndef transform[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> Dataset[ feat_dtype, target_dtype ]\n```\n\nProjects dense matrix X onto the truncated components.\n\n| Parameter | Type | Description |\n| :--- | :--- | :--- |\n| **`X`** | `Matrix[in_dtype]` | Feature matrix. |\n| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |\n\n**Returns**: `Matrix[in_dtype]`\n\n---\n\n### `TruncatedSVD.fit_transform()`\n\n```mojo\ndef fit_transform[in_dtype: DType](mut self, X: Matrix[in_dtype]) -> Matrix[in_dtype]\ndef fit_transform[in_dtype: DType](mut self, X: CSRMatrix[in_dtype]) -> Matrix[in_dtype]\ndef fit_transform[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype]) -> Dataset[ feat_dtype, target_dtype ]\n```\n\nFits TruncatedSVD to X and returns the projected data.\n\n| Parameter | Type | Description |\n| :--- | :--- | :--- |\n| **`X`** | `Matrix[in_dtype]` | Feature matrix. |\n| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |\n\n**Returns**: `Matrix[in_dtype]`\n\n---\n\n### `TruncatedSVD.inverse_transform()`\n\n```mojo\ndef inverse_transform[in_dtype: DType](self, X: Matrix[in_dtype]) -> Matrix[in_dtype]\n```\n\nTransforms data back to its original space.\n\n| Parameter | Type | Description |\n| :--- | :--- | :--- |\n| **`X`** | `Matrix[in_dtype]` | Feature matrix. |\n\n**Returns**: `Matrix[in_dtype]`\n\n---\n",
+    "reference/neighbors/index": "# `strata.neighbors`\n\nDistance metrics (Euclidean, Manhattan, Chebyshev, Minkowski, Cosine), nearest neighbors search, and k-NN classification and regression.\n\n---\n\n## Structs & Classes\n\n| Struct | Description |\n| :--- | :--- |\n| [`NeighborDistIdx`](NeighborDistIdx.md) | Container holding a sample distance and its training dataset row index. |\n| [`NearestNeighbors`](NearestNeighbors.md) | Unsupervised learner for implementing neighbor searches. |\n| [`KNeighborsClassifier`](KNeighborsClassifier.md) | Classifier implementing the k-nearest neighbors vote. |\n| [`KNeighborsRegressor`](KNeighborsRegressor.md) | Regression based on k-nearest neighbors. |\n| [`KDNode`](KDNode.md) | Contiguous node in a flat KD-Tree buffer. |\n| [`_AxisIndexPair`](_AxisIndexPair.md) | \u2014 |\n| [`KDTree`](KDTree.md) | Fast spatial index for nearest neighbor and radius queries in low dimensions. |\n\n## Functions\n\n| Function | Description |\n| :--- | :--- |\n| [`sqeuclidean_distance`](sqeuclidean_distance.md) | Compute the squared Euclidean distance between row X[row_x] and row Y[row_y]. |\n| [`euclidean_distance`](euclidean_distance.md) | Compute the Euclidean ($L_2$) distance between row X[row_x] and row Y[row_y]. |\n| [`manhattan_distance`](manhattan_distance.md) | Compute the Manhattan ($L_1$ / taxicab / cityblock) distance between row X[row_x] and row Y[row_y]. |\n| [`chebyshev_distance`](chebyshev_distance.md) | Compute the Chebyshev ($L_\\infty$ / max) distance between row X[row_x] and row Y[row_y]. |\n| [`minkowski_distance`](minkowski_distance.md) | Compute the Minkowski ($L_p$) distance between row X[row_x] and row Y[row_y]. |\n| [`cosine_distance`](cosine_distance.md) | Compute the Cosine distance between row X[row_x] and row Y[row_y]. |\n| [`row_distance`](row_distance.md) | Compute pairwise distance between sample row X[row_x] and sample row Y[row_y] under metric. |\n| [`pairwise_distances`](pairwise_distances.md) | Compute the full pairwise distance matrix between rows of X and rows of Y. |\n| [`pairwise_distances`](pairwise_distances.md) | Compute the self-pairwise distance matrix between all pairs of rows in X. |\n",
+    "reference/neighbors/sqeuclidean_distance": "# `sqeuclidean_distance`\n\n**Module**: [`strata.neighbors`](index.md) &bull; **Kind**: `function`  \n**Source**: [`strata/neighbors/distance.mojo`](file:////home/ewu/Code/Strata/strata/neighbors/distance.mojo)\n\n```mojo\ndef sqeuclidean_distance[dtype_x: DType, dtype_y: DType = dtype_x](X: Matrix[dtype_x], row_x: Int, Y: Matrix[dtype_y], row_y: Int) -> Float64\n```\n\n```mojo\nfrom strata.neighbors import sqeuclidean_distance\n```\n\n**Compute the squared Euclidean distance between row X[row_x] and row Y[row_y].**\n\n$$\nd^2(u, v) = \\sum_{j=1}^D (u_j - v_j)^2\n$$\n\n**Returns**: `Float64` \u2014 Float64: Squared Euclidean distance.\n",
+    "reference/neighbors/euclidean_distance": "# `euclidean_distance`\n\n**Module**: [`strata.neighbors`](index.md) &bull; **Kind**: `function`  \n**Source**: [`strata/neighbors/distance.mojo`](file:////home/ewu/Code/Strata/strata/neighbors/distance.mojo)\n\n```mojo\ndef euclidean_distance[dtype_x: DType, dtype_y: DType = dtype_x](X: Matrix[dtype_x], row_x: Int, Y: Matrix[dtype_y], row_y: Int) -> Float64\n```\n\n```mojo\nfrom strata.neighbors import euclidean_distance\n```\n\n**Compute the Euclidean ($L_2$) distance between row X[row_x] and row Y[row_y].**\n\n$$\nd(u, v) = \\sqrt{\\sum_{j=1}^D (u_j - v_j)^2}\n$$\n\n**Returns**: `Float64` \u2014 Float64: Euclidean distance.\n",
+    "reference/neighbors/manhattan_distance": "# `manhattan_distance`\n\n**Module**: [`strata.neighbors`](index.md) &bull; **Kind**: `function`  \n**Source**: [`strata/neighbors/distance.mojo`](file:////home/ewu/Code/Strata/strata/neighbors/distance.mojo)\n\n```mojo\ndef manhattan_distance[dtype_x: DType, dtype_y: DType = dtype_x](X: Matrix[dtype_x], row_x: Int, Y: Matrix[dtype_y], row_y: Int) -> Float64\n```\n\n```mojo\nfrom strata.neighbors import manhattan_distance\n```\n\n**Compute the Manhattan ($L_1$ / taxicab / cityblock) distance between row X[row_x] and row Y[row_y].**\n\n$$\nd(u, v) = \\sum_{j=1}^D |u_j - v_j|\n$$\n\n**Returns**: `Float64` \u2014 Float64: Manhattan distance.\n",
+    "reference/neighbors/chebyshev_distance": "# `chebyshev_distance`\n\n**Module**: [`strata.neighbors`](index.md) &bull; **Kind**: `function`  \n**Source**: [`strata/neighbors/distance.mojo`](file:////home/ewu/Code/Strata/strata/neighbors/distance.mojo)\n\n```mojo\ndef chebyshev_distance[dtype_x: DType, dtype_y: DType = dtype_x](X: Matrix[dtype_x], row_x: Int, Y: Matrix[dtype_y], row_y: Int) -> Float64\n```\n\n```mojo\nfrom strata.neighbors import chebyshev_distance\n```\n\n**Compute the Chebyshev ($L_\\infty$ / max) distance between row X[row_x] and row Y[row_y].**\n\n$$\nd(u, v) = \\max_{1 \\le j \\le D} |u_j - v_j|\n$$\n\n**Returns**: `Float64` \u2014 Float64: Chebyshev distance.\n",
+    "reference/neighbors/minkowski_distance": "# `minkowski_distance`\n\n**Module**: [`strata.neighbors`](index.md) &bull; **Kind**: `function`  \n**Source**: [`strata/neighbors/distance.mojo`](file:////home/ewu/Code/Strata/strata/neighbors/distance.mojo)\n\n```mojo\ndef minkowski_distance[dtype_x: DType, dtype_y: DType = dtype_x](X: Matrix[dtype_x], row_x: Int, Y: Matrix[dtype_y], row_y: Int, p: Float64 = 2.0) -> Float64\n```\n\n```mojo\nfrom strata.neighbors import minkowski_distance\n```\n\n**Compute the Minkowski ($L_p$) distance between row X[row_x] and row Y[row_y].**\n\n$$\nd(u, v) = \\left( \\sum_{j=1}^D |u_j - v_j|^p \\right)^{1/p}\n$$\n\n**Returns**: `Float64` \u2014 Float64: Minkowski distance.\n",
+    "reference/neighbors/cosine_distance": "# `cosine_distance`\n\n**Module**: [`strata.neighbors`](index.md) &bull; **Kind**: `function`  \n**Source**: [`strata/neighbors/distance.mojo`](file:////home/ewu/Code/Strata/strata/neighbors/distance.mojo)\n\n```mojo\ndef cosine_distance[dtype_x: DType, dtype_y: DType = dtype_x](X: Matrix[dtype_x], row_x: Int, Y: Matrix[dtype_y], row_y: Int) -> Float64\n```\n\n```mojo\nfrom strata.neighbors import cosine_distance\n```\n\n**Compute the Cosine distance between row X[row_x] and row Y[row_y].**\n\n$$\nd(u, v) = 1 - \\frac{u \\cdot v}{\\|u\\|_2 \\|v\\|_2}\n$$\n\n**Returns**: `Float64` \u2014 Float64: Cosine distance in range $[0, 2]$.\n",
+    "reference/neighbors/row_distance": "# `row_distance`\n\n**Module**: [`strata.neighbors`](index.md) &bull; **Kind**: `function`  \n**Source**: [`strata/neighbors/distance.mojo`](file:////home/ewu/Code/Strata/strata/neighbors/distance.mojo)\n\n```mojo\ndef row_distance[dtype: DType](X: Matrix[dtype], row_x: Int, Y: Matrix[dtype], row_y: Int, metric: String = \"euclidean\", p: Float64 = 2.0) -> Scalar[dtype]\n```\n\n```mojo\nfrom strata.neighbors import row_distance\n```\n\n**Compute pairwise distance between sample row X[row_x] and sample row Y[row_y] under metric.**\n\nSupported metrics:\n- `\"euclidean\"` or `\"l2\"`\n- `\"sqeuclidean\"`\n- `\"manhattan\"`, `\"cityblock\"`, or `\"l1\"`\n- `\"chebyshev\"`, `\"infinity\"`, or `\"max\"`\n- `\"minkowski\"` (with order parameter `p >= 1.0`)\n- `\"cosine\"`\n\n**Returns**: `Scalar[dtype]` \u2014 Scalar[dtype]: Calculated distance scalar.\n",
+    "reference/neighbors/pairwise_distances": "# `pairwise_distances`\n\n**Module**: [`strata.neighbors`](index.md) &bull; **Kind**: `function`  \n**Source**: [`strata/neighbors/distance.mojo`](file:////home/ewu/Code/Strata/strata/neighbors/distance.mojo)\n\n```mojo\ndef pairwise_distances[dtype: DType](X: Matrix[dtype], metric: String = \"euclidean\", p: Float64 = 2.0) -> Matrix[dtype]\n```\n\n```mojo\nfrom strata.neighbors import pairwise_distances\n```\n\n**Compute the self-pairwise distance matrix between all pairs of rows in X.**\n\nExploits symmetry $D_{i, j} = D_{j, i}$ and $D_{i, i} = 0$ for symmetric distance metrics.\n\n**Returns**: `Matrix[dtype]` \u2014 Matrix[dtype]: Symmetric distance matrix of shape $(N, N)$.\n",
+    "reference/neighbors/NeighborDistIdx": "# `NeighborDistIdx`\n\n**Module**: [`strata.neighbors`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Comparable, Copyable, Movable`  \n**Source**: [`strata/neighbors/base.mojo`](file:////home/ewu/Code/Strata/strata/neighbors/base.mojo)\n\n```mojo\nstruct NeighborDistIdx(Comparable, Copyable, Movable)\n```\n\n```mojo\nfrom strata.neighbors import NeighborDistIdx\n```\n\n**Container holding a sample distance and its training dataset row index.**\n",
+    "reference/neighbors/NearestNeighbors": "# `NearestNeighbors`\n\n**Module**: [`strata.neighbors`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable`  \n**Source**: [`strata/neighbors/base.mojo`](file:////home/ewu/Code/Strata/strata/neighbors/base.mojo)\n\n```mojo\nstruct NearestNeighbors[compute_dtype: DType = DType.float64](Copyable, Movable)\n```\n\n```mojo\nfrom strata.neighbors import NearestNeighbors\n```\n\n**Unsupervised learner for implementing neighbor searches.**\n\nFinds the $k$-nearest neighbors or all neighbors within a given radius\nusing brute-force or index-backed spatial distance metrics.\n\n---\n\n## Parameters (Compile-Time)\n\n| Parameter | Description |\n| :--- | :--- |\n| **`compute_dtype`** | Precision used for distance computations. Default DType.float64. |\n\n---\n\n## Arguments (Runtime)\n\n| Argument | Description |\n| :--- | :--- |\n| **`n_neighbors`** | Number of neighbors to use by default for `kneighbors` queries. Default 5. |\n| **`radius`** | Range of parameter space to use by default for `radius_neighbors` queries. Default 1.0. |\n| **`algorithm`** | Algorithm used to compute nearest neighbors ('auto', 'brute'). Default 'auto'. |\n| **`metric`** | Distance metric to use ('euclidean', 'sqeuclidean', 'manhattan', 'chebyshev', 'minkowski', 'cosine'). Default 'euclidean'. |\n| **`p`** | Parameter for the Minkowski metric. Default 2.0. |\n\n---\n\n## Attributes\n\n| Attribute | Description |\n| :--- | :--- |\n| **`n_samples_fit_`** | Number of samples in the fitted data. |\n| **`n_features_in_`** | Number of features seen during fit. |\n| **`is_fitted`** | Boolean flag indicating if estimator has been fitted. |\n\n---\n\n## Methods Overview\n\n| Method | Description |\n| :--- | :--- |\n| [`NearestNeighbors.fit()`](#fit) | Fit the nearest neighbors estimator from the training dataset. |\n| [`NearestNeighbors.kneighbors()`](#kneighbors) | Find the K-neighbors of points in X. |\n| [`NearestNeighbors.radius_neighbors()`](#radius_neighbors) | Find the neighbors within a given radius of points in X. |\n\n---\n\n## Method Details\n\n### `NearestNeighbors.fit()`\n\n```mojo\ndef fit[in_dtype: DType](mut self, X: Matrix[in_dtype])\n```\n\nFit the nearest neighbors estimator from the training dataset.\n\n| Parameter | Type | Description |\n| :--- | :--- | :--- |\n| **`X`** | `Matrix[in_dtype]` | Feature matrix. |\n\n---\n\n### `NearestNeighbors.kneighbors()`\n\n```mojo\ndef kneighbors[in_dtype: DType](self, X: Matrix[in_dtype], n_neighbors: Int = -1) -> Tuple[ Matrix[in_dtype], Matrix[DType.int32] ]\ndef kneighbors[in_dtype: DType = DType.float64](self, n_neighbors: Int = -1) -> Tuple[ Matrix[in_dtype], Matrix[DType.int32] ]\n```\n\nFind the K-neighbors of points in X.\n\n| Parameter | Type | Description |\n| :--- | :--- | :--- |\n| **`X`** | `Matrix[in_dtype]` | Feature matrix. |\n| **`n_neighbors`** | `Int` | \u2014 |\n\n**Returns**: `Tuple[ Matrix[in_dtype], Matrix[DType.int32] ]` \u2014 Tuple of: - Matrix[in_dtype]: Distances to neighbors with shape (n_queries, n_neighbors). - Matrix[DType.int32]: Indices of neighbors in the training dataset with shape (n_queries, n_neighbors).\n\n---\n\n### `NearestNeighbors.radius_neighbors()`\n\n```mojo\ndef radius_neighbors[in_dtype: DType](self, X: Matrix[in_dtype], radius: Float64 = -1.0) -> Tuple[ List[List[Scalar[in_dtype]]], List[List[Int]] ]\n```\n\nFind the neighbors within a given radius of points in X.\n\n| Parameter | Type | Description |\n| :--- | :--- | :--- |\n| **`X`** | `Matrix[in_dtype]` | Feature matrix. |\n| **`radius`** | `Float64` | \u2014 |\n\n**Returns**: `Tuple[ List[List[Scalar[in_dtype]]], List[List[Int]] ]` \u2014 Tuple of: - List[List[Scalar[in_dtype]]]: Distances to each neighbor within radius. - List[List[Int]]: Indices of neighbors in the training dataset.\n---\n\n## Example\n\n```mojo\nfrom strata.neighbors import NearestNeighbors\nfrom strata.core import Matrix\n\nvar nn = NearestNeighbors[DType.float64](n_neighbors=2)\nnn.fit(X_train)\nvar res = nn.kneighbors(X_test)\nvar distances = res[0]\nvar indices = res[1]\n```\n",
+    "reference/neighbors/KNeighborsClassifier": "# `KNeighborsClassifier`\n\n**Module**: [`strata.neighbors`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Classifier, Copyable, Movable`  \n**Source**: [`strata/neighbors/classification.mojo`](file:////home/ewu/Code/Strata/strata/neighbors/classification.mojo)\n\n```mojo\nstruct KNeighborsClassifier[compute_dtype: DType = DType.float64](Classifier, Copyable, Movable)\n```\n\n```mojo\nfrom strata.neighbors import KNeighborsClassifier\n```\n\n**Classifier implementing the k-nearest neighbors vote.**\n\nSupports uniform voting and inverse-distance weighted voting:\n- **Uniform weights**:\n$$\nP(y = c \\mid x) = \\frac{1}{K} \\sum_{i \\in N_K(x)} \\mathbb{I}(y_i = c)\n$$\n- **Distance weights**:\n$$\nw_i = \\frac{1}{d(x, x_i)}, \\quad P(y = c \\mid x) = \\frac{\\sum_{i \\in N_K(x)} w_i \\mathbb{I}(y_i = c)}{\\sum_{i \\in N_K(x)} w_i}\n$$\n\n---\n\n## Parameters (Compile-Time)\n\n| Parameter | Description |\n| :--- | :--- |\n| **`compute_dtype`** | Precision used for internal distance calculations. Default DType.float64. |\n\n---\n\n## Arguments (Runtime)\n\n| Argument | Description |\n| :--- | :--- |\n| **`n_neighbors`** | Number of neighbors to use for queries. Default 5. |\n| **`weights`** | Weight function used in prediction ('uniform', 'distance'). Default 'uniform'. |\n| **`algorithm`** | Algorithm used to compute nearest neighbors ('auto', 'brute'). Default 'auto'. |\n| **`metric`** | Distance metric to use. Default 'euclidean'. |\n| **`p`** | Power parameter for the Minkowski metric. Default 2.0. |\n\n---\n\n## Attributes\n\n| Attribute | Description |\n| :--- | :--- |\n| **`classes_`** | Distinct class labels matrix of shape (n_classes,). |\n| **`n_classes_`** | Number of distinct classes seen during fit. |\n| **`n_samples_fit_`** | Number of samples in the fitted data. |\n| **`n_features_in_`** | Number of features seen during fit. |\n| **`is_fitted`** | Boolean flag indicating if estimator has been fitted. |\n\n---\n\n## Methods Overview\n\n| Method | Description |\n| :--- | :--- |\n| [`KNeighborsClassifier.fit()`](#fit) | Fit the k-nearest neighbors classifier from the training dataset. |\n| [`KNeighborsClassifier.predict_proba()`](#predict_proba) | Return probability estimates for the test data X. |\n| [`KNeighborsClassifier.predict()`](#predict) | Predict the class labels for the provided data. |\n\n---\n\n## Method Details\n\n### `KNeighborsClassifier.fit()`\n\n```mojo\ndef fit[feat_dtype: DType, target_dtype: DType](mut self, X: Matrix[feat_dtype], y: List[Scalar[target_dtype]])\ndef fit[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype])\n```\n\nFit the k-nearest neighbors classifier from the training dataset.\n\n| Parameter | Type | Description |\n| :--- | :--- | :--- |\n| **`X`** | `Matrix[feat_dtype]` | Feature matrix. |\n| **`y`** | `List[Scalar[target_dtype]]` | Target vector / class labels. |\n| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |\n\n---\n\n### `KNeighborsClassifier.predict_proba()`\n\n```mojo\ndef predict_proba[feat_dtype: DType](self, X: Matrix[feat_dtype]) -> Matrix[feat_dtype]\ndef predict_proba[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> Matrix[ feat_dtype ]\n```\n\nReturn probability estimates for the test data X.\n\n| Parameter | Type | Description |\n| :--- | :--- | :--- |\n| **`X`** | `Matrix[feat_dtype]` | Feature matrix. |\n| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |\n\n**Returns**: `Matrix[feat_dtype]` \u2014 Matrix[feat_dtype]: Probabilities of shape (n_queries, n_classes).\n\n---\n\n### `KNeighborsClassifier.predict()`\n\n```mojo\ndef predict[feat_dtype: DType](self, X: Matrix[feat_dtype]) -> List[Int]\ndef predict[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> List[Int]\n```\n\nPredict the class labels for the provided data.\n\n| Parameter | Type | Description |\n| :--- | :--- | :--- |\n| **`X`** | `Matrix[feat_dtype]` | Feature matrix. |\n| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |\n\n**Returns**: `List[Int]` \u2014 List[Int]: Predicted class label for each sample.\n---\n\n## Example\n\n```mojo\nfrom strata.neighbors import KNeighborsClassifier\nfrom strata.core import Matrix\n\nvar clf = KNeighborsClassifier[DType.float64](n_neighbors=3, weights=\"distance\")\nclf.fit(X_train, y_train)\nvar y_pred = clf.predict(X_test)\nvar proba = clf.predict_proba(X_test)\n```\n",
+    "reference/neighbors/KNeighborsRegressor": "# `KNeighborsRegressor`\n\n**Module**: [`strata.neighbors`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable, Regressor`  \n**Source**: [`strata/neighbors/regression.mojo`](file:////home/ewu/Code/Strata/strata/neighbors/regression.mojo)\n\n```mojo\nstruct KNeighborsRegressor[compute_dtype: DType = DType.float64](Copyable, Movable, Regressor)\n```\n\n```mojo\nfrom strata.neighbors import KNeighborsRegressor\n```\n\n**Regression based on k-nearest neighbors.**\n\nPredicts the target value for query points by local interpolation:\n- **Uniform weights**:\n$$\n\\hat{y}(x) = \\frac{1}{K} \\sum_{i \\in N_K(x)} y_i\n$$\n- **Distance weights**:\n$$\nw_i = \\frac{1}{d(x, x_i)}, \\quad \\hat{y}(x) = \\frac{\\sum_{i \\in N_K(x)} w_i y_i}{\\sum_{i \\in N_K(x)} w_i}\n$$\n\n---\n\n## Parameters (Compile-Time)\n\n| Parameter | Description |\n| :--- | :--- |\n| **`compute_dtype`** | Computational precision for distance arithmetic. Default DType.float64. |\n\n---\n\n## Arguments (Runtime)\n\n| Argument | Description |\n| :--- | :--- |\n| **`n_neighbors`** | Number of neighbors to use for prediction. Default 5. |\n| **`weights`** | Weight function used in prediction ('uniform', 'distance'). Default 'uniform'. |\n| **`algorithm`** | Neighbor search algorithm ('auto', 'brute'). Default 'auto'. |\n| **`metric`** | Distance metric to use ('euclidean', 'sqeuclidean', 'manhattan', 'chebyshev', 'minkowski', 'cosine'). Default 'euclidean'. |\n| **`p`** | Power parameter for the Minkowski metric. Default 2.0. |\n\n---\n\n## Attributes\n\n| Attribute | Description |\n| :--- | :--- |\n| **`n_samples_fit_`** | Number of samples in the fitted data. |\n| **`n_features_in_`** | Number of features seen during fit. |\n| **`is_fitted`** | Boolean flag indicating if estimator has been fitted. |\n\n---\n\n## Methods Overview\n\n| Method | Description |\n| :--- | :--- |\n| [`KNeighborsRegressor.fit()`](#fit) | Fit the k-nearest neighbors regressor from the training dataset. |\n| [`KNeighborsRegressor.predict()`](#predict) | Predict the continuous target values for the provided data. |\n\n---\n\n## Method Details\n\n### `KNeighborsRegressor.fit()`\n\n```mojo\ndef fit[feat_dtype: DType, target_dtype: DType](mut self, X: Matrix[feat_dtype], y: List[Scalar[target_dtype]])\ndef fit[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype])\n```\n\nFit the k-nearest neighbors regressor from the training dataset.\n\n| Parameter | Type | Description |\n| :--- | :--- | :--- |\n| **`X`** | `Matrix[feat_dtype]` | Feature matrix. |\n| **`y`** | `List[Scalar[target_dtype]]` | Target vector / class labels. |\n| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |\n\n---\n\n### `KNeighborsRegressor.predict()`\n\n```mojo\ndef predict[feat_dtype: DType](self, X: Matrix[feat_dtype]) -> List[Scalar[feat_dtype]]\ndef predict[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> List[ Scalar[feat_dtype] ]\n```\n\nPredict the continuous target values for the provided data.\n\n| Parameter | Type | Description |\n| :--- | :--- | :--- |\n| **`X`** | `Matrix[feat_dtype]` | Feature matrix. |\n| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |\n\n**Returns**: `List[Scalar[feat_dtype]]` \u2014 List[Scalar[feat_dtype]]: Predicted regression values.\n---\n\n## Example\n\n```mojo\nfrom strata.neighbors import KNeighborsRegressor\nfrom strata.core import Matrix\n\nvar reg = KNeighborsRegressor[DType.float64](n_neighbors=3, weights=\"distance\")\nreg.fit(X_train, y_train)\nvar y_pred = reg.predict(X_test)\n```\n",
+    "reference/neighbors/KDNode": "# `KDNode`\n\n**Module**: [`strata.neighbors`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable`  \n**Source**: [`strata/neighbors/kd_tree.mojo`](file:////home/ewu/Code/Strata/strata/neighbors/kd_tree.mojo)\n\n```mojo\nstruct KDNode(Copyable, Movable)\n```\n\n```mojo\nfrom strata.neighbors import KDNode\n```\n\n**Contiguous node in a flat KD-Tree buffer.**\n",
+    "reference/neighbors/_AxisIndexPair": "# `_AxisIndexPair`\n\n**Module**: [`strata.neighbors`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Comparable, Copyable, Movable`  \n**Source**: [`strata/neighbors/kd_tree.mojo`](file:////home/ewu/Code/Strata/strata/neighbors/kd_tree.mojo)\n\n```mojo\nstruct _AxisIndexPair(Comparable, Copyable, Movable)\n```\n\n```mojo\nfrom strata.neighbors import _AxisIndexPair\n```\n",
+    "reference/neighbors/KDTree": "# `KDTree`\n\n**Module**: [`strata.neighbors`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable`  \n**Source**: [`strata/neighbors/kd_tree.mojo`](file:////home/ewu/Code/Strata/strata/neighbors/kd_tree.mojo)\n\n```mojo\nstruct KDTree[compute_dtype: DType = DType.float64](Copyable, Movable)\n```\n\n```mojo\nfrom strata.neighbors import KDTree\n```\n\n**Fast spatial index for nearest neighbor and radius queries in low dimensions.**\n\nOrganizes $N$ points in $D$-dimensional space into a binary space-partitioning\ntree for $O(K \\log N)$ neighbor lookups.\n\n---\n\n## Parameters (Compile-Time)\n\n| Parameter | Description |\n| :--- | :--- |\n| **`compute_dtype`** | Precision for spatial coordinate representation. Default DType.float64. |\n\n---\n\n## Arguments (Runtime)\n\n| Argument | Description |\n| :--- | :--- |\n| **`data`** | Matrix of training points with shape (n_samples, n_features). |\n| **`metric`** | Distance metric to use ('euclidean', 'manhattan', 'chebyshev'). Default 'euclidean'. |\n\n---\n\n## Attributes\n\n| Attribute | Description |\n| :--- | :--- |\n| **`n_samples_`** | Number of samples indexed in the tree. |\n| **`n_features_`** | Dimensionality of the indexed space. |\n| **`root_idx_`** | Index of the root node in the internal buffer. |\n\n---\n\n## Methods Overview\n\n| Method | Description |\n| :--- | :--- |\n| [`KDTree.query()`](#query) | Query the KDTree for the k-nearest neighbors of points in X. |\n| [`KDTree.query_radius()`](#query_radius) | Find all points within distance r of points in X. |\n\n---\n\n## Method Details\n\n### `KDTree.query()`\n\n```mojo\ndef query[in_dtype: DType](self, X: Matrix[in_dtype], k: Int = 1) -> Tuple[ Matrix[in_dtype], Matrix[DType.int32] ]\n```\n\nQuery the KDTree for the k-nearest neighbors of points in X.\n\n| Parameter | Type | Description |\n| :--- | :--- | :--- |\n| **`X`** | `Matrix[in_dtype]` | Feature matrix. |\n| **`k`** | `Int` | \u2014 |\n\n**Returns**: `Tuple[ Matrix[in_dtype], Matrix[DType.int32] ]` \u2014 Tuple of: - Matrix[in_dtype]: Distances to neighbors with shape (n_queries, k). - Matrix[DType.int32]: Indices of neighbors in original data with shape (n_queries, k).\n\n---\n\n### `KDTree.query_radius()`\n\n```mojo\ndef query_radius[in_dtype: DType](self, X: Matrix[in_dtype], r: Float64) -> Tuple[ List[List[Scalar[in_dtype]]], List[List[Int]] ]\n```\n\nFind all points within distance r of points in X.\n\n| Parameter | Type | Description |\n| :--- | :--- | :--- |\n| **`X`** | `Matrix[in_dtype]` | Feature matrix. |\n| **`r`** | `Float64` | \u2014 |\n\n**Returns**: `Tuple[ List[List[Scalar[in_dtype]]], List[List[Int]] ]` \u2014 Tuple of: - List[List[Scalar[in_dtype]]]: Distances to each neighbor within radius. - List[List[Int]]: Dataset indices of neighbors within radius.\n---\n\n## Example\n\n```mojo\nfrom strata.neighbors import KDTree\nfrom strata.core import Matrix\n\nvar tree = KDTree[DType.float64](X_train, metric=\"euclidean\")\nvar res = tree.query(X_query, k=3)\nvar dists = res[0]\nvar idxs = res[1]\n```\n",
     "reference/model_selection/index": "# `strata.model_selection`\n\nCross-validation splitters (K-Fold, Stratified, TimeSeries, Shuffle), cross_val_score, cross_validate, and Grid/Randomized hyperparameter search.\n\n---\n\n## Structs & Classes\n\n| Struct | Description |\n| :--- | :--- |\n| [`Split`](Split.md) | Pair of train and validation sample indices for a cross-validation fold. |\n| [`KFold`](KFold.md) | K-Fold cross-validator. |\n| [`StratifiedKFold`](StratifiedKFold.md) | Stratified K-Fold cross-validator for classification datasets. |\n| [`TimeSeriesSplit`](TimeSeriesSplit.md) | Time Series cross-validator. |\n| [`ShuffleSplit`](ShuffleSplit.md) | Random permutation cross-validator. |\n| [`StratifiedShuffleSplit`](StratifiedShuffleSplit.md) | Stratified random permutation cross-validator. |\n| [`CrossValidateResult`](CrossValidateResult.md) | Per-fold scores for one or more metrics from a cross-validation run. |\n| [`GridSearchRegressor`](GridSearchRegressor.md) | Exhaustive hyperparameter grid search for regression models. |\n| [`GridSearchClassifier`](GridSearchClassifier.md) | Exhaustive hyperparameter grid search for classification models. |\n| [`RandomizedSearchRegressor`](RandomizedSearchRegressor.md) | Randomized hyperparameter search for regression models. |\n| [`RandomizedSearchClassifier`](RandomizedSearchClassifier.md) | Randomized hyperparameter search for classification models. |\n\n## Functions\n\n| Function | Description |\n| :--- | :--- |\n| [`train_test_split`](train_test_split.md) | Split a Dataset container into random train and test partitions. |\n| [`train_test_split`](train_test_split.md) | Split feature matrix and target list into train and test partitions. |\n| [`cross_val_score`](cross_val_score.md) | Evaluate regression scores by cross-validation across K folds. |\n| [`cross_val_score`](cross_val_score.md) | Evaluate regression scores by cross-validation on predefined splits. |\n| [`cross_val_score`](cross_val_score.md) | Evaluates classification scores by stratified cross-validation across K folds. |\n| [`cross_val_score`](cross_val_score.md) | Evaluates classification scores by cross-validation on pre-defined splits. |\n| [`cross_val_predict`](cross_val_predict.md) | Generates out-of-fold regression predictions across K folds. |\n| [`cross_val_predict`](cross_val_predict.md) | Generates out-of-fold regression predictions on pre-defined splits. |\n| [`cross_val_predict`](cross_val_predict.md) | Generates out-of-fold class label predictions across K stratified folds. |\n| [`cross_val_predict`](cross_val_predict.md) | Generates out-of-fold class label predictions on pre-defined splits. |\n",
     "reference/model_selection/train_test_split": "# `train_test_split`\n\n**Module**: [`strata.model_selection`](index.md) &bull; **Kind**: `function`  \n**Source**: [`strata/model_selection/split.mojo`](file:////home/ewu/Code/Strata/strata/model_selection/split.mojo)\n\n```mojo\ndef train_test_split[dtype: DType = DType.float64](X: Matrix[dtype], y: List[Scalar[dtype]], test_size: Float64 = 0.25, shuffle: Bool = True, seed: Int = 42) -> DatasetSplit[dtype, dtype]\n```\n\n```mojo\nfrom strata.model_selection import train_test_split\n```\n\n**Split feature matrix and target list into train and test partitions.**\n\n**Returns**: `DatasetSplit[dtype, dtype]` \u2014 DatasetSplit: Container holding partitioned training and testing datasets.\n",
     "reference/model_selection/Split": "# `Split`\n\n**Module**: [`strata.model_selection`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Movable`  \n**Source**: [`strata/model_selection/kfold.mojo`](file:////home/ewu/Code/Strata/strata/model_selection/kfold.mojo)\n\n```mojo\nstruct Split(Movable)\n```\n\n```mojo\nfrom strata.model_selection import Split\n```\n\n**Pair of train and validation sample indices for a cross-validation fold.**\n\n---\n\n## Methods Overview\n\n| Method | Description |\n| :--- | :--- |\n| [`Split.copy()`](#copy) | Returns a deep copy of this split pair. |\n\n---\n\n## Method Details\n\n### `Split.copy()`\n\n```mojo\ndef copy(self) -> Self\n```\n\nReturns a deep copy of this split pair.\n\n**Returns**: `Self`\n\n---\n",
@@ -1104,6 +1223,150 @@ window.STRATA_DOCS = {
       "ref_file": "reference/decomposition/TruncatedSVD",
       "traits": "Copyable, Movable, Transformer",
       "file": "strata/decomposition/truncated_svd.mojo"
+    },
+    {
+      "module": "neighbors",
+      "name": "sqeuclidean_distance",
+      "kind": "function",
+      "summary": "Compute the squared Euclidean distance between row X[row_x] and row Y[row_y].",
+      "ref_file": "reference/neighbors/sqeuclidean_distance",
+      "traits": "",
+      "file": "strata/neighbors/distance.mojo"
+    },
+    {
+      "module": "neighbors",
+      "name": "euclidean_distance",
+      "kind": "function",
+      "summary": "Compute the Euclidean ($L_2$) distance between row X[row_x] and row Y[row_y].",
+      "ref_file": "reference/neighbors/euclidean_distance",
+      "traits": "",
+      "file": "strata/neighbors/distance.mojo"
+    },
+    {
+      "module": "neighbors",
+      "name": "manhattan_distance",
+      "kind": "function",
+      "summary": "Compute the Manhattan ($L_1$ / taxicab / cityblock) distance between row X[row_x] and row Y[row_y].",
+      "ref_file": "reference/neighbors/manhattan_distance",
+      "traits": "",
+      "file": "strata/neighbors/distance.mojo"
+    },
+    {
+      "module": "neighbors",
+      "name": "chebyshev_distance",
+      "kind": "function",
+      "summary": "Compute the Chebyshev ($L_\\infty$ / max) distance between row X[row_x] and row Y[row_y].",
+      "ref_file": "reference/neighbors/chebyshev_distance",
+      "traits": "",
+      "file": "strata/neighbors/distance.mojo"
+    },
+    {
+      "module": "neighbors",
+      "name": "minkowski_distance",
+      "kind": "function",
+      "summary": "Compute the Minkowski ($L_p$) distance between row X[row_x] and row Y[row_y].",
+      "ref_file": "reference/neighbors/minkowski_distance",
+      "traits": "",
+      "file": "strata/neighbors/distance.mojo"
+    },
+    {
+      "module": "neighbors",
+      "name": "cosine_distance",
+      "kind": "function",
+      "summary": "Compute the Cosine distance between row X[row_x] and row Y[row_y].",
+      "ref_file": "reference/neighbors/cosine_distance",
+      "traits": "",
+      "file": "strata/neighbors/distance.mojo"
+    },
+    {
+      "module": "neighbors",
+      "name": "row_distance",
+      "kind": "function",
+      "summary": "Compute pairwise distance between sample row X[row_x] and sample row Y[row_y] under metric.",
+      "ref_file": "reference/neighbors/row_distance",
+      "traits": "",
+      "file": "strata/neighbors/distance.mojo"
+    },
+    {
+      "module": "neighbors",
+      "name": "pairwise_distances",
+      "kind": "function",
+      "summary": "Compute the full pairwise distance matrix between rows of X and rows of Y.",
+      "ref_file": "reference/neighbors/pairwise_distances",
+      "traits": "",
+      "file": "strata/neighbors/distance.mojo"
+    },
+    {
+      "module": "neighbors",
+      "name": "pairwise_distances",
+      "kind": "function",
+      "summary": "Compute the self-pairwise distance matrix between all pairs of rows in X.",
+      "ref_file": "reference/neighbors/pairwise_distances",
+      "traits": "",
+      "file": "strata/neighbors/distance.mojo"
+    },
+    {
+      "module": "neighbors",
+      "name": "NeighborDistIdx",
+      "kind": "struct",
+      "summary": "Container holding a sample distance and its training dataset row index.",
+      "ref_file": "reference/neighbors/NeighborDistIdx",
+      "traits": "Comparable, Copyable, Movable",
+      "file": "strata/neighbors/base.mojo"
+    },
+    {
+      "module": "neighbors",
+      "name": "NearestNeighbors",
+      "kind": "struct",
+      "summary": "Unsupervised learner for implementing neighbor searches.",
+      "ref_file": "reference/neighbors/NearestNeighbors",
+      "traits": "Copyable, Movable",
+      "file": "strata/neighbors/base.mojo"
+    },
+    {
+      "module": "neighbors",
+      "name": "KNeighborsClassifier",
+      "kind": "struct",
+      "summary": "Classifier implementing the k-nearest neighbors vote.",
+      "ref_file": "reference/neighbors/KNeighborsClassifier",
+      "traits": "Classifier, Copyable, Movable",
+      "file": "strata/neighbors/classification.mojo"
+    },
+    {
+      "module": "neighbors",
+      "name": "KNeighborsRegressor",
+      "kind": "struct",
+      "summary": "Regression based on k-nearest neighbors.",
+      "ref_file": "reference/neighbors/KNeighborsRegressor",
+      "traits": "Copyable, Movable, Regressor",
+      "file": "strata/neighbors/regression.mojo"
+    },
+    {
+      "module": "neighbors",
+      "name": "KDNode",
+      "kind": "struct",
+      "summary": "Contiguous node in a flat KD-Tree buffer.",
+      "ref_file": "reference/neighbors/KDNode",
+      "traits": "Copyable, Movable",
+      "file": "strata/neighbors/kd_tree.mojo"
+    },
+    {
+      "module": "neighbors",
+      "name": "_AxisIndexPair",
+      "kind": "struct",
+      "summary": "",
+      "ref_file": "reference/neighbors/_AxisIndexPair",
+      "traits": "Comparable, Copyable, Movable",
+      "file": "strata/neighbors/kd_tree.mojo"
+    },
+    {
+      "module": "neighbors",
+      "name": "KDTree",
+      "kind": "struct",
+      "summary": "Fast spatial index for nearest neighbor and radius queries in low dimensions.",
+      "ref_file": "reference/neighbors/KDTree",
+      "traits": "Copyable, Movable",
+      "file": "strata/neighbors/kd_tree.mojo"
     },
     {
       "module": "model_selection",

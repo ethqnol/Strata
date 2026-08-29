@@ -297,6 +297,150 @@
     "file": "strata/decomposition/truncated_svd.mojo"
   },
   {
+    "module": "neighbors",
+    "name": "sqeuclidean_distance",
+    "kind": "function",
+    "summary": "Compute the squared Euclidean distance between row X[row_x] and row Y[row_y].",
+    "ref_file": "reference/neighbors/sqeuclidean_distance",
+    "traits": "",
+    "file": "strata/neighbors/distance.mojo"
+  },
+  {
+    "module": "neighbors",
+    "name": "euclidean_distance",
+    "kind": "function",
+    "summary": "Compute the Euclidean ($L_2$) distance between row X[row_x] and row Y[row_y].",
+    "ref_file": "reference/neighbors/euclidean_distance",
+    "traits": "",
+    "file": "strata/neighbors/distance.mojo"
+  },
+  {
+    "module": "neighbors",
+    "name": "manhattan_distance",
+    "kind": "function",
+    "summary": "Compute the Manhattan ($L_1$ / taxicab / cityblock) distance between row X[row_x] and row Y[row_y].",
+    "ref_file": "reference/neighbors/manhattan_distance",
+    "traits": "",
+    "file": "strata/neighbors/distance.mojo"
+  },
+  {
+    "module": "neighbors",
+    "name": "chebyshev_distance",
+    "kind": "function",
+    "summary": "Compute the Chebyshev ($L_\\infty$ / max) distance between row X[row_x] and row Y[row_y].",
+    "ref_file": "reference/neighbors/chebyshev_distance",
+    "traits": "",
+    "file": "strata/neighbors/distance.mojo"
+  },
+  {
+    "module": "neighbors",
+    "name": "minkowski_distance",
+    "kind": "function",
+    "summary": "Compute the Minkowski ($L_p$) distance between row X[row_x] and row Y[row_y].",
+    "ref_file": "reference/neighbors/minkowski_distance",
+    "traits": "",
+    "file": "strata/neighbors/distance.mojo"
+  },
+  {
+    "module": "neighbors",
+    "name": "cosine_distance",
+    "kind": "function",
+    "summary": "Compute the Cosine distance between row X[row_x] and row Y[row_y].",
+    "ref_file": "reference/neighbors/cosine_distance",
+    "traits": "",
+    "file": "strata/neighbors/distance.mojo"
+  },
+  {
+    "module": "neighbors",
+    "name": "row_distance",
+    "kind": "function",
+    "summary": "Compute pairwise distance between sample row X[row_x] and sample row Y[row_y] under metric.",
+    "ref_file": "reference/neighbors/row_distance",
+    "traits": "",
+    "file": "strata/neighbors/distance.mojo"
+  },
+  {
+    "module": "neighbors",
+    "name": "pairwise_distances",
+    "kind": "function",
+    "summary": "Compute the full pairwise distance matrix between rows of X and rows of Y.",
+    "ref_file": "reference/neighbors/pairwise_distances",
+    "traits": "",
+    "file": "strata/neighbors/distance.mojo"
+  },
+  {
+    "module": "neighbors",
+    "name": "pairwise_distances",
+    "kind": "function",
+    "summary": "Compute the self-pairwise distance matrix between all pairs of rows in X.",
+    "ref_file": "reference/neighbors/pairwise_distances",
+    "traits": "",
+    "file": "strata/neighbors/distance.mojo"
+  },
+  {
+    "module": "neighbors",
+    "name": "NeighborDistIdx",
+    "kind": "struct",
+    "summary": "Container holding a sample distance and its training dataset row index.",
+    "ref_file": "reference/neighbors/NeighborDistIdx",
+    "traits": "Comparable, Copyable, Movable",
+    "file": "strata/neighbors/base.mojo"
+  },
+  {
+    "module": "neighbors",
+    "name": "NearestNeighbors",
+    "kind": "struct",
+    "summary": "Unsupervised learner for implementing neighbor searches.",
+    "ref_file": "reference/neighbors/NearestNeighbors",
+    "traits": "Copyable, Movable",
+    "file": "strata/neighbors/base.mojo"
+  },
+  {
+    "module": "neighbors",
+    "name": "KNeighborsClassifier",
+    "kind": "struct",
+    "summary": "Classifier implementing the k-nearest neighbors vote.",
+    "ref_file": "reference/neighbors/KNeighborsClassifier",
+    "traits": "Classifier, Copyable, Movable",
+    "file": "strata/neighbors/classification.mojo"
+  },
+  {
+    "module": "neighbors",
+    "name": "KNeighborsRegressor",
+    "kind": "struct",
+    "summary": "Regression based on k-nearest neighbors.",
+    "ref_file": "reference/neighbors/KNeighborsRegressor",
+    "traits": "Copyable, Movable, Regressor",
+    "file": "strata/neighbors/regression.mojo"
+  },
+  {
+    "module": "neighbors",
+    "name": "KDNode",
+    "kind": "struct",
+    "summary": "Contiguous node in a flat KD-Tree buffer.",
+    "ref_file": "reference/neighbors/KDNode",
+    "traits": "Copyable, Movable",
+    "file": "strata/neighbors/kd_tree.mojo"
+  },
+  {
+    "module": "neighbors",
+    "name": "_AxisIndexPair",
+    "kind": "struct",
+    "summary": "",
+    "ref_file": "reference/neighbors/_AxisIndexPair",
+    "traits": "Comparable, Copyable, Movable",
+    "file": "strata/neighbors/kd_tree.mojo"
+  },
+  {
+    "module": "neighbors",
+    "name": "KDTree",
+    "kind": "struct",
+    "summary": "Fast spatial index for nearest neighbor and radius queries in low dimensions.",
+    "ref_file": "reference/neighbors/KDTree",
+    "traits": "Copyable, Movable",
+    "file": "strata/neighbors/kd_tree.mojo"
+  },
+  {
     "module": "model_selection",
     "name": "train_test_split",
     "kind": "function",

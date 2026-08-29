@@ -115,3 +115,16 @@ from .metrics import (
 )
 from .tree import DecisionTreeRegressor, DecisionTreeClassifier
 from .ensemble import RandomForestRegressor, RandomForestClassifier
+from .neighbors import (
+    euclidean_distance,
+    sqeuclidean_distance,
+    manhattan_distance,
+    chebyshev_distance,
+    minkowski_distance,
+    cosine_distance,
+    pairwise_distances,
+    NearestNeighbors,
+    KNeighborsClassifier,
+    KNeighborsRegressor,
+    KDTree,
+)
