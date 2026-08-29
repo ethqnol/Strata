@@ -98,6 +98,16 @@ Strata is a native machine learning library for Mojo designed around familiar sc
 - [x] `KNeighborsRegressor` (Uniform and inverse-distance weighted local regression)
 - [x] `KDTree` (Binary space-partitioning index with orthogonal hyperplane pruning)
 
+### Support Vector Machines & Kernel Methods
+- [ ] `LinearSVC` & `LinearSVR` (Dual coordinate descent solver)
+- [ ] `SVC` & `SVR` (Sequential Minimal Optimization with RBF, Polynomial, and Sigmoid kernels)
+- [ ] `Nystroem` (Low-rank kernel subspace approximation)
+- [ ] `RBFSampler` (Random Fourier Features for scalable kernel approximations)
+
+### Probabilistic & Bayesian Models
+- [ ] `GaussianMixture` (Expectation-Maximization with Full, Diagonal, Spherical, and Tied covariances)
+- [ ] `GaussianNB`, `MultinomialNB`, `BernoulliNB`, `CategoricalNB` (Naive Bayes family with Laplace smoothing)
+- [ ] `BayesianRidge` & `ARDRegression` (Bayesian linear regression with automatic relevance determination)
 
 ### Model Selection & Validation
 - [x] `train_test_split` (with deterministic RNG seed)
@@ -120,3 +130,4 @@ Strata is a native machine learning library for Mojo designed around familiar sc
 - [x] `mean_absolute_error` ($MAE$)
 - [x] `r2_score` ($R^2$)
 - [x] `silhouette_score`
+
