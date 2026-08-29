@@ -1737,7 +1737,7 @@ def test_normalizer_dataset() raises:
     feat_names.append("feat_a")
     feat_names.append("feat_b")
 
-    var ds = Dataset[DType.float64, DType.float64](X, y, feat_names)
+    var ds = Dataset[DType.float64, DType.float64](X^, y^)
     var norm = Normalizer(norm="l2")
     var records_norm = norm.fit_transform(ds.records)
 
@@ -1766,7 +1766,7 @@ def test_normalizer_copy_semantics() raises:
     var norm1 = Normalizer(norm="max")
     norm1.fit(X)
 
-    var norm2 = norm1
+    var norm2 = Normalizer(copy=norm1)
     assert_true(norm2.is_fitted)
     assert_equal(norm2.norm, "max")
     assert_equal(norm2.n_features_in_, 2)
@@ -1906,7 +1906,7 @@ def test_ordinal_encoder_dataset() raises:
     feat_names.append("cat_a")
     feat_names.append("cat_b")
 
-    var ds = Dataset[DType.float64, DType.float64](X, y, feat_names)
+    var ds = Dataset[DType.float64, DType.float64](X^, y^)
     var enc = OrdinalEncoder()
     var records_ord = enc.fit_transform(ds.records)
 
@@ -1914,8 +1914,6 @@ def test_ordinal_encoder_dataset() raises:
     assert_equal(records_ord[0, 1], 0.0)
     assert_equal(records_ord[1, 0], 1.0)
     assert_equal(records_ord[1, 1], 0.0)
-
-    assert_equal(ds.feature_names[0], "cat_a")
 
 
 def test_ordinal_encoder_float32() raises:
@@ -1936,7 +1934,7 @@ def test_ordinal_encoder_copy_semantics() raises:
     var enc1 = OrdinalEncoder()
     enc1.fit(X)
 
-    var enc2 = enc1
+    var enc2 = OrdinalEncoder(copy=enc1)
     assert_true(enc2.is_fitted)
     assert_equal(enc2.n_features_in_, 2)
 
@@ -2012,7 +2010,7 @@ def test_label_encoder_copy_semantics() raises:
     var le1 = LabelEncoder()
     le1.fit(y)
 
-    var le2 = le1
+    var le2 = LabelEncoder(copy=le1)
     assert_true(le2.is_fitted)
     assert_equal(len(le2.classes_), 2)
 
@@ -2196,7 +2194,7 @@ def test_simple_imputer_copy_semantics() raises:
     var imp1 = SimpleImputer(strategy="mean")
     imp1.fit(X)
 
-    var imp2 = imp1
+    var imp2 = SimpleImputer(copy=imp1)
     assert_true(imp2.is_fitted)
     assert_equal(imp2.n_features_in_, 2)
     assert_equal(len(imp2.statistics_), 2)
@@ -2368,7 +2366,7 @@ def test_polynomial_features_copy_semantics() raises:
     var poly1 = PolynomialFeatures(degree=2)
     poly1.fit(X)
 
-    var poly2 = poly1
+    var poly2 = PolynomialFeatures(copy=poly1)
     assert_true(poly2.is_fitted)
     assert_equal(poly2.n_features_in_, 2)
     assert_equal(poly2.n_output_features_, 6)
