@@ -85,6 +85,13 @@ MODULE_METADATA = {
             "decomposition/truncated_svd.mojo",
         ]
     },
+    "neighbors": {
+        "title": "Nearest Neighbors",
+        "description": "Distance metrics (Euclidean, Manhattan, Chebyshev, Minkowski, Cosine), nearest neighbors search, and k-NN classification and regression.",
+        "files": [
+            "neighbors/distance.mojo",
+        ]
+    },
     "model_selection": {
         "title": "Model Selection & Validation",
         "description": "Cross-validation splitters (K-Fold, Stratified, TimeSeries, Shuffle), cross_val_score, cross_validate, and Grid/Randomized hyperparameter search.",
