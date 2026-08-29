@@ -71,8 +71,13 @@ from .preprocessing import (
     StandardScaler,
     MinMaxScaler,
     RobustScaler,
+    Normalizer,
     Binarizer,
     OneHotEncoder,
+    OrdinalEncoder,
+    LabelEncoder,
+    SimpleImputer,
+    PolynomialFeatures,
 )
 from .model_selection import (
     train_test_split,

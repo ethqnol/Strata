@@ -136,6 +136,15 @@
   },
   {
     "module": "preprocessing",
+    "name": "Normalizer",
+    "kind": "struct",
+    "summary": "Normalize samples individually to unit norm.",
+    "ref_file": "reference/preprocessing/Normalizer",
+    "traits": "Copyable, Movable, Transformer",
+    "file": "strata/preprocessing/normalizer.mojo"
+  },
+  {
+    "module": "preprocessing",
     "name": "Binarizer",
     "kind": "struct",
     "summary": "Binarize feature values according to a threshold.",
@@ -151,6 +160,42 @@
     "ref_file": "reference/preprocessing/OneHotEncoder",
     "traits": "Copyable, Movable, Transformer",
     "file": "strata/preprocessing/encoders.mojo"
+  },
+  {
+    "module": "preprocessing",
+    "name": "OrdinalEncoder",
+    "kind": "struct",
+    "summary": "Encode categorical features as an integer array.",
+    "ref_file": "reference/preprocessing/OrdinalEncoder",
+    "traits": "Copyable, Movable, Transformer",
+    "file": "strata/preprocessing/encoders.mojo"
+  },
+  {
+    "module": "preprocessing",
+    "name": "LabelEncoder",
+    "kind": "struct",
+    "summary": "Encode target labels with value between 0 and n_classes-1.",
+    "ref_file": "reference/preprocessing/LabelEncoder",
+    "traits": "Copyable, Movable",
+    "file": "strata/preprocessing/encoders.mojo"
+  },
+  {
+    "module": "preprocessing",
+    "name": "SimpleImputer",
+    "kind": "struct",
+    "summary": "Univariate imputer for completing missing values with simple statistics.",
+    "ref_file": "reference/preprocessing/SimpleImputer",
+    "traits": "Copyable, Movable, Transformer",
+    "file": "strata/preprocessing/imputer.mojo"
+  },
+  {
+    "module": "preprocessing",
+    "name": "PolynomialFeatures",
+    "kind": "struct",
+    "summary": "Generate polynomial and interaction features.",
+    "ref_file": "reference/preprocessing/PolynomialFeatures",
+    "traits": "Copyable, Movable, Transformer",
+    "file": "strata/preprocessing/polynomial.mojo"
   },
   {
     "module": "linear_model",
