@@ -145,7 +145,8 @@ struct KDTree[compute_dtype: DType = DType.float64](Copyable, Movable):
         ):
             raise InvalidParameterError.error(
                 "metric",
-                "KDTree supports 'euclidean', 'manhattan', or 'chebyshev', got '"
+                "KDTree supports 'euclidean', 'manhattan', or 'chebyshev',"
+                " got '"
                 + metric
                 + "'",
             )
@@ -212,12 +213,7 @@ struct KDTree[compute_dtype: DType = DType.float64](Copyable, Movable):
 
     def _point_dist[
         in_dtype: DType
-    ](
-        self,
-        X_query: Matrix[in_dtype],
-        q_row: Int,
-        sample_idx: Int,
-    ) -> Float64:
+    ](self, X_query: Matrix[in_dtype], q_row: Int, sample_idx: Int,) -> Float64:
         if (
             self.metric == "manhattan"
             or self.metric == "cityblock"
@@ -328,7 +324,9 @@ struct KDTree[compute_dtype: DType = DType.float64](Copyable, Movable):
         self,
         X: Matrix[in_dtype],
         k: Int = 1,
-    ) raises -> Tuple[Matrix[in_dtype], Matrix[DType.int32]]:
+    ) raises -> Tuple[
+        Matrix[in_dtype], Matrix[DType.int32]
+    ]:
         """Query the KDTree for the k-nearest neighbors of points in X.
 
         Args:
@@ -379,14 +377,15 @@ struct KDTree[compute_dtype: DType = DType.float64](Copyable, Movable):
 
         return dist_mat^, idx_mat^
 
-
     def query_radius[
         in_dtype: DType
     ](
         self,
         X: Matrix[in_dtype],
         r: Float64,
-    ) raises -> Tuple[List[List[Scalar[in_dtype]]], List[List[Int]]]:
+    ) raises -> Tuple[
+        List[List[Scalar[in_dtype]]], List[List[Int]]
+    ]:
         """Find all points within distance r of points in X.
 
         Args:

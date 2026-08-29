@@ -410,7 +410,7 @@
     "kind": "struct",
     "summary": "Regression based on k-nearest neighbors.",
     "ref_file": "reference/neighbors/KNeighborsRegressor",
-    "traits": "Regressor, Copyable, Movable",
+    "traits": "Copyable, Movable, Regressor",
     "file": "strata/neighbors/regression.mojo"
   },
   {

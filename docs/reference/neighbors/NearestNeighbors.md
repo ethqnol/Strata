@@ -77,8 +77,8 @@ Fit the nearest neighbors estimator from the training dataset.
 ### `NearestNeighbors.kneighbors()`
 
 ```mojo
-def kneighbors[in_dtype: DType](self, X: Matrix[in_dtype], n_neighbors: Int = -1) -> Tuple[Matrix[in_dtype], Matrix[DType.int32]]
-def kneighbors[in_dtype: DType = DType.float64](self, n_neighbors: Int = -1) -> Tuple[Matrix[in_dtype], Matrix[DType.int32]]
+def kneighbors[in_dtype: DType](self, X: Matrix[in_dtype], n_neighbors: Int = -1) -> Tuple[ Matrix[in_dtype], Matrix[DType.int32] ]
+def kneighbors[in_dtype: DType = DType.float64](self, n_neighbors: Int = -1) -> Tuple[ Matrix[in_dtype], Matrix[DType.int32] ]
 ```
 
 Find the K-neighbors of points in X.
@@ -88,14 +88,14 @@ Find the K-neighbors of points in X.
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
 | **`n_neighbors`** | `Int` | — |
 
-**Returns**: `Tuple[Matrix[in_dtype], Matrix[DType.int32]]` — Tuple of: - Matrix[in_dtype]: Distances to neighbors with shape (n_queries, n_neighbors). - Matrix[DType.int32]: Indices of neighbors in the training dataset with shape (n_queries, n_neighbors).
+**Returns**: `Tuple[ Matrix[in_dtype], Matrix[DType.int32] ]` — Tuple of: - Matrix[in_dtype]: Distances to neighbors with shape (n_queries, n_neighbors). - Matrix[DType.int32]: Indices of neighbors in the training dataset with shape (n_queries, n_neighbors).
 
 ---
 
 ### `NearestNeighbors.radius_neighbors()`
 
 ```mojo
-def radius_neighbors[in_dtype: DType](self, X: Matrix[in_dtype], radius: Float64 = -1.0) -> Tuple[List[List[Scalar[in_dtype]]], List[List[Int]]]
+def radius_neighbors[in_dtype: DType](self, X: Matrix[in_dtype], radius: Float64 = -1.0) -> Tuple[ List[List[Scalar[in_dtype]]], List[List[Int]] ]
 ```
 
 Find the neighbors within a given radius of points in X.
@@ -105,7 +105,7 @@ Find the neighbors within a given radius of points in X.
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
 | **`radius`** | `Float64` | — |
 
-**Returns**: `Tuple[List[List[Scalar[in_dtype]]], List[List[Int]]]` — Tuple of: - List[List[Scalar[in_dtype]]]: Distances to each neighbor within radius. - List[List[Int]]: Indices of neighbors in the training dataset.
+**Returns**: `Tuple[ List[List[Scalar[in_dtype]]], List[List[Int]] ]` — Tuple of: - List[List[Scalar[in_dtype]]]: Distances to each neighbor within radius. - List[List[Int]]: Indices of neighbors in the training dataset.
 ---
 
 ## Example

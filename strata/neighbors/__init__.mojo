@@ -12,6 +12,3 @@ from .base import NearestNeighbors
 from .classification import KNeighborsClassifier
 from .regression import KNeighborsRegressor
 from .kd_tree import KDTree
-
-
-

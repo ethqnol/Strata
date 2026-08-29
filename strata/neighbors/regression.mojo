@@ -18,7 +18,7 @@ from .base import NearestNeighbors
 
 
 struct KNeighborsRegressor[compute_dtype: DType = DType.float64](
-    Regressor, Copyable, Movable
+    Copyable, Movable, Regressor
 ):
     """Regression based on k-nearest neighbors.
 
@@ -143,11 +143,7 @@ struct KNeighborsRegressor[compute_dtype: DType = DType.float64](
 
     def fit[
         feat_dtype: DType, target_dtype: DType
-    ](
-        mut self,
-        X: Matrix[feat_dtype],
-        y: List[Scalar[target_dtype]],
-    ) raises:
+    ](mut self, X: Matrix[feat_dtype], y: List[Scalar[target_dtype]],) raises:
         """Fit the k-nearest neighbors regressor from the training dataset.
 
         Args:
@@ -278,8 +274,8 @@ struct KNeighborsRegressor[compute_dtype: DType = DType.float64](
 
     def predict[
         feat_dtype: DType, target_dtype: DType
-    ](
-        self, dataset: Dataset[feat_dtype, target_dtype]
-    ) raises -> List[Scalar[feat_dtype]]:
+    ](self, dataset: Dataset[feat_dtype, target_dtype]) raises -> List[
+        Scalar[feat_dtype]
+    ]:
         """Predict continuous targets for a Dataset."""
         return self.predict[feat_dtype](dataset.records)

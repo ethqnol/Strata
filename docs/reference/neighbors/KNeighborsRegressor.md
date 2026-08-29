@@ -1,10 +1,10 @@
 # `KNeighborsRegressor`
 
-**Module**: [`strata.neighbors`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Regressor, Copyable, Movable`  
+**Module**: [`strata.neighbors`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable, Regressor`  
 **Source**: [`strata/neighbors/regression.mojo`](file:////home/ewu/Code/Strata/strata/neighbors/regression.mojo)
 
 ```mojo
-struct KNeighborsRegressor[compute_dtype: DType = DType.float64](Regressor, Copyable, Movable)
+struct KNeighborsRegressor[compute_dtype: DType = DType.float64](Copyable, Movable, Regressor)
 ```
 
 ```mojo
@@ -87,7 +87,7 @@ Fit the k-nearest neighbors regressor from the training dataset.
 
 ```mojo
 def predict[feat_dtype: DType](self, X: Matrix[feat_dtype]) -> List[Scalar[feat_dtype]]
-def predict[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> List[Scalar[feat_dtype]]
+def predict[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> List[ Scalar[feat_dtype] ]
 ```
 
 Predict the continuous target values for the provided data.

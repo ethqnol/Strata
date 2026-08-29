@@ -59,7 +59,7 @@ tree for $O(K \log N)$ neighbor lookups.
 ### `KDTree.query()`
 
 ```mojo
-def query[in_dtype: DType](self, X: Matrix[in_dtype], k: Int = 1) -> Tuple[Matrix[in_dtype], Matrix[DType.int32]]
+def query[in_dtype: DType](self, X: Matrix[in_dtype], k: Int = 1) -> Tuple[ Matrix[in_dtype], Matrix[DType.int32] ]
 ```
 
 Query the KDTree for the k-nearest neighbors of points in X.
@@ -69,14 +69,14 @@ Query the KDTree for the k-nearest neighbors of points in X.
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
 | **`k`** | `Int` | — |
 
-**Returns**: `Tuple[Matrix[in_dtype], Matrix[DType.int32]]` — Tuple of: - Matrix[in_dtype]: Distances to neighbors with shape (n_queries, k). - Matrix[DType.int32]: Indices of neighbors in original data with shape (n_queries, k).
+**Returns**: `Tuple[ Matrix[in_dtype], Matrix[DType.int32] ]` — Tuple of: - Matrix[in_dtype]: Distances to neighbors with shape (n_queries, k). - Matrix[DType.int32]: Indices of neighbors in original data with shape (n_queries, k).
 
 ---
 
 ### `KDTree.query_radius()`
 
 ```mojo
-def query_radius[in_dtype: DType](self, X: Matrix[in_dtype], r: Float64) -> Tuple[List[List[Scalar[in_dtype]]], List[List[Int]]]
+def query_radius[in_dtype: DType](self, X: Matrix[in_dtype], r: Float64) -> Tuple[ List[List[Scalar[in_dtype]]], List[List[Int]] ]
 ```
 
 Find all points within distance r of points in X.
@@ -86,7 +86,7 @@ Find all points within distance r of points in X.
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
 | **`r`** | `Float64` | — |
 
-**Returns**: `Tuple[List[List[Scalar[in_dtype]]], List[List[Int]]]` — Tuple of: - List[List[Scalar[in_dtype]]]: Distances to each neighbor within radius. - List[List[Int]]: Dataset indices of neighbors within radius.
+**Returns**: `Tuple[ List[List[Scalar[in_dtype]]], List[List[Int]] ]` — Tuple of: - List[List[Scalar[in_dtype]]]: Distances to each neighbor within radius. - List[List[Int]]: Dataset indices of neighbors within radius.
 ---
 
 ## Example

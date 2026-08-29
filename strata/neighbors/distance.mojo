@@ -197,7 +197,6 @@ def cosine_distance[
     return 1.0 - sim
 
 
-
 def _validate_metric_and_p(metric: String, p: Float64) raises:
     if (
         metric != "euclidean"
@@ -265,17 +264,9 @@ def row_distance[
         return Scalar[dtype](euclidean_distance(X, row_x, Y, row_y))
     elif metric == "sqeuclidean":
         return Scalar[dtype](sqeuclidean_distance(X, row_x, Y, row_y))
-    elif (
-        metric == "manhattan"
-        or metric == "cityblock"
-        or metric == "l1"
-    ):
+    elif metric == "manhattan" or metric == "cityblock" or metric == "l1":
         return Scalar[dtype](manhattan_distance(X, row_x, Y, row_y))
-    elif (
-        metric == "chebyshev"
-        or metric == "infinity"
-        or metric == "max"
-    ):
+    elif metric == "chebyshev" or metric == "infinity" or metric == "max":
         return Scalar[dtype](chebyshev_distance(X, row_x, Y, row_y))
     elif metric == "minkowski":
         return Scalar[dtype](minkowski_distance(X, row_x, Y, row_y, p))
@@ -330,28 +321,18 @@ def pairwise_distances[
         for i in range(nx):
             for j in range(ny):
                 D[i, j] = Scalar[dtype](sqeuclidean_distance(X, i, Y, j))
-    elif (
-        metric == "manhattan"
-        or metric == "cityblock"
-        or metric == "l1"
-    ):
+    elif metric == "manhattan" or metric == "cityblock" or metric == "l1":
         for i in range(nx):
             for j in range(ny):
                 D[i, j] = Scalar[dtype](manhattan_distance(X, i, Y, j))
-    elif (
-        metric == "chebyshev"
-        or metric == "infinity"
-        or metric == "max"
-    ):
+    elif metric == "chebyshev" or metric == "infinity" or metric == "max":
         for i in range(nx):
             for j in range(ny):
                 D[i, j] = Scalar[dtype](chebyshev_distance(X, i, Y, j))
     elif metric == "minkowski":
         for i in range(nx):
             for j in range(ny):
-                D[i, j] = Scalar[dtype](
-                    minkowski_distance(X, i, Y, j, p)
-                )
+                D[i, j] = Scalar[dtype](minkowski_distance(X, i, Y, j, p))
     elif metric == "cosine":
         for i in range(nx):
             for j in range(ny):
@@ -404,22 +385,14 @@ def pairwise_distances[
                 var dist = Scalar[dtype](sqeuclidean_distance(X, i, X, j))
                 D[i, j] = dist
                 D[j, i] = dist
-    elif (
-        metric == "manhattan"
-        or metric == "cityblock"
-        or metric == "l1"
-    ):
+    elif metric == "manhattan" or metric == "cityblock" or metric == "l1":
         for i in range(n):
             D[i, i] = Scalar[dtype](0)
             for j in range(i + 1, n):
                 var dist = Scalar[dtype](manhattan_distance(X, i, X, j))
                 D[i, j] = dist
                 D[j, i] = dist
-    elif (
-        metric == "chebyshev"
-        or metric == "infinity"
-        or metric == "max"
-    ):
+    elif metric == "chebyshev" or metric == "infinity" or metric == "max":
         for i in range(n):
             D[i, i] = Scalar[dtype](0)
             for j in range(i + 1, n):
@@ -430,9 +403,7 @@ def pairwise_distances[
         for i in range(n):
             D[i, i] = Scalar[dtype](0)
             for j in range(i + 1, n):
-                var dist = Scalar[dtype](
-                    minkowski_distance(X, i, X, j, p)
-                )
+                var dist = Scalar[dtype](minkowski_distance(X, i, X, j, p))
                 D[i, j] = dist
                 D[j, i] = dist
     elif metric == "cosine":

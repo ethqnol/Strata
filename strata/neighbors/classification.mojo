@@ -158,11 +158,7 @@ struct KNeighborsClassifier[compute_dtype: DType = DType.float64](
 
     def fit[
         feat_dtype: DType, target_dtype: DType
-    ](
-        mut self,
-        X: Matrix[feat_dtype],
-        y: List[Scalar[target_dtype]],
-    ) raises:
+    ](mut self, X: Matrix[feat_dtype], y: List[Scalar[target_dtype]],) raises:
         """Fit the k-nearest neighbors classifier from the training dataset.
 
         Args:
@@ -305,9 +301,9 @@ struct KNeighborsClassifier[compute_dtype: DType = DType.float64](
 
     def predict_proba[
         feat_dtype: DType, target_dtype: DType
-    ](
-        self, dataset: Dataset[feat_dtype, target_dtype]
-    ) raises -> Matrix[feat_dtype]:
+    ](self, dataset: Dataset[feat_dtype, target_dtype]) raises -> Matrix[
+        feat_dtype
+    ]:
         """Return probability estimates for a Dataset."""
         return self.predict_proba[feat_dtype](dataset.records)
 

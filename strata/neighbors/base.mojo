@@ -22,7 +22,8 @@ from .distance import (
 
 
 struct NeighborDistIdx(Comparable, Copyable, Movable):
-    """Container holding a sample distance and its training dataset row index."""
+    """Container holding a sample distance and its training dataset row index.
+    """
 
     var dist: Float64
     var idx: Int
@@ -208,10 +209,10 @@ struct NearestNeighbors[compute_dtype: DType = DType.float64](
         self,
         X_query: Matrix[in_dtype],
         query_row: Int,
-    ) raises -> List[NeighborDistIdx]:
-        var pairs = List[NeighborDistIdx](
-            capacity=self.n_samples_fit_
-        )
+    ) raises -> List[
+        NeighborDistIdx
+    ]:
+        var pairs = List[NeighborDistIdx](capacity=self.n_samples_fit_)
 
         if self.metric == "euclidean" or self.metric == "l2":
             for j in range(self.n_samples_fit_):
@@ -257,7 +258,9 @@ struct NearestNeighbors[compute_dtype: DType = DType.float64](
         self,
         X: Matrix[in_dtype],
         n_neighbors: Int = -1,
-    ) raises -> Tuple[Matrix[in_dtype], Matrix[DType.int32]]:
+    ) raises -> Tuple[
+        Matrix[in_dtype], Matrix[DType.int32]
+    ]:
         """Find the K-neighbors of points in X.
 
         Args:
@@ -319,7 +322,9 @@ struct NearestNeighbors[compute_dtype: DType = DType.float64](
     ](
         self,
         n_neighbors: Int = -1,
-    ) raises -> Tuple[Matrix[in_dtype], Matrix[DType.int32]]:
+    ) raises -> Tuple[
+        Matrix[in_dtype], Matrix[DType.int32]
+    ]:
         """Find the K-neighbors of the training data itself.
 
         Args:
@@ -343,7 +348,9 @@ struct NearestNeighbors[compute_dtype: DType = DType.float64](
         self,
         X: Matrix[in_dtype],
         radius: Float64 = -1.0,
-    ) raises -> Tuple[List[List[Scalar[in_dtype]]], List[List[Int]]]:
+    ) raises -> Tuple[
+        List[List[Scalar[in_dtype]]], List[List[Int]]
+    ]:
         """Find the neighbors within a given radius of points in X.
 
         Args:

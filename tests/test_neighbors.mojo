@@ -9,6 +9,7 @@ from std.testing import (
 from strata import (
     Matrix,
     Dataset,
+    StandardScaler,
     euclidean_distance,
     sqeuclidean_distance,
     manhattan_distance,
@@ -498,9 +499,9 @@ def test_kneighbors_classifier_binary_uniform() raises:
 
 def test_kneighbors_classifier_multiclass_distance_weighted() raises:
     var X_train = Matrix[DType.float64](4, 1, 0)
-    X_train[0, 0] = 0.0   # Class 0
-    X_train[1, 0] = 1.0   # Class 0
-    X_train[2, 0] = 2.0   # Class 1
+    X_train[0, 0] = 0.0  # Class 0
+    X_train[1, 0] = 1.0  # Class 0
+    X_train[2, 0] = 2.0  # Class 1
     X_train[3, 0] = 10.0  # Class 2
 
     var y_train = List[Float64]()
@@ -970,6 +971,353 @@ def test_kd_tree_invalid_parameters_and_errors() raises:
         _ = tree.query(q_wrong)
     with assert_raises():
         _ = tree.query_radius(q_wrong, r=1.0)
+
+
+def test_pairwise_distances_high_dimensional_100d() raises:
+    var N = 10
+    var D = 100
+    var X = Matrix[DType.float64](N, D, 0)
+    for i in range(N):
+        for j in range(D):
+            X[i, j] = Float64(i * D + j) * 0.01
+
+    var D_euc = pairwise_distances(X, metric="euclidean")
+    var D_man = pairwise_distances(X, metric="manhattan")
+    var D_cheb = pairwise_distances(X, metric="chebyshev")
+    var D_cos = pairwise_distances(X, metric="cosine")
+
+    assert_equal(D_euc.rows, N)
+    assert_equal(D_euc.cols, N)
+
+    for i in range(N):
+        assert_almost_equal(D_euc[i, i], 0.0, atol=1e-12)
+        assert_almost_equal(D_man[i, i], 0.0, atol=1e-12)
+        assert_almost_equal(D_cheb[i, i], 0.0, atol=1e-12)
+        assert_almost_equal(D_cos[i, i], 0.0, atol=1e-12)
+
+        for j in range(N):
+            assert_almost_equal(D_euc[i, j], D_euc[j, i], atol=1e-12)
+            assert_almost_equal(D_man[i, j], D_man[j, i], atol=1e-12)
+            assert_almost_equal(D_cheb[i, j], D_cheb[j, i], atol=1e-12)
+            assert_almost_equal(D_cos[i, j], D_cos[j, i], atol=1e-12)
+
+
+def test_distance_minkowski_fractional_p() raises:
+    var X = Matrix[DType.float64](2, 2, 0)
+    X[0, 0] = 0.0
+    X[0, 1] = 0.0
+    X[1, 0] = 1.0
+    X[1, 1] = 2.0
+
+    # p = 1.5 -> (1^1.5 + 2^1.5)^(1/1.5) = (1 + 2.828427)^(2/3) = (3.828427)^(2/3) approx 2.447
+    var d_1_5 = minkowski_distance(X, 0, X, 1, p=1.5)
+    var expected_1_5 = pow(1.0 + pow(2.0, 1.5), 1.0 / 1.5)
+    assert_almost_equal(d_1_5, expected_1_5, atol=1e-12)
+
+    # p = 3.5
+    var d_3_5 = minkowski_distance(X, 0, X, 1, p=3.5)
+    var expected_3_5 = pow(1.0 + pow(2.0, 3.5), 1.0 / 3.5)
+    assert_almost_equal(d_3_5, expected_3_5, atol=1e-12)
+
+
+def test_nearest_neighbors_large_dataset_k_sweep() raises:
+    var N = 40
+    var D = 4
+    var X = Matrix[DType.float64](N, D, 0)
+    for i in range(N):
+        for j in range(D):
+            X[i, j] = Float64(i * 3 + j * 7)
+
+    var nn = NearestNeighbors(n_neighbors=20)
+    nn.fit(X)
+
+    var q = Matrix[DType.float64](2, D, 0)
+    for j in range(D):
+        q[0, j] = 15.0
+        q[1, j] = 50.0
+
+    var res = nn.kneighbors(q, n_neighbors=15)
+    var dists = res[0].copy()
+    var idxs = res[1].copy()
+
+    assert_equal(dists.rows, 2)
+    assert_equal(dists.cols, 15)
+    assert_equal(idxs.rows, 2)
+    assert_equal(idxs.cols, 15)
+
+    # Ensure distances are strictly monotonically non-decreasing
+    for query_idx in range(2):
+        for k_idx in range(14):
+            assert_true(dists[query_idx, k_idx] <= dists[query_idx, k_idx + 1])
+
+
+def test_nearest_neighbors_radius_boundary_and_empty() raises:
+    var X = Matrix[DType.float64](5, 2, 0)
+    X[0, 0] = 0.0
+    X[0, 1] = 0.0
+    X[1, 0] = 10.0
+    X[1, 1] = 10.0
+    X[2, 0] = 20.0
+    X[2, 1] = 20.0
+    X[3, 0] = 30.0
+    X[3, 1] = 30.0
+    X[4, 0] = 40.0
+    X[4, 1] = 40.0
+
+    var nn = NearestNeighbors(radius=1.0)
+    nn.fit(X)
+
+    # Query far from all points with radius 1.0 -> 0 matches
+    var q_empty = Matrix[DType.float64](1, 2, 5.0)
+    var res_empty = nn.radius_neighbors(q_empty, radius=1.0)
+    assert_equal(len(res_empty[0][0]), 0)
+    assert_equal(len(res_empty[1][0]), 0)
+
+    # Query with huge radius -> matches all 5
+    var res_all = nn.radius_neighbors(q_empty, radius=100.0)
+    assert_equal(len(res_all[0][0]), 5)
+    assert_equal(len(res_all[1][0]), 5)
+
+
+def test_nearest_neighbors_brute_vs_kd_tree_parity() raises:
+    var N = 25
+    var D = 3
+    var data = Matrix[DType.float64](N, D, 0)
+    for i in range(N):
+        data[i, 0] = Float64(i * 7 % 19)
+        data[i, 1] = Float64(i * 13 % 23)
+        data[i, 2] = Float64(i * 3 % 11)
+
+    var nn_brute = NearestNeighbors(n_neighbors=5, metric="euclidean")
+    nn_brute.fit(data)
+
+    var tree = KDTree(data, metric="euclidean")
+
+    var query = Matrix[DType.float64](4, D, 0)
+    for q in range(4):
+        query[q, 0] = Float64(q * 4 + 2)
+        query[q, 1] = Float64(q * 5 + 1)
+        query[q, 2] = Float64(q * 2 + 3)
+
+    var res_brute = nn_brute.kneighbors(query, n_neighbors=5)
+    var res_tree = tree.query(query, k=5)
+
+    var dists_brute = res_brute[0].copy()
+    var idxs_brute = res_brute[1].copy()
+
+    var dists_tree = res_tree[0].copy()
+    var idxs_tree = res_tree[1].copy()
+
+    for q in range(4):
+        for k in range(5):
+            assert_almost_equal(dists_brute[q, k], dists_tree[q, k], atol=1e-12)
+            assert_equal(Int(idxs_brute[q, k]), Int(idxs_tree[q, k]))
+
+
+def test_nearest_neighbors_kd_tree_radius_parity() raises:
+    var N = 20
+    var D = 2
+    var data = Matrix[DType.float64](N, D, 0)
+    for i in range(N):
+        data[i, 0] = Float64(i * 5 % 17)
+        data[i, 1] = Float64(i * 11 % 19)
+
+    var nn_brute = NearestNeighbors(radius=6.0, metric="euclidean")
+    nn_brute.fit(data)
+
+    var tree = KDTree(data, metric="euclidean")
+
+    var query = Matrix[DType.float64](2, D, 0)
+    query[0, 0] = 5.0
+    query[0, 1] = 5.0
+    query[1, 0] = 10.0
+    query[1, 1] = 10.0
+
+    var res_brute = nn_brute.radius_neighbors(query, radius=6.0)
+    var res_tree = tree.query_radius(query, r=6.0)
+
+    for q in range(2):
+        var count_b = len(res_brute[1][q])
+        var count_t = len(res_tree[1][q])
+        assert_equal(count_b, count_t)
+
+        for j in range(count_b):
+            assert_almost_equal(
+                res_brute[0][q][j], res_tree[0][q][j], atol=1e-12
+            )
+            assert_equal(res_brute[1][q][j], res_tree[1][q][j])
+
+
+def test_kneighbors_classifier_multiclass_high_dim() raises:
+    var N = 20
+    var D = 10
+    var X = Matrix[DType.float64](N, D, 0)
+    var y = List[Float64]()
+
+    for i in range(N):
+        var c = i % 4
+        y.append(Float64(c))
+        for j in range(D):
+            X[i, j] = Float64(c * 10 + j)
+
+    var clf = KNeighborsClassifier(n_neighbors=3, weights="distance")
+    clf.fit[DType.float64, DType.float64](X, y)
+
+    assert_equal(clf.n_classes_, 4)
+
+    var query = Matrix[DType.float64](4, D, 0)
+    for q in range(4):
+        for j in range(D):
+            query[q, j] = Float64(q * 10 + j)
+
+    var proba = clf.predict_proba(query)
+    var preds = clf.predict(query)
+
+    for q in range(4):
+        assert_equal(preds[q], q)
+        var sum_p: Float64 = 0.0
+        for c in range(4):
+            sum_p += proba[q, c]
+        assert_almost_equal(sum_p, 1.0, atol=1e-12)
+
+
+def test_kneighbors_classifier_pipeline_integration() raises:
+    var X = Matrix[DType.float64](6, 2, 0)
+    X[0, 0] = 100.0
+    X[0, 1] = 1.0
+    X[1, 0] = 120.0
+    X[1, 1] = 2.0
+    X[2, 0] = 110.0
+    X[2, 1] = 1.5
+    X[3, 0] = 500.0
+    X[3, 1] = 10.0
+    X[4, 0] = 520.0
+    X[4, 1] = 11.0
+    X[5, 0] = 510.0
+    X[5, 1] = 10.5
+
+    var y = List[Float64]()
+    y.append(0.0)
+    y.append(0.0)
+    y.append(0.0)
+    y.append(1.0)
+    y.append(1.0)
+    y.append(1.0)
+
+    var scaler = StandardScaler[DType.float64]()
+    var X_scaled = scaler.fit_transform(X)
+
+    var clf = KNeighborsClassifier(n_neighbors=3)
+    clf.fit[DType.float64, DType.float64](X_scaled, y)
+
+    var q = Matrix[DType.float64](2, 2, 0)
+    q[0, 0] = 105.0
+    q[0, 1] = 1.2
+    q[1, 0] = 515.0
+    q[1, 1] = 10.8
+
+    var q_scaled = scaler.transform(q)
+    var preds = clf.predict(q_scaled)
+    assert_equal(preds[0], 0)
+    assert_equal(preds[1], 1)
+
+
+def test_kneighbors_regressor_non_linear_function_10d() raises:
+    var N = 30
+    var D = 5
+    var X = Matrix[DType.float64](N, D, 0)
+    var y = List[Float64]()
+
+    for i in range(N):
+        var sum_sq: Float64 = 0.0
+        for j in range(D):
+            var val = Float64(i * D + j) * 0.1
+            X[i, j] = val
+            sum_sq += val * val
+        y.append(sum_sq)
+
+    var reg = KNeighborsRegressor(n_neighbors=2, weights="distance")
+    reg.fit[DType.float64, DType.float64](X, y)
+
+    # Test exact query on sample 5
+    var q = Matrix[DType.float64](1, D, 0)
+    for j in range(D):
+        q[0, j] = X[5, j]
+
+    var preds = reg.predict(q)
+    assert_almost_equal(preds[0], y[5], atol=1e-12)
+
+
+def test_kneighbors_regressor_constant_target() raises:
+    var X = Matrix[DType.float64](4, 2, 1.0)
+    var y = List[Float64]()
+    y.append(42.0)
+    y.append(42.0)
+    y.append(42.0)
+    y.append(42.0)
+
+    var reg = KNeighborsRegressor(n_neighbors=3, weights="distance")
+    reg.fit[DType.float64, DType.float64](X, y)
+
+    var q = Matrix[DType.float64](2, 2, 99.0)
+    var preds = reg.predict(q)
+    assert_almost_equal(preds[0], 42.0, atol=1e-12)
+    assert_almost_equal(preds[1], 42.0, atol=1e-12)
+
+
+def test_kd_tree_single_point() raises:
+    var data = Matrix[DType.float64](1, 3, 5.0)
+    var tree = KDTree(data)
+
+    assert_equal(tree.n_samples_, 1)
+    assert_equal(tree.n_features_, 3)
+
+    var q = Matrix[DType.float64](1, 3, 5.0)
+    var res = tree.query(q, k=1)
+    assert_almost_equal(res[0][0, 0], 0.0, atol=1e-12)
+    assert_equal(Int(res[1][0, 0]), 0)
+
+
+def test_kd_tree_collinear_points() raises:
+    var data = Matrix[DType.float64](5, 2, 0)
+    # All points lie along line y = 3.0
+    data[0, 0] = 1.0
+    data[0, 1] = 3.0
+    data[1, 0] = 2.0
+    data[1, 1] = 3.0
+    data[2, 0] = 3.0
+    data[2, 1] = 3.0
+    data[3, 0] = 4.0
+    data[3, 1] = 3.0
+    data[4, 0] = 5.0
+    data[4, 1] = 3.0
+
+    var tree = KDTree(data)
+    var q = Matrix[DType.float64](1, 2, 0)
+    q[0, 0] = 2.9
+    q[0, 1] = 3.0
+
+    var res = tree.query(q, k=2)
+    assert_equal(Int(res[1][0, 0]), 2)  # (3.0, 3.0) is dist 0.1
+    assert_equal(Int(res[1][0, 1]), 1)  # (2.0, 3.0) is dist 0.9
+
+
+def test_kd_tree_high_dimensional_20d() raises:
+    var N = 30
+    var D = 20
+    var data = Matrix[DType.float64](N, D, 0)
+    for i in range(N):
+        for j in range(D):
+            data[i, j] = Float64(i * D + j)
+
+    var tree = KDTree(data, metric="euclidean")
+    var q = Matrix[DType.float64](1, D, 0)
+    for j in range(D):
+        q[0, j] = Float64(10 * D + j)  # exact match with sample 10
+
+    var res = tree.query(q, k=1)
+    assert_almost_equal(res[0][0, 0], 0.0, atol=1e-12)
+    assert_equal(Int(res[1][0, 0]), 10)
 
 
 def main() raises:
