@@ -11,6 +11,7 @@ from strata import (
     StandardScaler,
     MinMaxScaler,
     RobustScaler,
+    Normalizer,
     Binarizer,
     OneHotEncoder,
     NotFittedError,
@@ -1610,6 +1611,194 @@ def test_robust_scaler_quantile_100_uses_maximum() raises:
     var half = RobustScaler(True, True, 0.0, 50.0)
     half.fit(X)
     assert_almost_equal(half.scale_[0], 5.0, atol=1e-12)
+
+
+def test_normalizer_l2_reference() raises:
+    var X = Matrix[DType.float64](3, 2, 0)
+    X[0, 0] = 4.0
+    X[0, 1] = 3.0
+    X[1, 0] = -1.0
+    X[1, 1] = 0.0
+    X[2, 0] = 2.0
+    X[2, 1] = 2.0
+
+    var norm = Normalizer(norm="l2")
+    var X_norm = norm.fit_transform(X)
+
+    assert_true(norm.is_fitted)
+    assert_equal(norm.n_features_in_, 2)
+    assert_almost_equal(X_norm[0, 0], 0.8, atol=1e-12)
+    assert_almost_equal(X_norm[0, 1], 0.6, atol=1e-12)
+    assert_almost_equal(X_norm[1, 0], -1.0, atol=1e-12)
+    assert_almost_equal(X_norm[1, 1], 0.0, atol=1e-12)
+    assert_almost_equal(X_norm[2, 0], 0.7071067811865475, atol=1e-12)
+    assert_almost_equal(X_norm[2, 1], 0.7071067811865475, atol=1e-12)
+
+
+def test_normalizer_l1_reference() raises:
+    var X = Matrix[DType.float64](3, 2, 0)
+    X[0, 0] = 4.0
+    X[0, 1] = 3.0
+    X[1, 0] = -1.0
+    X[1, 1] = 0.0
+    X[2, 0] = -2.0
+    X[2, 1] = 2.0
+
+    var norm = Normalizer(norm="l1")
+    var X_norm = norm.fit_transform(X)
+
+    assert_almost_equal(X_norm[0, 0], 4.0 / 7.0, atol=1e-12)
+    assert_almost_equal(X_norm[0, 1], 3.0 / 7.0, atol=1e-12)
+    assert_almost_equal(X_norm[1, 0], -1.0, atol=1e-12)
+    assert_almost_equal(X_norm[1, 1], 0.0, atol=1e-12)
+    assert_almost_equal(X_norm[2, 0], -0.5, atol=1e-12)
+    assert_almost_equal(X_norm[2, 1], 0.5, atol=1e-12)
+
+
+def test_normalizer_max_reference() raises:
+    var X = Matrix[DType.float64](3, 2, 0)
+    X[0, 0] = 4.0
+    X[0, 1] = 3.0
+    X[1, 0] = -1.0
+    X[1, 1] = 0.0
+    X[2, 0] = -5.0
+    X[2, 1] = 2.0
+
+    var norm = Normalizer(norm="max")
+    var X_norm = norm.fit_transform(X)
+
+    assert_almost_equal(X_norm[0, 0], 1.0, atol=1e-12)
+    assert_almost_equal(X_norm[0, 1], 0.75, atol=1e-12)
+    assert_almost_equal(X_norm[1, 0], -1.0, atol=1e-12)
+    assert_almost_equal(X_norm[1, 1], 0.0, atol=1e-12)
+    assert_almost_equal(X_norm[2, 0], -1.0, atol=1e-12)
+    assert_almost_equal(X_norm[2, 1], 0.4, atol=1e-12)
+
+
+def test_normalizer_all_zero_row_remains_zeros() raises:
+    var X = Matrix[DType.float64](2, 3, 0)
+    X[0, 0] = 0.0
+    X[0, 1] = 0.0
+    X[0, 2] = 0.0
+    X[1, 0] = 3.0
+    X[1, 1] = 4.0
+    X[1, 2] = 0.0
+
+    var norm = Normalizer(norm="l2")
+    var X_norm = norm.fit_transform(X)
+
+    assert_equal(X_norm[0, 0], 0.0)
+    assert_equal(X_norm[0, 1], 0.0)
+    assert_equal(X_norm[0, 2], 0.0)
+    assert_almost_equal(X_norm[1, 0], 0.6, atol=1e-12)
+    assert_almost_equal(X_norm[1, 1], 0.8, atol=1e-12)
+    assert_equal(X_norm[1, 2], 0.0)
+
+
+def test_normalizer_single_sample_and_single_feature() raises:
+    var X_1x3 = Matrix[DType.float64](1, 3, 0)
+    X_1x3[0, 0] = 1.0
+    X_1x3[0, 1] = 2.0
+    X_1x3[0, 2] = 2.0
+    var n1 = Normalizer(norm="l2")
+    var res1 = n1.fit_transform(X_1x3)
+    assert_almost_equal(res1[0, 0], 1.0 / 3.0, atol=1e-12)
+    assert_almost_equal(res1[0, 1], 2.0 / 3.0, atol=1e-12)
+    assert_almost_equal(res1[0, 2], 2.0 / 3.0, atol=1e-12)
+
+    var X_3x1 = Matrix[DType.float64](3, 1, 0)
+    X_3x1[0, 0] = 5.0
+    X_3x1[1, 0] = -10.0
+    X_3x1[2, 0] = 0.0
+    var n2 = Normalizer(norm="l1")
+    var res2 = n2.fit_transform(X_3x1)
+    assert_almost_equal(res2[0, 0], 1.0, atol=1e-12)
+    assert_almost_equal(res2[1, 0], -1.0, atol=1e-12)
+    assert_equal(res2[2, 0], 0.0)
+
+
+def test_normalizer_dataset() raises:
+    var X = Matrix[DType.float64](2, 2, 0)
+    X[0, 0] = 3.0
+    X[0, 1] = 4.0
+    X[1, 0] = 6.0
+    X[1, 1] = 8.0
+
+    var y = List[Float64]()
+    y.append(0.0)
+    y.append(1.0)
+
+    var feat_names = List[String]()
+    feat_names.append("feat_a")
+    feat_names.append("feat_b")
+
+    var ds = Dataset[DType.float64, DType.float64](X, y, feat_names)
+    var norm = Normalizer(norm="l2")
+    var ds_norm = norm.fit_transform(ds)
+
+    assert_almost_equal(ds_norm.records[0, 0], 0.6, atol=1e-12)
+    assert_almost_equal(ds_norm.records[0, 1], 0.8, atol=1e-12)
+    assert_almost_equal(ds_norm.records[1, 0], 0.6, atol=1e-12)
+    assert_almost_equal(ds_norm.records[1, 1], 0.8, atol=1e-12)
+    assert_equal(ds_norm.targets[0], 0.0)
+    assert_equal(ds_norm.targets[1], 1.0)
+    assert_equal(ds_norm.feature_names[0], "feat_a")
+    assert_equal(ds_norm.feature_names[1], "feat_b")
+
+
+def test_normalizer_float32() raises:
+    var X = Matrix[DType.float32](2, 2, 0)
+    X[0, 0] = 3.0
+    X[0, 1] = 4.0
+    X[1, 0] = 1.0
+    X[1, 1] = 1.0
+
+    var norm = Normalizer[DType.float32](norm="l2")
+    var X_norm = norm.fit_transform(X)
+
+    assert_almost_equal(X_norm[0, 0], 0.6, atol=1e-6)
+    assert_almost_equal(X_norm[0, 1], 0.8, atol=1e-6)
+
+
+def test_normalizer_copy_semantics() raises:
+    var X = Matrix[DType.float64](2, 2, 1.0)
+    var norm1 = Normalizer(norm="max")
+    norm1.fit(X)
+
+    var norm2 = norm1
+    assert_true(norm2.is_fitted)
+    assert_equal(norm2.norm, "max")
+    assert_equal(norm2.n_features_in_, 2)
+
+
+def test_normalizer_invalid_parameters_and_errors() raises:
+    with assert_raises():
+        _ = Normalizer(norm="l3")
+
+    var norm = Normalizer(norm="l2")
+    var X = Matrix[DType.float64](2, 2, 1.0)
+
+    # Unfitted transform
+    with assert_raises():
+        _ = norm.transform(X)
+
+    norm.fit(X)
+
+    # Dimension mismatch
+    var X_wrong = Matrix[DType.float64](2, 3, 1.0)
+    with assert_raises():
+        _ = norm.transform(X_wrong)
+
+    # Type mismatch
+    var X_f32 = Matrix[DType.float32](2, 2, 1.0)
+    with assert_raises():
+        _ = norm.transform(X_f32)
+
+    # NaN in input
+    var nan = Float64(0.0) / Float64(0.0)
+    var X_nan = Matrix[DType.float64](2, 2, nan)
+    with assert_raises():
+        norm.fit(X_nan)
 
 
 def main() raises:

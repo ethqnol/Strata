@@ -38,6 +38,7 @@ MODULE_METADATA = {
         "description": "StandardScaler, MinMaxScaler, RobustScaler, Normalizer, Binarizer, and OneHotEncoder with streaming SIMD statistics.",
         "files": [
             "preprocessing/scaler.mojo",
+            "preprocessing/normalizer.mojo",
             "preprocessing/binarizer.mojo",
             "preprocessing/encoders.mojo",
         ]

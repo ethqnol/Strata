@@ -71,6 +71,7 @@ from .preprocessing import (
     StandardScaler,
     MinMaxScaler,
     RobustScaler,
+    Normalizer,
     Binarizer,
     OneHotEncoder,
 )
