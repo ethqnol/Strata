@@ -29,12 +29,19 @@ Strata is a native machine learning library for Mojo designed around familiar sc
   - `RandomForestClassifier` (Bootstrap aggregation, soft-voting probability averaging, batched OOB accuracy)
   - `RandomForestRegressor` (Bootstrap aggregation, mean prediction averaging, batched OOB R² score)
   - Contiguous flat-array `Tree` / `Node` buffers with $O(1)$ streaming histogram split calculations
+- **Nearest Neighbors & Spatial Trees**:
+  - Distance metrics: `euclidean`, `sqeuclidean`, `manhattan`, `chebyshev`, `minkowski`, `cosine`, and `pairwise_distances`
+  - `NearestNeighbors` (Unsupervised $k$-NN and radius query engine)
+  - `KNeighborsClassifier` (Uniform and inverse-distance weighted multiclass probability voting)
+  - `KNeighborsRegressor` (Uniform and inverse-distance continuous local regression)
+  - `KDTree` (Binary space-partitioning index with orthogonal hyperplane pruning)
 - **Evaluation Metrics**:
   - Regression: `mean_squared_error` / `root_mean_squared_error`, `mean_absolute_error`, `r2_score`
   - Classification: `accuracy_score`, `precision_score`, `recall_score`, `f1_score` (binary, micro, macro, weighted), `confusion_matrix`, `log_loss`
   - Ranking & clustering: rank-based `roc_auc_score` with tie correction, `silhouette_score`
 - **Test Coverage**:
-  - 22 modular test suites (880+ passing tests)
+  - 23 modular test suites (930+ passing tests)
+
 
 ---
 
@@ -54,10 +61,10 @@ Strata is a native machine learning library for Mojo designed around familiar sc
 - [x] `MinMaxScaler` & `RobustScaler`
 - [x] `Normalizer` (L1, L2, Max row-wise normalization)
 - [x] `OneHotEncoder` (Dense category expansion with `drop` and `handle_unknown` policies)
-- [ ] `OrdinalEncoder` & `LabelEncoder`
-- [ ] `SimpleImputer` (mean, median, most_frequent, constant)
+- [x] `OrdinalEncoder` & `LabelEncoder`
+- [x] `SimpleImputer` (mean, median, most_frequent, constant)
 - [x] `Binarizer` (threshold-based indicator mapping)
-- [ ] `PolynomialFeatures` (interaction and degree expansion)
+- [x] `PolynomialFeatures` (interaction and degree expansion)
 
 ### Linear Models
 - [x] `LinearRegression` (Ordinary Least Squares via QR, SVD, Cholesky, Solve)
@@ -85,10 +92,12 @@ Strata is a native machine learning library for Mojo designed around familiar sc
 - [ ] `DBSCAN` (Density-based spatial clustering)
 
 ### Nearest Neighbors
-- [ ] SIMD Distance Kernels (Euclidean, Manhattan, Cosine, Minkowski)
-- [ ] `KNeighborsClassifier` (Brute-force & Index-backed)
-- [ ] `KNeighborsRegressor`
-- [ ] `KDTree` / `BallTree` Spatial Indexing
+- [x] Distance Kernels (Euclidean, SqEuclidean, Manhattan, Chebyshev, Minkowski, Cosine)
+- [x] `NearestNeighbors` (Unsupervised $k$-NN and radius searches)
+- [x] `KNeighborsClassifier` (Uniform and inverse-distance weighted voting)
+- [x] `KNeighborsRegressor` (Uniform and inverse-distance weighted local regression)
+- [x] `KDTree` (Binary space-partitioning index with orthogonal hyperplane pruning)
+
 
 ### Model Selection & Validation
 - [x] `train_test_split` (with deterministic RNG seed)

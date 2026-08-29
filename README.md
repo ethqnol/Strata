@@ -106,13 +106,17 @@ def main() raises:
   - `dataset`: `Dataset` container for features, targets, and metadata.
   - `interop`: NumPy and SciPy sparse conversions.
 - **`strata.linear_model`**: `LinearRegression`, `Ridge`, `LogisticRegression` (binary and multinomial).
+- **`strata.tree`**: `DecisionTreeClassifier`, `DecisionTreeRegressor` (with Gini, Entropy, MSE, MAE criteria).
+- **`strata.ensemble`**: `RandomForestClassifier`, `RandomForestRegressor` (with OOB evaluation and soft voting).
+- **`strata.neighbors`**: `NearestNeighbors`, `KNeighborsClassifier`, `KNeighborsRegressor`, `KDTree`, and distance metrics (`euclidean`, `manhattan`, `chebyshev`, `minkowski`, `cosine`, `pairwise_distances`).
 - **`strata.decomposition`**: `PCA` (with whitening and sign-flip), `TruncatedSVD` (dense and sparse CSR via SpMM).
 - **`strata.cluster`**: `KMeans` (k-means++, Lloyd's algorithm, distance-space transforms), `MiniBatchKMeans` (streaming online updates, EWMA inertia smoothing, `partial_fit`).
-- **`strata.preprocessing`**: `StandardScaler`, `MinMaxScaler`, `RobustScaler`, `OneHotEncoder`, `Binarizer`.
-- **`strata.model_selection`**: `train_test_split`, `KFold`, `StratifiedKFold`, `TimeSeriesSplit`, `ShuffleSplit`, `cross_val_score`, `GridSearchRegressor`, `GridSearchClassifier`.
+- **`strata.preprocessing`**: `StandardScaler`, `MinMaxScaler`, `RobustScaler`, `Normalizer`, `OneHotEncoder`, `OrdinalEncoder`, `LabelEncoder`, `SimpleImputer`, `Binarizer`, `PolynomialFeatures`.
+- **`strata.model_selection`**: `train_test_split`, `KFold`, `StratifiedKFold`, `TimeSeriesSplit`, `ShuffleSplit`, `StratifiedShuffleSplit`, `cross_val_score`, `cross_val_predict`, `cross_validate`, `GridSearchRegressor`, `GridSearchClassifier`, `RandomizedSearchRegressor`, `RandomizedSearchClassifier`.
 - **`strata.metrics`**:
   - Regression: `mean_squared_error`, `root_mean_squared_error`, `mean_absolute_error`, `r2_score`.
-  - Classification: `accuracy_score`, `precision_score`, `recall_score`, `f1_score`, `confusion_matrix`.
+  - Classification: `accuracy_score`, `precision_score`, `recall_score`, `f1_score`, `confusion_matrix`, `roc_auc_score`, `log_loss`.
+  - Clustering: `silhouette_score`.
 - **`strata.base`**: `Transformer`, `Regressor`, `Classifier`, `Clusterer`, and composable `Pipeline` structs.
 
 ---
