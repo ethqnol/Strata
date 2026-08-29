@@ -18,6 +18,7 @@ from strata import (
     OrdinalEncoder,
     LabelEncoder,
     SimpleImputer,
+    PolynomialFeatures,
     NotFittedError,
     DataConversionError,
 )
@@ -2229,6 +2230,182 @@ def test_simple_imputer_invalid_inputs_and_errors() raises:
     var X_f32 = Matrix[DType.float32](2, 2, 1.0)
     with assert_raises():
         _ = imp.transform(X_f32)
+
+
+def test_polynomial_features_degree_2_with_bias() raises:
+    var X = Matrix[DType.float64](1, 2, 0)
+    X[0, 0] = 2.0
+    X[0, 1] = 3.0
+
+    var poly = PolynomialFeatures(
+        degree=2, interaction_only=False, include_bias=True
+    )
+    var X_poly = poly.fit_transform(X)
+
+    assert_true(poly.is_fitted)
+    assert_equal(poly.n_features_in_, 2)
+    assert_equal(poly.n_output_features_, 6)
+    assert_equal(X_poly.rows, 1)
+    assert_equal(X_poly.cols, 6)
+
+    # [1, a, b, a^2, ab, b^2]
+    assert_almost_equal(X_poly[0, 0], 1.0, atol=1e-12)  # bias
+    assert_almost_equal(X_poly[0, 1], 2.0, atol=1e-12)  # a
+    assert_almost_equal(X_poly[0, 2], 3.0, atol=1e-12)  # b
+    assert_almost_equal(X_poly[0, 3], 4.0, atol=1e-12)  # a^2
+    assert_almost_equal(X_poly[0, 4], 6.0, atol=1e-12)  # a*b
+    assert_almost_equal(X_poly[0, 5], 9.0, atol=1e-12)  # b^2
+
+    # Check powers_ matrix
+    assert_equal(poly.powers_[0, 0], 0)
+    assert_equal(poly.powers_[0, 1], 0)
+    assert_equal(poly.powers_[1, 0], 1)
+    assert_equal(poly.powers_[1, 1], 0)
+    assert_equal(poly.powers_[2, 0], 0)
+    assert_equal(poly.powers_[2, 1], 1)
+    assert_equal(poly.powers_[3, 0], 2)
+    assert_equal(poly.powers_[3, 1], 0)
+    assert_equal(poly.powers_[4, 0], 1)
+    assert_equal(poly.powers_[4, 1], 1)
+    assert_equal(poly.powers_[5, 0], 0)
+    assert_equal(poly.powers_[5, 1], 2)
+
+
+def test_polynomial_features_interaction_only() raises:
+    var X = Matrix[DType.float64](1, 3, 0)
+    X[0, 0] = 2.0
+    X[0, 1] = 3.0
+    X[0, 2] = 5.0
+
+    var poly = PolynomialFeatures(
+        degree=2, interaction_only=True, include_bias=False
+    )
+    var X_poly = poly.fit_transform(X)
+
+    # Output: [a, b, c, ab, ac, bc]
+    assert_equal(poly.n_output_features_, 6)
+    assert_almost_equal(X_poly[0, 0], 2.0, atol=1e-12)  # a
+    assert_almost_equal(X_poly[0, 1], 3.0, atol=1e-12)  # b
+    assert_almost_equal(X_poly[0, 2], 5.0, atol=1e-12)  # c
+    assert_almost_equal(X_poly[0, 3], 6.0, atol=1e-12)  # a*b
+    assert_almost_equal(X_poly[0, 4], 10.0, atol=1e-12)  # a*c
+    assert_almost_equal(X_poly[0, 5], 15.0, atol=1e-12)  # b*c
+
+
+def test_polynomial_features_degree_3_without_bias() raises:
+    var X = Matrix[DType.float64](1, 2, 0)
+    X[0, 0] = 2.0
+    X[0, 1] = 3.0
+
+    var poly = PolynomialFeatures(
+        degree=3, interaction_only=False, include_bias=False
+    )
+    var X_poly = poly.fit_transform(X)
+
+    # Degree 1 (2 terms), Degree 2 (3 terms), Degree 3 (4 terms) = 9 output terms
+    assert_equal(poly.n_output_features_, 9)
+    assert_almost_equal(X_poly[0, 0], 2.0, atol=1e-12)  # a
+    assert_almost_equal(X_poly[0, 1], 3.0, atol=1e-12)  # b
+    assert_almost_equal(X_poly[0, 2], 4.0, atol=1e-12)  # a^2
+    assert_almost_equal(X_poly[0, 3], 6.0, atol=1e-12)  # a*b
+    assert_almost_equal(X_poly[0, 4], 9.0, atol=1e-12)  # b^2
+    assert_almost_equal(X_poly[0, 5], 8.0, atol=1e-12)  # a^3
+    assert_almost_equal(X_poly[0, 6], 12.0, atol=1e-12)  # a^2*b
+    assert_almost_equal(X_poly[0, 7], 18.0, atol=1e-12)  # a*b^2
+    assert_almost_equal(X_poly[0, 8], 27.0, atol=1e-12)  # b^3
+
+
+def test_polynomial_features_degree_0() raises:
+    var X = Matrix[DType.float64](2, 2, 5.0)
+    var poly = PolynomialFeatures(degree=0, include_bias=True)
+    var X_poly = poly.fit_transform(X)
+
+    assert_equal(poly.n_output_features_, 1)
+    assert_equal(X_poly.rows, 2)
+    assert_equal(X_poly.cols, 1)
+    assert_equal(X_poly[0, 0], 1.0)
+    assert_equal(X_poly[1, 0], 1.0)
+
+
+def test_polynomial_features_degree_1() raises:
+    var X = Matrix[DType.float64](2, 2, 0)
+    X[0, 0] = 10.0
+    X[0, 1] = 20.0
+    X[1, 0] = 30.0
+    X[1, 1] = 40.0
+
+    var poly = PolynomialFeatures(degree=1, include_bias=True)
+    var X_poly = poly.fit_transform(X)
+
+    # [1, a, b]
+    assert_equal(poly.n_output_features_, 3)
+    assert_equal(X_poly[0, 0], 1.0)
+    assert_equal(X_poly[0, 1], 10.0)
+    assert_equal(X_poly[0, 2], 20.0)
+    assert_equal(X_poly[1, 0], 1.0)
+    assert_equal(X_poly[1, 1], 30.0)
+    assert_equal(X_poly[1, 2], 40.0)
+
+
+def test_polynomial_features_float32() raises:
+    var X = Matrix[DType.float32](1, 2, 0)
+    X[0, 0] = 2.0
+    X[0, 1] = 3.0
+
+    var poly = PolynomialFeatures[DType.float32](degree=2, include_bias=False)
+    var X_poly = poly.fit_transform(X)
+
+    assert_equal(poly.n_output_features_, 5)
+    assert_almost_equal(X_poly[0, 0], 2.0, atol=1e-6)
+    assert_almost_equal(X_poly[0, 1], 3.0, atol=1e-6)
+    assert_almost_equal(X_poly[0, 2], 4.0, atol=1e-6)
+    assert_almost_equal(X_poly[0, 3], 6.0, atol=1e-6)
+    assert_almost_equal(X_poly[0, 4], 9.0, atol=1e-6)
+
+
+def test_polynomial_features_copy_semantics() raises:
+    var X = Matrix[DType.float64](2, 2, 1.0)
+    var poly1 = PolynomialFeatures(degree=2)
+    poly1.fit(X)
+
+    var poly2 = poly1
+    assert_true(poly2.is_fitted)
+    assert_equal(poly2.n_features_in_, 2)
+    assert_equal(poly2.n_output_features_, 6)
+    assert_equal(poly2.powers_.rows, 6)
+    assert_equal(poly2.powers_.cols, 2)
+
+
+def test_polynomial_features_invalid_inputs_and_errors() raises:
+    with assert_raises():
+        _ = PolynomialFeatures(degree=-1)
+    with assert_raises():
+        _ = PolynomialFeatures(degree=0, include_bias=False)
+
+    var poly = PolynomialFeatures(degree=2)
+    var X = Matrix[DType.float64](2, 2, 1.0)
+
+    # Unfitted transform
+    with assert_raises():
+        _ = poly.transform(X)
+
+    poly.fit(X)
+
+    # Dimension mismatch
+    var X_wrong = Matrix[DType.float64](2, 3, 1.0)
+    with assert_raises():
+        _ = poly.transform(X_wrong)
+
+    # DataConversionError on dtype mismatch
+    var X_f32 = Matrix[DType.float32](2, 2, 1.0)
+    with assert_raises():
+        _ = poly.transform(X_f32)
+
+    # NaN in input
+    var nan_val = nan[DType.float64]()
+    var X_nan = Matrix[DType.float64](2, 2, nan_val)
+    with assert_raises():
+        poly.fit(X_nan)
 
 
 def main() raises:

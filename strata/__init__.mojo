@@ -77,6 +77,7 @@ from .preprocessing import (
     OrdinalEncoder,
     LabelEncoder,
     SimpleImputer,
+    PolynomialFeatures,
 )
 from .model_selection import (
     train_test_split,
