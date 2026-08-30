@@ -11,7 +11,12 @@ from ..utils.validation import (
 from ..utils.random import PRNG
 from ..utils.math import softmax, sigmoid
 from ..exceptions.errors import InvalidParameterError, DimensionMismatchError
-from ._sgd_fast import _compute_eta, _dloss_classification, _apply_penalty_step
+from ._sgd_fast import (
+    _compute_eta,
+    _loss_classification,
+    _dloss_classification,
+    _apply_penalty_step,
+)
 
 
 struct SGDClassifier[
@@ -273,7 +278,8 @@ struct SGDClassifier[
 
             var x_ptr = X_comp.data.unsafe_ptr()
             var w_ptr = w.unsafe_ptr()
-            var prev_loss: Scalar[Self.compute_dtype] = 1e30
+            var best_loss: Scalar[Self.compute_dtype] = 1e30
+            var no_improvement_count = 0
 
             for epoch in range(self.max_iter):
                 if epoch + 1 > max_n_iter:
@@ -356,12 +362,19 @@ struct SGDClassifier[
                     if self.fit_intercept:
                         b -= eta * d_loss
 
-                    epoch_loss += abs(d_loss)
+                    epoch_loss += _loss_classification[Self.compute_dtype](
+                        self.loss, y_bin[i], score, self.epsilon
+                    )
 
                 epoch_loss /= Scalar[Self.compute_dtype](N)
-                if abs(prev_loss - epoch_loss) < self.tol:
-                    break
-                prev_loss = epoch_loss
+                if self.tol > 0:
+                    if best_loss - epoch_loss < self.tol:
+                        no_improvement_count += 1
+                        if no_improvement_count >= 5:
+                            break
+                    else:
+                        no_improvement_count = 0
+                        best_loss = epoch_loss
 
             # Save learned weights
             for j in range(D):
@@ -411,12 +424,15 @@ struct SGDClassifier[
         var K = len(self.classes_)
         var probs = Matrix[feat_dtype](N, K, 0)
 
-        if K == 2:
+        if K == 1:
             for i in range(N):
-                var s = Float64(scores[i, 0])
-                var p1 = 1.0 / (1.0 + exp(-s))
-                probs[i, 0] = Scalar[feat_dtype](1.0 - p1)
-                probs[i, 1] = Scalar[feat_dtype](p1)
+                probs[i, 0] = 1.0
+        elif K == 2:
+            for i in range(N):
+                var s = scores[i, 0]
+                var p1 = sigmoid[feat_dtype](s)
+                probs[i, 0] = Scalar[feat_dtype](1.0) - p1
+                probs[i, 1] = p1
         else:
             for i in range(N):
                 var row_scores = scores.row(i)
@@ -434,7 +450,10 @@ struct SGDClassifier[
         var N = scores.rows
         var preds = List[Int](capacity=N)
 
-        if len(self.classes_) == 2:
+        if len(self.classes_) == 1:
+            for _ in range(N):
+                preds.append(self.classes_[0])
+        elif len(self.classes_) == 2:
             for i in range(N):
                 if scores[i, 0] > 0:
                     preds.append(self.classes_[1])

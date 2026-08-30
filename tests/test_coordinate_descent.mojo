@@ -1,3 +1,4 @@
+from std.math import abs
 from std.testing import (
     TestSuite,
     assert_equal,
@@ -170,9 +171,9 @@ def test_lasso_monotonic_shrinkage() raises:
     var m3 = Lasso(alpha=2.0, fit_intercept=False)
     m3.fit(X, y)
 
-    var norm1 = m1.coef_[0] + m1.coef_[1]
-    var norm2 = m2.coef_[0] + m2.coef_[1]
-    var norm3 = m3.coef_[0] + m3.coef_[1]
+    var norm1 = abs(m1.coef_[0]) + abs(m1.coef_[1])
+    var norm2 = abs(m2.coef_[0]) + abs(m2.coef_[1])
+    var norm3 = abs(m3.coef_[0]) + abs(m3.coef_[1])
 
     assert_true(norm1 >= norm2)
     assert_true(norm2 >= norm3)
@@ -271,8 +272,13 @@ def test_lasso_underdetermined_wide_matrix() raises:
     var model = Lasso(alpha=0.1, fit_intercept=False)
     model.fit(X, y)
     assert_equal(len(model.coef_), D)
+    assert_true(model.is_fitted)
+    for j in range(D):
+        assert_true(model.coef_[j] == model.coef_[j])
     var preds = model.predict(X)
     assert_equal(len(preds), N)
+    for i in range(N):
+        assert_true(preds[i] == preds[i])
 
 
 def test_lasso_float32() raises:
@@ -527,8 +533,13 @@ def test_elastic_net_underdetermined_wide_matrix() raises:
     var model = ElasticNet(alpha=0.1, l1_ratio=0.5, fit_intercept=False)
     model.fit(X, y)
     assert_equal(len(model.coef_), D)
+    assert_true(model.is_fitted)
+    for j in range(D):
+        assert_true(model.coef_[j] == model.coef_[j])
     var preds = model.predict(X)
     assert_equal(len(preds), N)
+    for i in range(N):
+        assert_true(preds[i] == preds[i])
 
 
 def test_elastic_net_float32() raises:

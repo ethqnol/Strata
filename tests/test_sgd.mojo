@@ -103,6 +103,9 @@ def test_sgd_regressor_huber_loss() raises:
     )
     reg.fit(X, y)
     assert_true(reg.is_fitted)
+    assert_true(reg.coef_[0] > 0.0)
+    var preds = reg.predict(X)
+    assert_equal(len(preds), 5)
 
 
 def test_sgd_regressor_epsilon_insensitive() raises:
@@ -122,6 +125,9 @@ def test_sgd_regressor_epsilon_insensitive() raises:
     )
     reg.fit(X, y)
     assert_true(reg.is_fitted)
+    assert_almost_equal(reg.coef_[0], 2.0, rtol=0.25)
+    var preds = reg.predict(X)
+    assert_equal(len(preds), 4)
 
 
 def test_sgd_regressor_penalties() raises:
@@ -357,10 +363,16 @@ def test_sgd_classifier_modified_huber_and_squared_hinge() raises:
     var clf_hub = SGDClassifier(loss="modified_huber", eta0=0.1, max_iter=300)
     clf_hub.fit(X, y)
     assert_true(clf_hub.is_fitted)
+    var preds_hub = clf_hub.predict(X)
+    assert_equal(preds_hub[0], 0)
+    assert_equal(preds_hub[3], 1)
 
     var clf_sqh = SGDClassifier(loss="squared_hinge", eta0=0.1, max_iter=300)
     clf_sqh.fit(X, y)
     assert_true(clf_sqh.is_fitted)
+    var preds_sqh = clf_sqh.predict(X)
+    assert_equal(preds_sqh[0], 0)
+    assert_equal(preds_sqh[3], 1)
 
 
 def test_sgd_classifier_decision_function() raises:

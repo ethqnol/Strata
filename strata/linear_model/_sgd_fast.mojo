@@ -1,20 +1,9 @@
-from std.math import abs, exp, max, min, pow, sqrt
+from std.math import abs, max, min, pow
 from ..utils.math import sigmoid
 from ..utils.random import PRNG
 from ..core.matrix import Matrix
 from ..exceptions.errors import InvalidParameterError, DimensionMismatchError
-
-
-def _soft_threshold_scalar[
-    dtype: DType = DType.float64
-](z: Scalar[dtype], gamma: Scalar[dtype]) -> Scalar[dtype]:
-    """Applies soft-thresholding to a scalar."""
-    if z > gamma:
-        return z - gamma
-    elif z < -gamma:
-        return z + gamma
-    else:
-        return 0
+from ._coordinate_descent import _soft_threshold
 
 
 def _compute_eta[
@@ -43,6 +32,33 @@ def _compute_eta[
         return eta0
     else:
         return eta0
+
+
+def _loss_regression[
+    dtype: DType = DType.float64
+](
+    loss: String,
+    y_true: Scalar[dtype],
+    y_pred: Scalar[dtype],
+    epsilon: Scalar[dtype],
+) -> Scalar[dtype]:
+    """Computes the scalar regression loss value."""
+    var diff = y_pred - y_true
+    var abs_diff = abs(diff)
+    if loss == "squared_error":
+        return Scalar[dtype](0.5) * diff * diff
+    elif loss == "huber":
+        if abs_diff <= epsilon:
+            return Scalar[dtype](0.5) * diff * diff
+        else:
+            return epsilon * abs_diff - Scalar[dtype](0.5) * epsilon * epsilon
+    elif loss == "epsilon_insensitive":
+        if abs_diff <= epsilon:
+            return 0
+        else:
+            return abs_diff - epsilon
+    else:
+        return Scalar[dtype](0.5) * diff * diff
 
 
 def _dloss_regression[
@@ -75,6 +91,50 @@ def _dloss_regression[
             return -1
     else:
         return diff
+
+
+def _loss_classification[
+    dtype: DType = DType.float64
+](
+    loss: String,
+    y_true: Scalar[dtype],
+    raw_score: Scalar[dtype],
+    epsilon: Scalar[dtype] = 0.1,
+) -> Scalar[dtype]:
+    """Computes the scalar classification loss value."""
+    from std.math import log1p, exp
+
+    var margin = y_true * raw_score
+    if loss == "hinge":
+        if margin < 1.0:
+            return Scalar[dtype](1.0) - margin
+        else:
+            return 0
+    elif loss == "log_loss" or loss == "log":
+        var z = Float64(margin)
+        if z >= 0.0:
+            return Scalar[dtype](log1p(exp(-z)))
+        else:
+            return Scalar[dtype](-z + log1p(exp(z)))
+    elif loss == "modified_huber":
+        if margin >= 1.0:
+            return 0
+        elif margin >= -1.0:
+            var term = Scalar[dtype](1.0) - margin
+            return term * term
+        else:
+            return -Scalar[dtype](4.0) * margin
+    elif loss == "squared_hinge":
+        if margin < 1.0:
+            var term = Scalar[dtype](1.0) - margin
+            return term * term
+        else:
+            return 0
+    else:
+        if margin < 1.0:
+            return Scalar[dtype](1.0) - margin
+        else:
+            return 0
 
 
 def _dloss_classification[
@@ -140,7 +200,7 @@ def _apply_penalty_step[
     elif penalty == "l1":
         var threshold = eta * alpha
         for j in range(D):
-            w[j] = _soft_threshold_scalar[dtype](w[j], threshold)
+            w[j] = _soft_threshold[dtype](w[j], threshold)
     elif penalty == "elasticnet":
         var l1_strength = alpha * l1_ratio
         var l2_strength = alpha * (Scalar[dtype](1.0) - l1_ratio)
@@ -150,4 +210,4 @@ def _apply_penalty_step[
         var threshold = eta * l1_strength
         for j in range(D):
             var shrunk = w[j] * decay
-            w[j] = _soft_threshold_scalar[dtype](shrunk, threshold)
+            w[j] = _soft_threshold[dtype](shrunk, threshold)

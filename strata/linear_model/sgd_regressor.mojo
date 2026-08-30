@@ -10,7 +10,12 @@ from ..utils.validation import (
 )
 from ..utils.random import PRNG
 from ..exceptions.errors import InvalidParameterError, DimensionMismatchError
-from ._sgd_fast import _compute_eta, _dloss_regression, _apply_penalty_step
+from ._sgd_fast import (
+    _compute_eta,
+    _loss_regression,
+    _dloss_regression,
+    _apply_penalty_step,
+)
 
 
 struct SGDRegressor[
@@ -225,13 +230,15 @@ struct SGDRegressor[
         var global_step = 0
         var t0 = Scalar[Self.compute_dtype](1.0)
         if self.learning_rate == "optimal":
-            t0 = Scalar[Self.compute_dtype](1.0) / (self.alpha * self.eta0)
+            if self.alpha > 0 and self.eta0 > 0:
+                t0 = Scalar[Self.compute_dtype](1.0) / (self.alpha * self.eta0)
 
         comptime simd_width = 4 if Self.compute_dtype == DType.float64 else 8
         var x_ptr = X_comp.data.unsafe_ptr()
         var w_ptr = w.unsafe_ptr()
 
-        var prev_epoch_loss: Scalar[Self.compute_dtype] = 1e30
+        var best_loss: Scalar[Self.compute_dtype] = 1e30
+        var no_improvement_count = 0
 
         for epoch in range(self.max_iter):
             self.n_iter_ = epoch + 1
@@ -271,7 +278,9 @@ struct SGDRegressor[
                     self.loss, y_comp[i], y_pred, self.epsilon
                 )
 
-                epoch_loss += abs(y_pred - y_comp[i])
+                epoch_loss += _loss_regression[Self.compute_dtype](
+                    self.loss, y_comp[i], y_pred, self.epsilon
+                )
 
                 var eta = _compute_eta[Self.compute_dtype](
                     self.learning_rate,
@@ -313,9 +322,14 @@ struct SGDRegressor[
                     b -= eta * d_loss
 
             epoch_loss /= Scalar[Self.compute_dtype](N)
-            if abs(prev_epoch_loss - epoch_loss) < self.tol:
-                break
-            prev_epoch_loss = epoch_loss
+            if self.tol > 0:
+                if best_loss - epoch_loss < self.tol:
+                    no_improvement_count += 1
+                    if no_improvement_count >= 5:
+                        break
+                else:
+                    no_improvement_count = 0
+                    best_loss = epoch_loss
 
         self.coef_ = w^
         self.intercept_ = b
