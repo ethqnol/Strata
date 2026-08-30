@@ -69,10 +69,10 @@ Strata is a native machine learning library for Mojo designed around familiar sc
 ### Linear Models
 - [x] `LinearRegression` (Ordinary Least Squares via QR, SVD, Cholesky, Solve)
 - [x] `Ridge` (Analytical $L_2$-regularization closed-form solver)
-- [ ] `Lasso` (Coordinate Descent solver)
-- [ ] `ElasticNet` ($L_1 + L_2$ Coordinate Descent solver)
+- [x] `Lasso` (Coordinate Descent solver)
+- [x] `ElasticNet` ($L_1 + L_2$ Coordinate Descent solver)
 - [x] `LogisticRegression` (Binary and multinomial softmax classification)
-- [ ] `SGDClassifier` & `SGDRegressor` (Streaming and online mini-batch optimization)
+- [x] `SGDClassifier` & `SGDRegressor` (Streaming and online mini-batch optimization)
 
 ### Tree-Based & Ensemble Models
 - [x] `DecisionTreeClassifier` (Gini impurity / Entropy / Log-Loss)
