@@ -96,7 +96,15 @@ from .model_selection import (
     RandomizedSearchRegressor,
     RandomizedSearchClassifier,
 )
-from .linear_model import LinearRegression, Ridge, LogisticRegression
+from .linear_model import (
+    LinearRegression,
+    Ridge,
+    LogisticRegression,
+    Lasso,
+    ElasticNet,
+    SGDRegressor,
+    SGDClassifier,
+)
 from .decomposition import PCA, TruncatedSVD
 from .cluster import KMeans, MiniBatchKMeans
 from .metrics import (

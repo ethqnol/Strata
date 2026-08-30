@@ -217,12 +217,48 @@
   },
   {
     "module": "linear_model",
+    "name": "Lasso",
+    "kind": "struct",
+    "summary": "Lasso linear model with L1 regularization.",
+    "ref_file": "reference/linear_model/Lasso",
+    "traits": "Copyable, Movable, Regressor",
+    "file": "strata/linear_model/lasso.mojo"
+  },
+  {
+    "module": "linear_model",
+    "name": "ElasticNet",
+    "kind": "struct",
+    "summary": "Linear regression with combined L1 and L2 regularization (ElasticNet).",
+    "ref_file": "reference/linear_model/ElasticNet",
+    "traits": "Copyable, Movable, Regressor",
+    "file": "strata/linear_model/elastic_net.mojo"
+  },
+  {
+    "module": "linear_model",
     "name": "LogisticRegression",
     "kind": "struct",
     "summary": "Logistic Regression classifier with L2 regularization.",
     "ref_file": "reference/linear_model/LogisticRegression",
     "traits": "Classifier, Copyable, Movable",
     "file": "strata/linear_model/logistic_regression.mojo"
+  },
+  {
+    "module": "linear_model",
+    "name": "SGDRegressor",
+    "kind": "struct",
+    "summary": "Linear model fitted by minimizing a regularized empirical loss with SGD.",
+    "ref_file": "reference/linear_model/SGDRegressor",
+    "traits": "Copyable, Movable, Regressor",
+    "file": "strata/linear_model/sgd_regressor.mojo"
+  },
+  {
+    "module": "linear_model",
+    "name": "SGDClassifier",
+    "kind": "struct",
+    "summary": "Linear classifier with SGD training.",
+    "ref_file": "reference/linear_model/SGDClassifier",
+    "traits": "Classifier, Copyable, Movable",
+    "file": "strata/linear_model/sgd_classifier.mojo"
   },
   {
     "module": "tree",

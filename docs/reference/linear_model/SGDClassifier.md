@@ -1,0 +1,156 @@
+# `SGDClassifier`
+
+**Module**: [`strata.linear_model`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Classifier, Copyable, Movable`  
+**Source**: [`strata/linear_model/sgd_classifier.mojo`](file:////home/ewu/Code/Strata/strata/linear_model/sgd_classifier.mojo)
+
+```mojo
+struct SGDClassifier[compute_dtype: DType = DType.float64](Classifier, Copyable, Movable)
+```
+
+```mojo
+from strata.linear_model import SGDClassifier
+```
+
+**Linear classifier with SGD training.**
+
+Supports linear SVM (`loss='hinge'`), Logistic Regression (`loss='log_loss'`),
+Modified Huber (`loss='modified_huber'`), and Squared Hinge (`loss='squared_hinge'`).
+Minimizes the regularized loss:
+$$
+\min_{W, b} \frac{1}{N} \sum_{i=1}^N \mathcal{L}(W x_i + b, y_i) + \alpha \mathcal{R}(W)
+$$
+
+---
+
+## Parameters (Compile-Time)
+
+| Parameter | Description |
+| :--- | :--- |
+| **`compute_dtype`** | Computational precision data type. Default DType.float64. |
+
+---
+
+## Arguments (Runtime)
+
+| Argument | Description |
+| :--- | :--- |
+| **`loss`** | Loss function to use ('hinge', 'log_loss', 'modified_huber', 'squared_hinge'). Default 'hinge'. |
+| **`penalty`** | Regularization penalty ('l2', 'l1', 'elasticnet', 'none'). Default 'l2'. |
+| **`alpha`** | Regularization constant multiplier ($\alpha \ge 0$). Default 1e-4. |
+| **`l1_ratio`** | ElasticNet mixing parameter in [0, 1]. Default 0.15. |
+| **`fit_intercept`** | Whether to estimate an independent intercept term. Default True. |
+| **`max_iter`** | Maximum number of passes over training data (epochs). Default 1000. |
+| **`tol`** | Stopping criterion threshold for loss changes. Default 1e-3. |
+| **`shuffle_data`** | Whether to shuffle data per epoch. Default True. |
+| **`epsilon`** | Epsilon parameter for huber loss. Default 0.1. |
+| **`random_state`** | Seed for random shuffling. Default 42. |
+| **`learning_rate`** | Learning rate schedule ('optimal', 'constant', 'invscaling', 'adaptive'). Default 'optimal'. |
+| **`eta0`** | Initial learning rate. Default 0.0. |
+| **`power_t`** | Exponent for inverse scaling schedule. Default 0.5. |
+
+---
+
+## Attributes
+
+| Attribute | Description |
+| :--- | :--- |
+| **`classes_`** | Unique sorted class labels observed in training data. |
+| **`coef_`** | Learned weights matrix of shape $(K, D)$ (or $(1, D)$ for binary). |
+| **`intercept_`** | Learned bias vector of length $K$ (or 1 for binary). |
+| **`n_iter_`** | Actual number of epochs executed before convergence. |
+| **`is_fitted`** | Boolean flag indicating if estimator has been fitted. |
+| **`n_features_in_`** | Number of features seen during fitting. |
+
+---
+
+## Methods Overview
+
+| Method | Description |
+| :--- | :--- |
+| [`SGDClassifier.fit()`](#fit) | Fit linear model classifier with Stochastic Gradient Descent. |
+| [`SGDClassifier.decision_function()`](#decision_function) | Predict linear margin decision function. |
+| [`SGDClassifier.predict_proba()`](#predict_proba) | Probability estimates for each class. |
+| [`SGDClassifier.predict()`](#predict) | Predict class labels for samples in X. |
+
+---
+
+## Method Details
+
+### `SGDClassifier.fit()`
+
+```mojo
+def fit[feat_dtype: DType, in_target_dtype: DType](mut self, X: Matrix[feat_dtype], y: List[Scalar[in_target_dtype]])
+def fit[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype])
+```
+
+Fit linear model classifier with Stochastic Gradient Descent.
+
+| Parameter | Type | Description |
+| :--- | :--- | :--- |
+| **`X`** | `Matrix[feat_dtype]` | Feature matrix. |
+| **`y`** | `List[Scalar[in_target_dtype]]` | Target vector / class labels. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix and target labels. |
+
+---
+
+### `SGDClassifier.decision_function()`
+
+```mojo
+def decision_function[feat_dtype: DType](self, X: Matrix[feat_dtype]) -> Matrix[feat_dtype]
+```
+
+Predict linear margin decision function.
+
+| Parameter | Type | Description |
+| :--- | :--- | :--- |
+| **`X`** | `Matrix[feat_dtype]` | Feature matrix. |
+
+**Returns**: `Matrix[feat_dtype]`
+
+---
+
+### `SGDClassifier.predict_proba()`
+
+```mojo
+def predict_proba[feat_dtype: DType](self, X: Matrix[feat_dtype]) -> Matrix[feat_dtype]
+def predict_proba[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> Matrix[feat_dtype]
+```
+
+Probability estimates for each class.
+
+| Parameter | Type | Description |
+| :--- | :--- | :--- |
+| **`X`** | `Matrix[feat_dtype]` | Feature matrix. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature records. |
+
+**Returns**: `Matrix[feat_dtype]`
+
+---
+
+### `SGDClassifier.predict()`
+
+```mojo
+def predict[feat_dtype: DType](self, X: Matrix[feat_dtype]) -> List[Int]
+def predict[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> List[Int]
+```
+
+Predict class labels for samples in X.
+
+| Parameter | Type | Description |
+| :--- | :--- | :--- |
+| **`X`** | `Matrix[feat_dtype]` | Feature matrix. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature records. |
+
+**Returns**: `List[Int]`
+---
+
+## Example
+
+```mojo
+from strata.linear_model import SGDClassifier
+from strata.core import Matrix
+
+var clf = SGDClassifier[DType.float64](loss="log_loss", penalty="l2")
+clf.fit(X_train, y_train)
+var preds = clf.predict(X_test)
+```

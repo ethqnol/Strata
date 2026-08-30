@@ -51,7 +51,11 @@ MODULE_METADATA = {
         "files": [
             "linear_model/linear_regression.mojo",
             "linear_model/ridge.mojo",
+            "linear_model/lasso.mojo",
+            "linear_model/elastic_net.mojo",
             "linear_model/logistic_regression.mojo",
+            "linear_model/sgd_regressor.mojo",
+            "linear_model/sgd_classifier.mojo",
         ]
     },
     "tree": {

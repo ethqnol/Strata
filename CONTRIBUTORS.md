@@ -84,7 +84,9 @@ pixi run test-large           # Large matrix benchmarks & stress tests
 pixi run test-core            # Error types, validation routines, base traits
 pixi run test-linear-regression   # OLS solvers, dtype flexibility, degenerate designs
 pixi run test-ridge               # L2 closed-form solvers, regularization paths
+pixi run test-coordinate-descent  # Lasso, ElasticNet, sparsity, coordinate descent
 pixi run test-logistic-regression # Binary & multinomial softmax classification
+pixi run test-sgd                 # Stochastic Gradient Descent regressor & classifier
 ```
 
 ### Typechecking & Building
