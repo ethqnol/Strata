@@ -1,1 +1,3 @@
 from .forest import RandomForestRegressor, RandomForestClassifier
+from .hist_gradient_boosting_regressor import HistGradientBoostingRegressor
+from .hist_gradient_boosting_classifier import HistGradientBoostingClassifier

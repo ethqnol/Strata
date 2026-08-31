@@ -122,7 +122,12 @@ from .metrics import (
     silhouette_score,
 )
 from .tree import DecisionTreeRegressor, DecisionTreeClassifier
-from .ensemble import RandomForestRegressor, RandomForestClassifier
+from .ensemble import (
+    RandomForestRegressor,
+    RandomForestClassifier,
+    HistGradientBoostingRegressor,
+    HistGradientBoostingClassifier,
+)
 from .neighbors import (
     euclidean_distance,
     sqeuclidean_distance,

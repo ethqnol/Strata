@@ -107,7 +107,7 @@ def main() raises:
   - `interop`: NumPy and SciPy sparse conversions.
 - **`strata.linear_model`**: `LinearRegression`, `Ridge`, `Lasso` (coordinate descent), `ElasticNet`, `LogisticRegression` (binary and multinomial), `SGDRegressor`, `SGDClassifier`.
 - **`strata.tree`**: `DecisionTreeClassifier`, `DecisionTreeRegressor` (with Gini, Entropy, MSE, MAE criteria).
-- **`strata.ensemble`**: `RandomForestClassifier`, `RandomForestRegressor` (with OOB evaluation and soft voting).
+- **`strata.ensemble`**: `RandomForestClassifier`, `RandomForestRegressor` (with OOB evaluation and soft voting), `HistGradientBoostingClassifier`, `HistGradientBoostingRegressor` (with UInt8 binning, histogram subtraction, and early stopping).
 - **`strata.neighbors`**: `NearestNeighbors`, `KNeighborsClassifier`, `KNeighborsRegressor`, `KDTree`, and distance metrics (`euclidean`, `manhattan`, `chebyshev`, `minkowski`, `cosine`, `pairwise_distances`).
 - **`strata.decomposition`**: `PCA` (with whitening and sign-flip), `TruncatedSVD` (dense and sparse CSR via SpMM).
 - **`strata.cluster`**: `KMeans` (k-means++, Lloyd's algorithm, distance-space transforms), `MiniBatchKMeans` (streaming online updates, EWMA inertia smoothing, `partial_fit`).
