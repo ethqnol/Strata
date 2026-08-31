@@ -12,6 +12,11 @@ from strata.ensemble._binning import (
     _compute_bin_thresholds,
     _map_to_bins,
 )
+from strata.ensemble._gb_loss import (
+    LeastSquaresLoss,
+    BinaryCrossEntropyLoss,
+    MulticlassCrossEntropyLoss,
+)
 
 
 def test_find_bin_idx_boundaries() raises:
@@ -219,6 +224,139 @@ def test_binning_edge_cases() raises:
     var b_empty = _map_to_bins[DType.float64](X_empty, th_empty)
     assert_equal(b_empty.rows, 0)
     assert_equal(b_empty.cols, 0)
+
+
+def test_least_squares_loss() raises:
+    var loss_fn = LeastSquaresLoss()
+
+    # 1. Scalar loss: 0.5 * (y_hat - y)^2
+    assert_almost_equal(loss_fn.loss(3.0, 5.0), 2.0)
+    assert_almost_equal(loss_fn.loss(5.0, 5.0), 0.0)
+
+    # 2. Gradient: y_hat - y, Hessian: 1.0
+    assert_almost_equal(loss_fn.gradient(3.0, 5.0), 2.0)
+    assert_almost_equal(loss_fn.gradient(5.0, 3.0), -2.0)
+    assert_equal(loss_fn.hessian(3.0, 5.0), 1.0)
+
+    # 3. Initial baseline raw prediction = mean(y)
+    var y_vals: List[Float64] = [2.0, 4.0, 6.0, 8.0]
+    assert_almost_equal(loss_fn.init_raw_prediction(y_vals), 5.0)
+
+    # 4. Batched gradients and hessians
+    var raw_preds: List[Float64] = [2.5, 4.5, 5.5, 7.5]
+    var grads = List[Float64]()
+    var hess = List[Float64]()
+    loss_fn.update_gradients_and_hessians(y_vals, raw_preds, grads, hess)
+    assert_equal(len(grads), 4)
+    assert_equal(len(hess), 4)
+    assert_almost_equal(grads[0], 0.5)
+    assert_almost_equal(grads[1], 0.5)
+    assert_almost_equal(grads[2], -0.5)
+    assert_almost_equal(grads[3], -0.5)
+    assert_equal(hess[0], 1.0)
+
+
+def test_binary_cross_entropy_loss() raises:
+    var loss_fn = BinaryCrossEntropyLoss()
+
+    # 1. Predict proba: sigmoid(0.0) = 0.5, sigmoid(large) ~ 1.0
+    assert_almost_equal(loss_fn.predict_proba(0.0), 0.5)
+    assert_true(loss_fn.predict_proba(10.0) > 0.99)
+    assert_true(loss_fn.predict_proba(-10.0) < 0.01)
+
+    # 2. Loss at margin 0: -ln(0.5) = ln(2) ~ 0.693147
+    assert_almost_equal(loss_fn.loss(1.0, 0.0), 0.69314718056, rtol=1e-4)
+    assert_almost_equal(loss_fn.loss(0.0, 0.0), 0.69314718056, rtol=1e-4)
+
+    # 3. Gradient: p - y. At margin 0, p = 0.5
+    assert_almost_equal(loss_fn.gradient(1.0, 0.0), -0.5)
+    assert_almost_equal(loss_fn.gradient(0.0, 0.0), 0.5)
+
+    # 4. Hessian: p*(1 - p) = 0.25 at margin 0
+    assert_almost_equal(loss_fn.hessian(1.0, 0.0), 0.25)
+
+    # 5. Baseline raw prediction: log-odds
+    var y_balanced: List[Float64] = [0.0, 1.0]
+    assert_almost_equal(loss_fn.init_raw_prediction(y_balanced), 0.0, atol=1e-4)
+
+
+def test_multiclass_cross_entropy_loss() raises:
+    var loss_fn = MulticlassCrossEntropyLoss(3)
+
+    # 1. Softmax probability distribution sums to 1.0
+    var raw_preds: List[Float64] = [1.0, 2.0, 3.0]
+    var probs = loss_fn.predict_proba(raw_preds)
+    assert_equal(len(probs), 3)
+    var sum_p = probs[0] + probs[1] + probs[2]
+    assert_almost_equal(sum_p, 1.0)
+    assert_true(probs[2] > probs[1])
+    assert_true(probs[1] > probs[0])
+
+    # 2. Negative log likelihood loss
+    var loss_val = loss_fn.loss(2, raw_preds)
+    assert_true(loss_val > 0.0)
+
+    # 3. Initial raw predictions (priors) for 3 classes
+    var y_labels: List[Int] = [0, 1, 1, 2, 2, 2]
+    var init_p = loss_fn.init_raw_predictions(y_labels)
+    assert_equal(len(init_p), 3)
+    assert_true(init_p[2] > init_p[1])
+    assert_true(init_p[1] > init_p[0])
+
+    # 4. Class-specific gradient and hessian update
+    var raw_all: List[Float64] = [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+    ]
+    var grads = List[Float64]()
+    var hess = List[Float64]()
+    loss_fn.update_gradients_and_hessians_for_class(
+        y_labels, raw_all, 2, grads, hess
+    )
+    assert_equal(len(grads), 6)
+    assert_equal(len(hess), 6)
+    # At uniform logits 0, p_2 = 1/3 ~ 0.3333
+    # For sample 0 (y=0 != 2): g = 1/3 - 0 = 0.3333
+    assert_almost_equal(grads[3], -2.0 / 3.0, rtol=1e-3)
+
+
+def test_gb_loss_edge_cases() raises:
+    # 1. Extreme margins (+/- 500)
+    var bce = BinaryCrossEntropyLoss()
+    assert_true(bce.loss(1.0, 500.0) >= 0.0)
+    assert_true(bce.loss(0.0, -500.0) >= 0.0)
+    assert_almost_equal(bce.hessian(1.0, 500.0), 1e-16)
+    assert_almost_equal(bce.hessian(1.0, -500.0), 1e-16)
+
+    # 2. Pure binary targets (all 0 or all 1)
+    var y_all_0: List[Float64] = [0.0, 0.0, 0.0]
+    var y_all_1: List[Float64] = [1.0, 1.0, 1.0]
+    var init_0 = bce.init_raw_prediction(y_all_0)
+    var init_1 = bce.init_raw_prediction(y_all_1)
+    assert_true(init_0 < -10.0)
+    assert_true(init_1 > 10.0)
+
+    # 3. Empty input list
+    var y_empty = List[Float64]()
+    var ls = LeastSquaresLoss()
+    assert_equal(ls.init_raw_prediction(y_empty), 0.0)
+    assert_equal(bce.init_raw_prediction(y_empty), 0.0)
 
 
 def main() raises:
