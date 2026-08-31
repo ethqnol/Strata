@@ -134,4 +134,3 @@ Strata is a native machine learning library for Mojo designed around familiar sc
 - [x] `mean_absolute_error` ($MAE$)
 - [x] `r2_score` ($R^2$)
 - [x] `silhouette_score`
-

@@ -204,7 +204,7 @@
 
     // Clean relative path e.g. "Dataset.md", "index.md", "../reference/ensemble/RandomForestClassifier.md"
     let clean = href.replace(/\.md$/, '').replace(/^\.\//, '');
-    
+
     if (clean.startsWith('../')) {
       clean = clean.replace(/^\.\.\//, '');
     } else if (!clean.includes('/')) {
@@ -416,7 +416,7 @@
     if (rows.length < 2) return rows.map(r => `<p>${formatInline(r)}</p>`).join('\n');
     let out = ['<div class="table-wrapper"><table>'];
 
-    
+
     const headers = rows[0].split('|').map(s => s.trim()).filter((s, idx, arr) => idx > 0 && idx < arr.length - 1);
     out.push('<thead><tr>');
     headers.forEach(h => out.push(`<th>${formatInline(h)}</th>`));

@@ -38,7 +38,7 @@ from strata.metrics.classification import accuracy_score
 def main() raises:
     # Allocate an 8x2 floating-point feature matrix
     var X = Matrix[DType.float64](8, 2)
-    
+
     # Class 0 samples (clustered near negative values)
     X[0, 0] = -3.0
     X[0, 1] = -2.0
@@ -79,7 +79,7 @@ def main() raises:
     # Predict class labels and probabilities
     var preds = rf.predict(X)
     var proba = rf.predict_proba(X)
-    
+
     # Evaluate accuracy
     var acc = accuracy_score(y, preds)
     print("Training Accuracy:", acc)

@@ -40,7 +40,7 @@ To multiply a sparse matrix $\mathbf{A} \in \mathbb{R}^{M \times K}$ by a dense 
 ```mojo
     var B = Matrix[DType.float64](3, 2)
     # Fill B...
-    
+
     # Compute C = A * B
     var C = spmm(csr, B)
     print("Result shape:", C.rows, "x", C.cols)

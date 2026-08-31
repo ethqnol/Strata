@@ -1082,7 +1082,7 @@ def build_docs_site_bundle(all_symbols_index: list, module_symbols_map: dict):
 def main():
     print("Generating Strata Reference Documentation (Individual Symbol Pages)...")
 
-    
+
     # Clean previous reference dir to avoid stale files
     if REF_DIR.exists():
         shutil.rmtree(REF_DIR)

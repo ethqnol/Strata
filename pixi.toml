@@ -58,6 +58,3 @@ generate-docs = "python scripts/generate_docs.py"
 build-docs = { depends-on = ["generate-docs"] }
 serve-docs = "python -m http.server 8000 --directory docs"
 pre-pr = { depends-on = ["format", "build", "test-runner", "generate-docs"] }
-
-
-

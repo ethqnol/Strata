@@ -155,6 +155,5 @@ pixi run format
 pixi run build
 ```
 
-See [CONTRIBUTORS.md](./CONTRIBUTORS.md) for development setup and codebase conventions.  
+See [CONTRIBUTORS.md](./CONTRIBUTORS.md) for development setup and codebase conventions.
 See [ROADMAP.md](./ROADMAP.md) for planned features and progress.
-
