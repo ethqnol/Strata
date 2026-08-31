@@ -38,6 +38,8 @@ from .core import (
     spmm,
     spgemm,
     sddmm,
+    hstack,
+    vstack,
     matrix_to_numpy,
     matrix_from_numpy,
     csr_to_scipy,

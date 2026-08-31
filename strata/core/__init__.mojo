@@ -1,5 +1,5 @@
 from .types import ArrayLike, Float32Type, Float64Type, Int32Type, Int64Type
-from .matrix import Matrix
+from .matrix import Matrix, hstack, vstack
 from .view import MatrixView
 from .csr_matrix import CSRMatrix
 from .csc_matrix import CSCMatrix

@@ -1,8 +1,7 @@
 from std.math import sqrt
 from std.python import PythonObject
-from .types import ArrayLike
 from .view import MatrixView
-from ..exceptions.errors import DimensionMismatchError
+from ..exceptions.errors import DimensionMismatchError, InvalidParameterError
 
 
 struct Matrix[dtype: DType = DType.float64](
@@ -169,6 +168,74 @@ struct Matrix[dtype: DType = DType.float64](
                 res[c, r] = self[r, c]
         return res^
 
+    def select_columns(self, indices: List[Int]) raises -> Self:
+        """Extracts an $N \\times K$ submatrix containing only the specified column indices in order.
+
+        Args:
+            indices: List of column indices to extract.
+
+        Returns:
+            Matrix[dtype]: Submatrix of shape (self.rows, len(indices)).
+
+        Raises:
+            InvalidParameterError: If any index is negative or >= self.cols.
+        """
+        var n_sub_cols = len(indices)
+        for i in range(n_sub_cols):
+            var c = indices[i]
+            if c < 0 or c >= self.cols:
+                raise InvalidParameterError.error(
+                    "indices[" + String(i) + "]",
+                    "Column index "
+                    + String(c)
+                    + " is out of bounds for matrix with "
+                    + String(self.cols)
+                    + " columns",
+                )
+
+        var res = Self(self.rows, n_sub_cols)
+        for r in range(self.rows):
+            var row_offset = r * self.cols
+            var out_offset = r * n_sub_cols
+            for c_idx in range(n_sub_cols):
+                var src_col = indices[c_idx]
+                res.data[out_offset + c_idx] = self.data[row_offset + src_col]
+        return res^
+
+    def select_rows(self, indices: List[Int]) raises -> Self:
+        """Extracts an $M \\times D$ submatrix containing only the specified row indices in order.
+
+        Args:
+            indices: List of row indices to extract.
+
+        Returns:
+            Matrix[dtype]: Submatrix of shape (len(indices), self.cols).
+
+        Raises:
+            InvalidParameterError: If any index is negative or >= self.rows.
+        """
+        var n_sub_rows = len(indices)
+        for i in range(n_sub_rows):
+            var r = indices[i]
+            if r < 0 or r >= self.rows:
+                raise InvalidParameterError.error(
+                    "indices[" + String(i) + "]",
+                    "Row index "
+                    + String(r)
+                    + " is out of bounds for matrix with "
+                    + String(self.rows)
+                    + " rows",
+                )
+
+        var res = Self(n_sub_rows, self.cols)
+        for r_idx in range(n_sub_rows):
+            var src_row = indices[r_idx]
+            var src_offset = src_row * self.cols
+            var out_offset = r_idx * self.cols
+            for c in range(self.cols):
+                res.data[out_offset + c] = self.data[src_offset + c]
+        return res^
+
     def __add__(self, other: Self) raises -> Self:
         """Element-wise matrix addition."""
         if self.rows != other.rows or self.cols != other.cols:
@@ -320,3 +387,127 @@ struct Matrix[dtype: DType = DType.float64](
             if r + 1 < self.rows:
                 writer.write("\n")
         writer.write("]")
+
+
+def hstack[
+    dtype: DType = DType.float64
+](matrices: List[Matrix[dtype]]) raises -> Matrix[dtype]:
+    """Horizontally stacks a list of matrices with matching row counts.
+
+    Args:
+        matrices: List of Matrix instances to concatenate along axis 1.
+
+    Returns:
+        Matrix[dtype]: Concatenated matrix of shape (rows, sum(cols)).
+
+    Raises:
+        InvalidParameterError: If matrices list is empty.
+        DimensionMismatchError: If any matrix has a different row count.
+    """
+    var n_mats = len(matrices)
+    if n_mats == 0:
+        raise InvalidParameterError.error(
+            "matrices", "Cannot hstack empty list of matrices"
+        )
+    if n_mats == 1:
+        return matrices[0].copy()
+
+    var rows = matrices[0].rows
+    var total_cols = 0
+    for i in range(n_mats):
+        if matrices[i].rows != rows:
+            raise DimensionMismatchError.error(
+                "Matrix 0 has " + String(rows) + " rows",
+                "Matrix "
+                + String(i)
+                + " has "
+                + String(matrices[i].rows)
+                + " rows",
+                "hstack",
+            )
+        total_cols += matrices[i].cols
+
+    var res = Matrix[dtype](rows, total_cols)
+    var col_offset = 0
+    for m_idx in range(n_mats):
+        var m_cols = matrices[m_idx].cols
+        for r in range(rows):
+            var src_offset = r * m_cols
+            var out_offset = r * total_cols + col_offset
+            for c in range(m_cols):
+                res.data[out_offset + c] = matrices[m_idx].data[src_offset + c]
+        col_offset += m_cols
+
+    return res^
+
+
+def hstack[
+    dtype: DType = DType.float64
+](A: Matrix[dtype], B: Matrix[dtype]) raises -> Matrix[dtype]:
+    """Horizontally stacks two matrices with matching row counts."""
+    var mats = List[Matrix[dtype]](capacity=2)
+    mats.append(A.copy())
+    mats.append(B.copy())
+    return hstack[dtype](mats)
+
+
+def vstack[
+    dtype: DType = DType.float64
+](matrices: List[Matrix[dtype]]) raises -> Matrix[dtype]:
+    """Vertically stacks a list of matrices with matching column counts.
+
+    Args:
+        matrices: List of Matrix instances to concatenate along axis 0.
+
+    Returns:
+        Matrix[dtype]: Concatenated matrix of shape (sum(rows), cols).
+
+    Raises:
+        InvalidParameterError: If matrices list is empty.
+        DimensionMismatchError: If any matrix has a different column count.
+    """
+    var n_mats = len(matrices)
+    if n_mats == 0:
+        raise InvalidParameterError.error(
+            "matrices", "Cannot vstack empty list of matrices"
+        )
+    if n_mats == 1:
+        return matrices[0].copy()
+
+    var cols = matrices[0].cols
+    var total_rows = 0
+    for i in range(n_mats):
+        if matrices[i].cols != cols:
+            raise DimensionMismatchError.error(
+                "Matrix 0 has " + String(cols) + " cols",
+                "Matrix "
+                + String(i)
+                + " has "
+                + String(matrices[i].cols)
+                + " cols",
+                "vstack",
+            )
+        total_rows += matrices[i].rows
+
+    var res = Matrix[dtype](total_rows, cols)
+    var row_offset = 0
+    for m_idx in range(n_mats):
+        var m_rows = matrices[m_idx].rows
+        var m_size = m_rows * cols
+        var out_offset = row_offset * cols
+        for i in range(m_size):
+            res.data[out_offset + i] = matrices[m_idx].data[i]
+        row_offset += m_rows
+
+    return res^
+
+
+def vstack[
+    dtype: DType = DType.float64
+](A: Matrix[dtype], B: Matrix[dtype]) raises -> Matrix[dtype]:
+    """Vertically stacks two matrices with matching column counts."""
+    var mats = List[Matrix[dtype]](capacity=2)
+    mats.append(A.copy())
+    mats.append(B.copy())
+    return vstack[dtype](mats)
+
