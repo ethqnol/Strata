@@ -110,8 +110,8 @@ struct BinnedMatrix(Copyable, Movable):
         return res^
 
 
-    def unsafe_ptr(self) -> UnsafePointer[UInt8]:
-        """Returns the raw unsafe pointer to the underlying contiguous UInt8 buffer."""
+    def unsafe_ptr(ref [_]self) -> Pointer[UInt8, origin_of(self.data)]:
+        """Returns the raw pointer to the underlying contiguous UInt8 buffer."""
         return self.data.unsafe_ptr()
 
 

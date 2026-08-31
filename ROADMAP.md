@@ -28,6 +28,8 @@ Strata is a native machine learning library for Mojo designed around familiar sc
   - `DecisionTreeRegressor` (Squared error MSE, Friedman MSE, sample median MAE)
   - `RandomForestClassifier` (Bootstrap aggregation, soft-voting probability averaging, batched OOB accuracy)
   - `RandomForestRegressor` (Bootstrap aggregation, mean prediction averaging, batched OOB R² score)
+  - `HistGradientBoostingClassifier` (UInt8 binning, histogram subtraction, binary/multiclass log-loss)
+  - `HistGradientBoostingRegressor` (UInt8 binning, histogram subtraction, squared error loss)
   - Contiguous flat-array `Tree` / `Node` buffers with $O(1)$ streaming histogram split calculations
 - **Nearest Neighbors & Spatial Trees**:
   - Distance metrics: `euclidean`, `sqeuclidean`, `manhattan`, `chebyshev`, `minkowski`, `cosine`, and `pairwise_distances`
@@ -81,8 +83,8 @@ Strata is a native machine learning library for Mojo designed around familiar sc
 - [x] `DecisionTreeRegressor` (MSE / Friedman MSE / MAE split criteria)
 - [x] `RandomForestClassifier` (Bagging with soft voting and batched OOB score)
 - [x] `RandomForestRegressor` (Bagging with mean averaging and batched OOB score)
-- [ ] `HistGradientBoostingClassifier` (UInt8 binning + parallel histogram building)
-- [ ] `HistGradientBoostingRegressor`
+- [x] `HistGradientBoostingClassifier` (UInt8 binning, histogram subtraction, binary/multiclass log-loss)
+- [x] `HistGradientBoostingRegressor` (UInt8 binning, histogram subtraction, squared error loss)
 - [ ] `VotingClassifier` & `StackingClassifier`
 
 ### Cluster Analysis & Dimensionality Reduction
