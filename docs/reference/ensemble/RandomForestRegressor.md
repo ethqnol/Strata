@@ -1,10 +1,10 @@
 # `RandomForestRegressor`
 
-**Module**: [`strata.ensemble`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable, Regressor`  
+**Module**: [`strata.ensemble`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable, Regressor, Serializable`  
 **Source**: [`strata/ensemble/forest.mojo`](file:////home/ewu/Code/Strata/strata/ensemble/forest.mojo)
 
 ```mojo
-struct RandomForestRegressor[compute_dtype: DType = DType.float64](Copyable, Movable, Regressor)
+struct RandomForestRegressor[compute_dtype: DType = DType.float64](Copyable, Movable, Regressor, Serializable)
 ```
 
 ```mojo
@@ -71,6 +71,8 @@ def __init__(out self, n_estimators: Int = 100, criterion: String = "squared_err
 | [`RandomForestRegressor.get_n_estimators()`](#get_n_estimators) | Returns the number of fitted trees. |
 | [`RandomForestRegressor.get_feature_importances()`](#get_feature_importances) | Returns normalized MDI feature importances (sums to 1.0). |
 | [`RandomForestRegressor.get_oob_score()`](#get_oob_score) | Returns out-of-bag R² score. Requires oob_score=True and bootstrap=True. |
+| [`RandomForestRegressor.serialize()`](#serialize) | Serializes RandomForestRegressor parameters and fitted state into BufferWriter. |
+| [`RandomForestRegressor.deserialize()`](#deserialize) | Deserializes RandomForestRegressor from BufferReader. |
 
 ---
 
@@ -143,6 +145,26 @@ def get_oob_score(self) -> Float64
 Returns out-of-bag R² score. Requires oob_score=True and bootstrap=True.
 
 **Returns**: `Float64`
+
+---
+
+### `RandomForestRegressor.serialize()`
+
+```mojo
+def serialize(self, mut writer: BufferWriter)
+```
+Serializes RandomForestRegressor parameters and fitted state into BufferWriter.
+
+---
+
+### `RandomForestRegressor.deserialize()`
+
+```mojo
+def deserialize(mut reader: BufferReader) -> Self
+```
+Deserializes RandomForestRegressor from BufferReader.
+
+**Returns**: `Self`
 ---
 
 ## Example

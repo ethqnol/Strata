@@ -1,10 +1,10 @@
 # `StandardScaler`
 
-**Module**: [`strata.preprocessing`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable, Transformer`  
+**Module**: [`strata.preprocessing`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable, Serializable, Transformer`  
 **Source**: [`strata/preprocessing/scaler.mojo`](file:////home/ewu/Code/Strata/strata/preprocessing/scaler.mojo)
 
 ```mojo
-struct StandardScaler[compute_dtype: DType = DType.float64](Copyable, Movable, Transformer)
+struct StandardScaler[compute_dtype: DType = DType.float64](Copyable, Movable, Serializable, Transformer)
 ```
 
 ```mojo
@@ -61,6 +61,8 @@ Initialize the StandardScaler.
 | [`StandardScaler.fit()`](#fit) | — |
 | [`StandardScaler.transform()`](#transform) | — |
 | [`StandardScaler.fit_transform()`](#fit_transform) | — |
+| [`StandardScaler.serialize()`](#serialize) | Serializes StandardScaler parameters and fitted state into BufferWriter. |
+| [`StandardScaler.deserialize()`](#deserialize) | Deserializes StandardScaler from BufferReader. |
 
 ---
 
@@ -112,6 +114,26 @@ def fit_transform[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dat
 | **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 **Returns**: `Matrix[in_dtype]`
+
+---
+
+### `StandardScaler.serialize()`
+
+```mojo
+def serialize(self, mut writer: BufferWriter)
+```
+Serializes StandardScaler parameters and fitted state into BufferWriter.
+
+---
+
+### `StandardScaler.deserialize()`
+
+```mojo
+def deserialize(mut reader: BufferReader) -> Self
+```
+Deserializes StandardScaler from BufferReader.
+
+**Returns**: `Self`
 ---
 
 ## Example

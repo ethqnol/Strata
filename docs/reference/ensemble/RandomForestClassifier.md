@@ -1,10 +1,10 @@
 # `RandomForestClassifier`
 
-**Module**: [`strata.ensemble`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Classifier, Copyable, Movable`  
+**Module**: [`strata.ensemble`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Classifier, Copyable, Movable, Serializable`  
 **Source**: [`strata/ensemble/forest.mojo`](file:////home/ewu/Code/Strata/strata/ensemble/forest.mojo)
 
 ```mojo
-struct RandomForestClassifier[compute_dtype: DType = DType.float64](Classifier, Copyable, Movable)
+struct RandomForestClassifier[compute_dtype: DType = DType.float64](Classifier, Copyable, Movable, Serializable)
 ```
 
 ```mojo
@@ -75,6 +75,8 @@ def __init__(out self, n_estimators: Int = 100, criterion: String = "gini", max_
 | [`RandomForestClassifier.get_feature_importances()`](#get_feature_importances) | Returns normalized MDI feature importances (sums to 1.0). |
 | [`RandomForestClassifier.get_oob_score()`](#get_oob_score) | Returns out-of-bag accuracy score. Requires oob_score=True and bootstrap=True. |
 | [`RandomForestClassifier.get_classes()`](#get_classes) | Returns the sorted list of known class labels. |
+| [`RandomForestClassifier.serialize()`](#serialize) | Serializes RandomForestClassifier parameters and fitted state into BufferWriter. |
+| [`RandomForestClassifier.deserialize()`](#deserialize) | Deserializes RandomForestClassifier from BufferReader. |
 
 ---
 
@@ -177,6 +179,26 @@ def get_classes(self) -> List[Int]
 Returns the sorted list of known class labels.
 
 **Returns**: `List[Int]`
+
+---
+
+### `RandomForestClassifier.serialize()`
+
+```mojo
+def serialize(self, mut writer: BufferWriter)
+```
+Serializes RandomForestClassifier parameters and fitted state into BufferWriter.
+
+---
+
+### `RandomForestClassifier.deserialize()`
+
+```mojo
+def deserialize(mut reader: BufferReader) -> Self
+```
+Deserializes RandomForestClassifier from BufferReader.
+
+**Returns**: `Self`
 ---
 
 ## Example

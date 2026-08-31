@@ -220,7 +220,7 @@ def test_column_transformer_invalid_params_and_mismatch() raises:
     with assert_raises():
         _ = ColumnTransformer(
             (StandardScaler(),),
-            specs, # Length mismatch: 0 specs for 1 transformer
+            specs,  # Length mismatch: 0 specs for 1 transformer
             remainder="drop",
         )
 
@@ -233,9 +233,7 @@ def test_column_transformer_invalid_params_and_mismatch() raises:
             remainder="invalid_remainder",
         )
 
-    var ct = ColumnTransformer(
-        (StandardScaler(),), specs, remainder="drop"
-    )
+    var ct = ColumnTransformer((StandardScaler(),), specs, remainder="drop")
     var X = Matrix[DType.float64](2, 2, 1.0)
     with assert_raises():
         _ = ct.transform(X)

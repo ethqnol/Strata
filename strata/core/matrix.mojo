@@ -511,4 +511,3 @@ def vstack[
     mats.append(A.copy())
     mats.append(B.copy())
     return vstack[dtype](mats)
-

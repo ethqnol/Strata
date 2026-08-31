@@ -1,10 +1,10 @@
 # `LinearRegression`
 
-**Module**: [`strata.linear_model`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable, Regressor`  
+**Module**: [`strata.linear_model`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable, Regressor, Serializable`  
 **Source**: [`strata/linear_model/linear_regression.mojo`](file:////home/ewu/Code/Strata/strata/linear_model/linear_regression.mojo)
 
 ```mojo
-struct LinearRegression[compute_dtype: DType = DType.float64](Copyable, Movable, Regressor)
+struct LinearRegression[compute_dtype: DType = DType.float64](Copyable, Movable, Regressor, Serializable)
 ```
 
 ```mojo
@@ -60,6 +60,8 @@ Initialize the linear regression estimator.
 | :--- | :--- |
 | [`LinearRegression.fit()`](#fit) | Fit the linear model from training data. |
 | [`LinearRegression.predict()`](#predict) | Predict continuous target values using the fitted linear model. |
+| [`LinearRegression.serialize()`](#serialize) | Serializes LinearRegression parameters and fitted state into BufferWriter. |
+| [`LinearRegression.deserialize()`](#deserialize) | Deserializes LinearRegression from BufferReader. |
 
 ---
 
@@ -99,6 +101,26 @@ Predict continuous target values using the fitted linear model.
 | **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix and targets. *(Can be provided alternatively in place of (X, y))*  |
 
 **Returns**: `List[Scalar[feat_dtype]]` — List[Scalar[feat_dtype]]: Predicted target vector of length $N$.
+
+---
+
+### `LinearRegression.serialize()`
+
+```mojo
+def serialize(self, mut writer: BufferWriter)
+```
+Serializes LinearRegression parameters and fitted state into BufferWriter.
+
+---
+
+### `LinearRegression.deserialize()`
+
+```mojo
+def deserialize(mut reader: BufferReader) -> Self
+```
+Deserializes LinearRegression from BufferReader.
+
+**Returns**: `Self`
 ---
 
 ## Example

@@ -8,6 +8,13 @@ from ..utils.validation import (
 )
 from ..utils.random import PRNG
 from ..exceptions.errors import InvalidParameterError, DimensionMismatchError
+from ..io.serializer import (
+    BufferWriter,
+    BufferReader,
+    Serializable,
+    write_header,
+    check_header,
+)
 from .tree import Node, Tree
 from .criterion import (
     squared_error_impurity,
@@ -18,7 +25,7 @@ from .splitter import find_best_split_regression
 
 struct DecisionTreeRegressor[
     compute_dtype: DType = DType.float64,
-](Copyable, Movable, Regressor):
+](Copyable, Movable, Regressor, Serializable):
     """Decision Tree Regressor for non-parametric continuous target regression.
 
     Builds a regression tree by minimizing sample variance (mean squared error)
@@ -326,3 +333,56 @@ struct DecisionTreeRegressor[
             if self.tree_.nodes[i].is_leaf:
                 count += 1
         return count
+
+    def serialize(self, mut writer: BufferWriter):
+        """Serializes DecisionTreeRegressor parameters and fitted state into BufferWriter.
+        """
+        write_header(writer, "DecisionTreeRegressor")
+        writer.write_bool(self.is_fitted)
+        writer.write_string(self.criterion)
+        writer.write_string(self.splitter)
+        writer.write_int(self.max_depth)
+        writer.write_int(self.min_samples_split)
+        writer.write_int(self.min_samples_leaf)
+        writer.write_float64(self.min_impurity_decrease)
+        writer.write_string(self.max_features)
+        writer.write_int(self.max_features_count)
+        writer.write_float64(self.max_features_ratio)
+        writer.write_int(self.random_state)
+        writer.write_int(self.n_features_in_)
+        self.tree_.serialize(writer)
+
+    @staticmethod
+    def deserialize(mut reader: BufferReader) raises -> Self:
+        """Deserializes DecisionTreeRegressor from BufferReader."""
+        check_header(reader, "DecisionTreeRegressor")
+        var is_fitted = reader.read_bool()
+        var criterion = reader.read_string()
+        var splitter = reader.read_string()
+        var max_depth = reader.read_int()
+        var min_samples_split = reader.read_int()
+        var min_samples_leaf = reader.read_int()
+        var min_impurity_decrease = reader.read_float64()
+        var max_features = reader.read_string()
+        var max_features_count = reader.read_int()
+        var max_features_ratio = reader.read_float64()
+        var random_state = reader.read_int()
+        var n_features_in_ = reader.read_int()
+        var tree_ = Tree.deserialize(reader)
+
+        var model = Self(
+            criterion=criterion,
+            splitter=splitter,
+            max_depth=max_depth,
+            min_samples_split=min_samples_split,
+            min_samples_leaf=min_samples_leaf,
+            min_impurity_decrease=min_impurity_decrease,
+            max_features=max_features,
+            max_features_count=max_features_count,
+            max_features_ratio=max_features_ratio,
+            random_state=random_state,
+        )
+        model.is_fitted = is_fitted
+        model.n_features_in_ = n_features_in_
+        model.tree_ = tree_^
+        return model^

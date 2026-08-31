@@ -1,10 +1,10 @@
 # `DecisionTreeClassifier`
 
-**Module**: [`strata.tree`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Classifier, Copyable, Movable`  
+**Module**: [`strata.tree`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Classifier, Copyable, Movable, Serializable`  
 **Source**: [`strata/tree/classifier.mojo`](file:////home/ewu/Code/Strata/strata/tree/classifier.mojo)
 
 ```mojo
-struct DecisionTreeClassifier[compute_dtype: DType = DType.float64](Classifier, Copyable, Movable)
+struct DecisionTreeClassifier[compute_dtype: DType = DType.float64](Classifier, Copyable, Movable, Serializable)
 ```
 
 ```mojo
@@ -70,6 +70,8 @@ def __init__(out self, criterion: String = "gini", splitter: String = "best", ma
 | [`DecisionTreeClassifier.predict_proba()`](#predict_proba) | Generates class probability estimates for input matrix X. |
 | [`DecisionTreeClassifier.get_depth()`](#get_depth) | Returns the maximum depth of the fitted tree. |
 | [`DecisionTreeClassifier.get_n_leaves()`](#get_n_leaves) | Returns the total number of leaf nodes in the fitted tree. |
+| [`DecisionTreeClassifier.serialize()`](#serialize) | Serializes DecisionTreeClassifier parameters and fitted state into BufferWriter. |
+| [`DecisionTreeClassifier.deserialize()`](#deserialize) | Deserializes DecisionTreeClassifier from BufferReader. |
 
 ---
 
@@ -150,6 +152,26 @@ def get_n_leaves(self) -> Int
 Returns the total number of leaf nodes in the fitted tree.
 
 **Returns**: `Int`
+
+---
+
+### `DecisionTreeClassifier.serialize()`
+
+```mojo
+def serialize(self, mut writer: BufferWriter)
+```
+Serializes DecisionTreeClassifier parameters and fitted state into BufferWriter.
+
+---
+
+### `DecisionTreeClassifier.deserialize()`
+
+```mojo
+def deserialize(mut reader: BufferReader) -> Self
+```
+Deserializes DecisionTreeClassifier from BufferReader.
+
+**Returns**: `Self`
 ---
 
 ## Example

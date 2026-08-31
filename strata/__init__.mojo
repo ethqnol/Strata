@@ -144,4 +144,11 @@ from .neighbors import (
     KDTree,
 )
 from .compose import ColumnTransformer
-
+from .io import (
+    BufferWriter,
+    BufferReader,
+    dump,
+    load,
+    dumps,
+    loads,
+)

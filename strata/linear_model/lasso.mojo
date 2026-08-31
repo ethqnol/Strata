@@ -8,12 +8,19 @@ from ..utils.validation import (
     check_is_fitted,
 )
 from ..exceptions.errors import InvalidParameterError, DimensionMismatchError
+from ..io.serializer import (
+    BufferWriter,
+    BufferReader,
+    Serializable,
+    write_header,
+    check_header,
+)
 from ._coordinate_descent import _coordinate_descent_elastic_net
 
 
 struct Lasso[
     compute_dtype: DType = DType.float64,
-](Copyable, Movable, Regressor):
+](Copyable, Movable, Regressor, Serializable):
     """Lasso linear model with L1 regularization.
 
     Minimizes the penalized least-squares objective function using coordinate descent:
@@ -238,3 +245,46 @@ struct Lasso[
                 else:
                     preds.append(Scalar[feat_dtype](preds_comp[i]))
             return preds^
+
+    def serialize(self, mut writer: BufferWriter):
+        """Serializes Lasso parameters and fitted state into BufferWriter."""
+        write_header(writer, "Lasso")
+        writer.write_bool(self.is_fitted)
+        writer.write_float64(self.alpha.cast[DType.float64]())
+        writer.write_bool(self.fit_intercept)
+        writer.write_int(self.max_iter)
+        writer.write_float64(self.tol.cast[DType.float64]())
+        writer.write_bool(self.positive)
+        writer.write_float_list[Self.compute_dtype](self.coef_)
+        writer.write_float64(self.intercept_.cast[DType.float64]())
+        writer.write_int(self.n_iter_)
+        writer.write_int(self.n_features_in_)
+
+    @staticmethod
+    def deserialize(mut reader: BufferReader) raises -> Self:
+        """Deserializes Lasso from BufferReader."""
+        check_header(reader, "Lasso")
+        var is_fitted = reader.read_bool()
+        var alpha = Scalar[Self.compute_dtype](reader.read_float64())
+        var fit_intercept = reader.read_bool()
+        var max_iter = reader.read_int()
+        var tol = Scalar[Self.compute_dtype](reader.read_float64())
+        var positive = reader.read_bool()
+        var coef_ = reader.read_float_list[Self.compute_dtype]()
+        var intercept_ = Scalar[Self.compute_dtype](reader.read_float64())
+        var n_iter_ = reader.read_int()
+        var n_features_in_ = reader.read_int()
+
+        var model = Self(
+            alpha=alpha,
+            fit_intercept=fit_intercept,
+            max_iter=max_iter,
+            tol=tol,
+            positive=positive,
+        )
+        model.is_fitted = is_fitted
+        model.coef_ = coef_^
+        model.intercept_ = intercept_
+        model.n_iter_ = n_iter_
+        model.n_features_in_ = n_features_in_
+        return model^

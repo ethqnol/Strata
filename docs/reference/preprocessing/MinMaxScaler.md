@@ -1,10 +1,10 @@
 # `MinMaxScaler`
 
-**Module**: [`strata.preprocessing`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable, Transformer`  
+**Module**: [`strata.preprocessing`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable, Serializable, Transformer`  
 **Source**: [`strata/preprocessing/scaler.mojo`](file:////home/ewu/Code/Strata/strata/preprocessing/scaler.mojo)
 
 ```mojo
-struct MinMaxScaler[compute_dtype: DType = DType.float64](Copyable, Movable, Transformer)
+struct MinMaxScaler[compute_dtype: DType = DType.float64](Copyable, Movable, Serializable, Transformer)
 ```
 
 ```mojo
@@ -66,6 +66,8 @@ Initialize the MinMaxScaler.
 | [`MinMaxScaler.transform()`](#transform) | — |
 | [`MinMaxScaler.fit_transform()`](#fit_transform) | — |
 | [`MinMaxScaler.inverse_transform()`](#inverse_transform) | Undoes the scaling of X according to the fitted feature range. |
+| [`MinMaxScaler.serialize()`](#serialize) | Serializes MinMaxScaler parameters and fitted state into BufferWriter. |
+| [`MinMaxScaler.deserialize()`](#deserialize) | Deserializes MinMaxScaler from BufferReader. |
 
 ---
 
@@ -132,6 +134,26 @@ Undoes the scaling of X according to the fitted feature range.
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
 
 **Returns**: `Matrix[in_dtype]`
+
+---
+
+### `MinMaxScaler.serialize()`
+
+```mojo
+def serialize(self, mut writer: BufferWriter)
+```
+Serializes MinMaxScaler parameters and fitted state into BufferWriter.
+
+---
+
+### `MinMaxScaler.deserialize()`
+
+```mojo
+def deserialize(mut reader: BufferReader) -> Self
+```
+Deserializes MinMaxScaler from BufferReader.
+
+**Returns**: `Self`
 ---
 
 ## Example

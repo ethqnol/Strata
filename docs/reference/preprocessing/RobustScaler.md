@@ -1,10 +1,10 @@
 # `RobustScaler`
 
-**Module**: [`strata.preprocessing`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable, Transformer`  
+**Module**: [`strata.preprocessing`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable, Serializable, Transformer`  
 **Source**: [`strata/preprocessing/scaler.mojo`](file:////home/ewu/Code/Strata/strata/preprocessing/scaler.mojo)
 
 ```mojo
-struct RobustScaler[compute_dtype: DType = DType.float64](Copyable, Movable, Transformer)
+struct RobustScaler[compute_dtype: DType = DType.float64](Copyable, Movable, Serializable, Transformer)
 ```
 
 ```mojo
@@ -64,6 +64,8 @@ Initialize the RobustScaler.
 | [`RobustScaler.transform()`](#transform) | — |
 | [`RobustScaler.fit_transform()`](#fit_transform) | — |
 | [`RobustScaler.inverse_transform()`](#inverse_transform) | Undoes the centering and scaling of X. |
+| [`RobustScaler.serialize()`](#serialize) | Serializes RobustScaler parameters and fitted state into BufferWriter. |
+| [`RobustScaler.deserialize()`](#deserialize) | Deserializes RobustScaler from BufferReader. |
 
 ---
 
@@ -130,6 +132,26 @@ Undoes the centering and scaling of X.
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
 
 **Returns**: `Matrix[in_dtype]`
+
+---
+
+### `RobustScaler.serialize()`
+
+```mojo
+def serialize(self, mut writer: BufferWriter)
+```
+Serializes RobustScaler parameters and fitted state into BufferWriter.
+
+---
+
+### `RobustScaler.deserialize()`
+
+```mojo
+def deserialize(mut reader: BufferReader) -> Self
+```
+Deserializes RobustScaler from BufferReader.
+
+**Returns**: `Self`
 ---
 
 ## Example

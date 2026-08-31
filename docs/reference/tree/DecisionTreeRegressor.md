@@ -1,10 +1,10 @@
 # `DecisionTreeRegressor`
 
-**Module**: [`strata.tree`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable, Regressor`  
+**Module**: [`strata.tree`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable, Regressor, Serializable`  
 **Source**: [`strata/tree/regressor.mojo`](file:////home/ewu/Code/Strata/strata/tree/regressor.mojo)
 
 ```mojo
-struct DecisionTreeRegressor[compute_dtype: DType = DType.float64](Copyable, Movable, Regressor)
+struct DecisionTreeRegressor[compute_dtype: DType = DType.float64](Copyable, Movable, Regressor, Serializable)
 ```
 
 ```mojo
@@ -67,6 +67,8 @@ def __init__(out self, criterion: String = "squared_error", splitter: String = "
 | [`DecisionTreeRegressor.predict()`](#predict) | Generates regression predictions for input matrix X. |
 | [`DecisionTreeRegressor.get_depth()`](#get_depth) | Returns the maximum depth of the fitted tree. |
 | [`DecisionTreeRegressor.get_n_leaves()`](#get_n_leaves) | Returns the total number of leaf nodes in the fitted tree. |
+| [`DecisionTreeRegressor.serialize()`](#serialize) | Serializes DecisionTreeRegressor parameters and fitted state into BufferWriter. |
+| [`DecisionTreeRegressor.deserialize()`](#deserialize) | Deserializes DecisionTreeRegressor from BufferReader. |
 
 ---
 
@@ -128,6 +130,26 @@ def get_n_leaves(self) -> Int
 Returns the total number of leaf nodes in the fitted tree.
 
 **Returns**: `Int`
+
+---
+
+### `DecisionTreeRegressor.serialize()`
+
+```mojo
+def serialize(self, mut writer: BufferWriter)
+```
+Serializes DecisionTreeRegressor parameters and fitted state into BufferWriter.
+
+---
+
+### `DecisionTreeRegressor.deserialize()`
+
+```mojo
+def deserialize(mut reader: BufferReader) -> Self
+```
+Deserializes DecisionTreeRegressor from BufferReader.
+
+**Returns**: `Self`
 ---
 
 ## Example

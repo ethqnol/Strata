@@ -1,10 +1,10 @@
 # `LogisticRegression`
 
-**Module**: [`strata.linear_model`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Classifier, Copyable, Movable`  
+**Module**: [`strata.linear_model`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Classifier, Copyable, Movable, Serializable`  
 **Source**: [`strata/linear_model/logistic_regression.mojo`](file:////home/ewu/Code/Strata/strata/linear_model/logistic_regression.mojo)
 
 ```mojo
-struct LogisticRegression[compute_dtype: DType = DType.float64](Classifier, Copyable, Movable)
+struct LogisticRegression[compute_dtype: DType = DType.float64](Classifier, Copyable, Movable, Serializable)
 ```
 
 ```mojo
@@ -66,6 +66,8 @@ Initialize the LogisticRegression estimator.
 | [`LogisticRegression.fit()`](#fit) | Fits the logistic regression model on training data (X, y). |
 | [`LogisticRegression.predict_proba()`](#predict_proba) | Predict class probability distributions for samples in X. |
 | [`LogisticRegression.predict()`](#predict) | Predict discrete class labels for samples in X. |
+| [`LogisticRegression.serialize()`](#serialize) | Serializes LogisticRegression parameters and fitted state into BufferWriter. |
+| [`LogisticRegression.deserialize()`](#deserialize) | Deserializes LogisticRegression from BufferReader. |
 
 ---
 
@@ -124,6 +126,26 @@ Predict discrete class labels for samples in X.
 | **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix and targets. *(Can be provided alternatively in place of (X, y))*  |
 
 **Returns**: `List[Int]` — List[Int]: Predicted class labels vector of length $N$.
+
+---
+
+### `LogisticRegression.serialize()`
+
+```mojo
+def serialize(self, mut writer: BufferWriter)
+```
+Serializes LogisticRegression parameters and fitted state into BufferWriter.
+
+---
+
+### `LogisticRegression.deserialize()`
+
+```mojo
+def deserialize(mut reader: BufferReader) -> Self
+```
+Deserializes LogisticRegression from BufferReader.
+
+**Returns**: `Self`
 ---
 
 ## Example

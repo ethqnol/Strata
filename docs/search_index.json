@@ -113,7 +113,7 @@
     "kind": "struct",
     "summary": "Standardize features by removing the mean and scaling to unit variance.",
     "ref_file": "reference/preprocessing/StandardScaler",
-    "traits": "Copyable, Movable, Transformer",
+    "traits": "Copyable, Movable, Serializable, Transformer",
     "file": "strata/preprocessing/scaler.mojo"
   },
   {
@@ -122,7 +122,7 @@
     "kind": "struct",
     "summary": "Transform features by scaling each feature to a specified range.",
     "ref_file": "reference/preprocessing/MinMaxScaler",
-    "traits": "Copyable, Movable, Transformer",
+    "traits": "Copyable, Movable, Serializable, Transformer",
     "file": "strata/preprocessing/scaler.mojo"
   },
   {
@@ -131,7 +131,7 @@
     "kind": "struct",
     "summary": "Scale features using statistics that are robust to outliers.",
     "ref_file": "reference/preprocessing/RobustScaler",
-    "traits": "Copyable, Movable, Transformer",
+    "traits": "Copyable, Movable, Serializable, Transformer",
     "file": "strata/preprocessing/scaler.mojo"
   },
   {
@@ -203,7 +203,7 @@
     "kind": "struct",
     "summary": "Ordinary Least Squares Linear Regression.",
     "ref_file": "reference/linear_model/LinearRegression",
-    "traits": "Copyable, Movable, Regressor",
+    "traits": "Copyable, Movable, Regressor, Serializable",
     "file": "strata/linear_model/linear_regression.mojo"
   },
   {
@@ -212,7 +212,7 @@
     "kind": "struct",
     "summary": "Ridge regression with L2 regularization.",
     "ref_file": "reference/linear_model/Ridge",
-    "traits": "Copyable, Movable, Regressor",
+    "traits": "Copyable, Movable, Regressor, Serializable",
     "file": "strata/linear_model/ridge.mojo"
   },
   {
@@ -221,7 +221,7 @@
     "kind": "struct",
     "summary": "Lasso linear model with L1 regularization.",
     "ref_file": "reference/linear_model/Lasso",
-    "traits": "Copyable, Movable, Regressor",
+    "traits": "Copyable, Movable, Regressor, Serializable",
     "file": "strata/linear_model/lasso.mojo"
   },
   {
@@ -230,7 +230,7 @@
     "kind": "struct",
     "summary": "Linear regression with combined L1 and L2 regularization (ElasticNet).",
     "ref_file": "reference/linear_model/ElasticNet",
-    "traits": "Copyable, Movable, Regressor",
+    "traits": "Copyable, Movable, Regressor, Serializable",
     "file": "strata/linear_model/elastic_net.mojo"
   },
   {
@@ -239,7 +239,7 @@
     "kind": "struct",
     "summary": "Logistic Regression classifier with L2 regularization.",
     "ref_file": "reference/linear_model/LogisticRegression",
-    "traits": "Classifier, Copyable, Movable",
+    "traits": "Classifier, Copyable, Movable, Serializable",
     "file": "strata/linear_model/logistic_regression.mojo"
   },
   {
@@ -266,7 +266,7 @@
     "kind": "struct",
     "summary": "Decision Tree Classifier for non-parametric supervised classification.",
     "ref_file": "reference/tree/DecisionTreeClassifier",
-    "traits": "Classifier, Copyable, Movable",
+    "traits": "Classifier, Copyable, Movable, Serializable",
     "file": "strata/tree/classifier.mojo"
   },
   {
@@ -275,7 +275,7 @@
     "kind": "struct",
     "summary": "Decision Tree Regressor for non-parametric continuous target regression.",
     "ref_file": "reference/tree/DecisionTreeRegressor",
-    "traits": "Copyable, Movable, Regressor",
+    "traits": "Copyable, Movable, Regressor, Serializable",
     "file": "strata/tree/regressor.mojo"
   },
   {
@@ -284,7 +284,7 @@
     "kind": "struct",
     "summary": "Random Forest Regressor ensemble estimator.",
     "ref_file": "reference/ensemble/RandomForestRegressor",
-    "traits": "Copyable, Movable, Regressor",
+    "traits": "Copyable, Movable, Regressor, Serializable",
     "file": "strata/ensemble/forest.mojo"
   },
   {
@@ -293,7 +293,7 @@
     "kind": "struct",
     "summary": "Random Forest Classifier ensemble estimator.",
     "ref_file": "reference/ensemble/RandomForestClassifier",
-    "traits": "Classifier, Copyable, Movable",
+    "traits": "Classifier, Copyable, Movable, Serializable",
     "file": "strata/ensemble/forest.mojo"
   },
   {
@@ -1033,5 +1033,32 @@
     "ref_file": "reference/utils/DataConversionError",
     "traits": "Copyable, Movable, Writable",
     "file": "strata/exceptions/errors.mojo"
+  },
+  {
+    "module": "io",
+    "name": "BufferWriter",
+    "kind": "struct",
+    "summary": "Byte buffer writer with endian-safe scalar and matrix serialization.",
+    "ref_file": "reference/io/BufferWriter",
+    "traits": "",
+    "file": "strata/io/serializer.mojo"
+  },
+  {
+    "module": "io",
+    "name": "BufferReader",
+    "kind": "struct",
+    "summary": "Byte buffer reader with bounds checking and scalar/matrix deserialization.",
+    "ref_file": "reference/io/BufferReader",
+    "traits": "",
+    "file": "strata/io/serializer.mojo"
+  },
+  {
+    "module": "io",
+    "name": "Serializable",
+    "kind": "trait",
+    "summary": "Trait for models and transformers supporting binary serialization.",
+    "ref_file": "reference/io/Serializable",
+    "traits": "Copyable, Movable",
+    "file": "strata/io/serializer.mojo"
   }
 ]

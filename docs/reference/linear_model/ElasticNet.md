@@ -1,10 +1,10 @@
 # `ElasticNet`
 
-**Module**: [`strata.linear_model`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable, Regressor`  
+**Module**: [`strata.linear_model`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable, Regressor, Serializable`  
 **Source**: [`strata/linear_model/elastic_net.mojo`](file:////home/ewu/Code/Strata/strata/linear_model/elastic_net.mojo)
 
 ```mojo
-struct ElasticNet[compute_dtype: DType = DType.float64](Copyable, Movable, Regressor)
+struct ElasticNet[compute_dtype: DType = DType.float64](Copyable, Movable, Regressor, Serializable)
 ```
 
 ```mojo
@@ -66,6 +66,8 @@ Initialize the ElasticNet regression estimator.
 | :--- | :--- |
 | [`ElasticNet.fit()`](#fit) | Fit the ElasticNet linear model via coordinate descent. |
 | [`ElasticNet.predict()`](#predict) | Predict continuous target values using the fitted ElasticNet model. |
+| [`ElasticNet.serialize()`](#serialize) | Serializes ElasticNet parameters and fitted state into BufferWriter. |
+| [`ElasticNet.deserialize()`](#deserialize) | Deserializes ElasticNet from BufferReader. |
 
 ---
 
@@ -105,6 +107,26 @@ Predict continuous target values using the fitted ElasticNet model.
 | **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix and targets. *(Can be provided alternatively in place of (X, y))*  |
 
 **Returns**: `List[Scalar[feat_dtype]]` — List[Scalar[feat_dtype]]: Predicted target vector of length $N$.
+
+---
+
+### `ElasticNet.serialize()`
+
+```mojo
+def serialize(self, mut writer: BufferWriter)
+```
+Serializes ElasticNet parameters and fitted state into BufferWriter.
+
+---
+
+### `ElasticNet.deserialize()`
+
+```mojo
+def deserialize(mut reader: BufferReader) -> Self
+```
+Deserializes ElasticNet from BufferReader.
+
+**Returns**: `Self`
 ---
 
 ## Example

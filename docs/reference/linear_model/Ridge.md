@@ -1,10 +1,10 @@
 # `Ridge`
 
-**Module**: [`strata.linear_model`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable, Regressor`  
+**Module**: [`strata.linear_model`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable, Regressor, Serializable`  
 **Source**: [`strata/linear_model/ridge.mojo`](file:////home/ewu/Code/Strata/strata/linear_model/ridge.mojo)
 
 ```mojo
-struct Ridge[compute_dtype: DType = DType.float64](Copyable, Movable, Regressor)
+struct Ridge[compute_dtype: DType = DType.float64](Copyable, Movable, Regressor, Serializable)
 ```
 
 ```mojo
@@ -60,6 +60,8 @@ Initialize the Ridge regression estimator.
 | :--- | :--- |
 | [`Ridge.fit()`](#fit) | Fit the Ridge regression model from training data. |
 | [`Ridge.predict()`](#predict) | Predict continuous target values using the fitted linear model. |
+| [`Ridge.serialize()`](#serialize) | Serializes Ridge parameters and fitted state into BufferWriter. |
+| [`Ridge.deserialize()`](#deserialize) | Deserializes Ridge from BufferReader. |
 
 ---
 
@@ -99,6 +101,26 @@ Predict continuous target values using the fitted linear model.
 | **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix and targets. *(Can be provided alternatively in place of (X, y))*  |
 
 **Returns**: `List[Scalar[feat_dtype]]` — List[Scalar[feat_dtype]]: Predicted target vector of length $N$.
+
+---
+
+### `Ridge.serialize()`
+
+```mojo
+def serialize(self, mut writer: BufferWriter)
+```
+Serializes Ridge parameters and fitted state into BufferWriter.
+
+---
+
+### `Ridge.deserialize()`
+
+```mojo
+def deserialize(mut reader: BufferReader) -> Self
+```
+Deserializes Ridge from BufferReader.
+
+**Returns**: `Self`
 ---
 
 ## Example

@@ -150,6 +150,13 @@ MODULE_METADATA = {
             "utils/validation.mojo",
             "exceptions/errors.mojo",
         ]
+    },
+    "io": {
+        "title": "Model Persistence & Serialization",
+        "description": "Zero-copy, endian-safe binary serialization engine (dump, load, dumps, loads) for fitted estimators, transformers, trees, and ensembles.",
+        "files": [
+            "io/serializer.mojo",
+        ]
     }
 }
 
@@ -1022,6 +1029,7 @@ def build_docs_site_bundle(all_symbols_index: list, module_symbols_map: dict):
                 "icon": "wrench-screwdriver",
                 "description": "Problem-oriented guides and recipes for real-world tasks.",
                 "items": [
+                    {"id": "how_to/model_persistence", "title": "Model Persistence & Serialization", "path": "how_to/model_persistence.md"},
                     {"id": "how_to/hyperparameter_tuning", "title": "Hyperparameter Tuning", "path": "how_to/hyperparameter_tuning.md"},
                     {"id": "how_to/sparse_matrix_ops", "title": "Sparse Matrix Operations", "path": "how_to/sparse_matrix_ops.md"},
                     {"id": "how_to/out_of_bag_validation", "title": "Out-of-Bag Validation", "path": "how_to/out_of_bag_validation.md"},
