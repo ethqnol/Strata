@@ -17,6 +17,14 @@ from strata.ensemble._gb_loss import (
     BinaryCrossEntropyLoss,
     MulticlassCrossEntropyLoss,
 )
+from strata.ensemble._hist_tree import (
+    FeatureHistogram,
+    HistNode,
+    HistTree,
+    HistSplit,
+    _build_node_histograms,
+    _find_best_split_in_histograms,
+)
 
 
 def test_find_bin_idx_boundaries() raises:
@@ -357,6 +365,154 @@ def test_gb_loss_edge_cases() raises:
     var ls = LeastSquaresLoss()
     assert_equal(ls.init_raw_prediction(y_empty), 0.0)
     assert_equal(bce.init_raw_prediction(y_empty), 0.0)
+
+
+def test_feature_histogram_subtraction() raises:
+    var parent = FeatureHistogram(4)
+    parent.grad_sum[0] = 5.0
+    parent.grad_sum[1] = 10.0
+    parent.grad_sum[2] = 15.0
+    parent.grad_sum[3] = 20.0
+    parent.hess_sum[0] = 1.0
+    parent.hess_sum[1] = 2.0
+    parent.hess_sum[2] = 3.0
+    parent.hess_sum[3] = 4.0
+    parent.count[0] = 10
+    parent.count[1] = 20
+    parent.count[2] = 30
+    parent.count[3] = 40
+
+    var child = FeatureHistogram(4)
+    child.grad_sum[0] = 2.0
+    child.grad_sum[1] = 4.0
+    child.grad_sum[2] = 6.0
+    child.grad_sum[3] = 8.0
+    child.hess_sum[0] = 0.5
+    child.hess_sum[1] = 1.0
+    child.hess_sum[2] = 1.5
+    child.hess_sum[3] = 2.0
+    child.count[0] = 4
+    child.count[1] = 8
+    child.count[2] = 12
+    child.count[3] = 16
+
+    var sibling = parent.subtract(child)
+    assert_almost_equal(sibling.grad_sum[0], 3.0)
+    assert_almost_equal(sibling.grad_sum[1], 6.0)
+    assert_almost_equal(sibling.grad_sum[2], 9.0)
+    assert_almost_equal(sibling.grad_sum[3], 12.0)
+    assert_almost_equal(sibling.hess_sum[0], 0.5)
+    assert_almost_equal(sibling.hess_sum[3], 2.0)
+    assert_equal(sibling.count[0], 6)
+    assert_equal(sibling.count[3], 24)
+
+    # Identical parent-child subtraction yields exact 0
+    var exact_zero_sibling = child.subtract(child)
+    assert_equal(exact_zero_sibling.hess_sum[0], 0.0)
+    assert_equal(exact_zero_sibling.count[0], 0)
+
+
+def test_hist_tree_single_split() raises:
+    # 6 samples along feature 0: 0, 1, 2 (left) and 10, 11, 12 (right)
+    var X = Matrix[DType.float64](6, 1, 0)
+    X[0, 0] = 0.0
+    X[1, 0] = 1.0
+    X[2, 0] = 2.0
+    X[3, 0] = 10.0
+    X[4, 0] = 11.0
+    X[5, 0] = 12.0
+
+    var thresholds = _compute_bin_thresholds[DType.float64](X, max_bins=256)
+    var binned = _map_to_bins[DType.float64](X, thresholds)
+
+    # Gradients: negative for left, positive for right
+    var grads: List[Float64] = [-1.0, -1.0, -1.0, 1.0, 1.0, 1.0]
+    var hess: List[Float64] = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+
+    var tree = HistTree(
+        max_depth=2,
+        min_samples_leaf=2,
+        l2_regularization=1.0,
+        shrinkage=1.0,
+    )
+    tree.build(binned, grads, hess)
+
+    assert_true(len(tree.nodes) >= 3)
+    assert_equal(tree.nodes[0].is_leaf, False)
+    assert_equal(tree.nodes[0].feature_idx, 0)
+
+    var preds = tree.predict(X)
+    assert_equal(len(preds), 6)
+    # Left leaf value: -(-3.0 / (3 + 1)) = +0.75
+    assert_almost_equal(preds[0], 0.75)
+    assert_almost_equal(preds[1], 0.75)
+    assert_almost_equal(preds[2], 0.75)
+    # Right leaf value: -(3.0 / (3 + 1)) = -0.75
+    assert_almost_equal(preds[3], -0.75)
+    assert_almost_equal(preds[4], -0.75)
+    assert_almost_equal(preds[5], -0.75)
+
+
+def test_hist_tree_regularization() raises:
+    var X = Matrix[DType.float64](4, 1, 0)
+    X[0, 0] = 1.0
+    X[1, 0] = 2.0
+    X[2, 0] = 3.0
+    X[3, 0] = 4.0
+
+    var thresholds = _compute_bin_thresholds[DType.float64](X, max_bins=256)
+    var binned = _map_to_bins[DType.float64](X, thresholds)
+
+    var grads: List[Float64] = [-2.0, -2.0, 2.0, 2.0]
+    var hess: List[Float64] = [1.0, 1.0, 1.0, 1.0]
+
+    # Tree with lambda = 0
+    var tree_no_reg = HistTree(
+        max_depth=1, min_samples_leaf=1, l2_regularization=0.0, shrinkage=1.0
+    )
+    tree_no_reg.build(binned, grads, hess)
+    var preds_no_reg = tree_no_reg.predict(X)
+
+    # Tree with lambda = 10
+    var tree_reg = HistTree(
+        max_depth=1, min_samples_leaf=1, l2_regularization=10.0, shrinkage=1.0
+    )
+    tree_reg.build(binned, grads, hess)
+    var preds_reg = tree_reg.predict(X)
+
+    # Regularization strictly shrinks magnitude of leaf updates
+    assert_true(preds_no_reg[0] > preds_reg[0])
+    assert_true(preds_no_reg[3] < preds_reg[3])
+
+
+def test_hist_tree_binned_vs_continuous_parity() raises:
+    var X = Matrix[DType.float64](6, 2, 0)
+    X[0, 0] = 1.0
+    X[0, 1] = 0.5
+    X[1, 0] = 2.0
+    X[1, 1] = 1.5
+    X[2, 0] = 3.0
+    X[2, 1] = 2.5
+    X[3, 0] = 10.0
+    X[3, 1] = 0.5
+    X[4, 0] = 11.0
+    X[4, 1] = 1.5
+    X[5, 0] = 12.0
+    X[5, 1] = 2.5
+
+    var thresholds = _compute_bin_thresholds[DType.float64](X, max_bins=256)
+    var binned = _map_to_bins[DType.float64](X, thresholds)
+
+    var grads: List[Float64] = [-1.0, -1.0, -1.0, 1.0, 1.0, 1.0]
+    var hess: List[Float64] = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+
+    var tree = HistTree(max_depth=3, min_samples_leaf=1, l2_regularization=1.0)
+    tree.build(binned, grads, hess)
+
+    for i in range(6):
+        var cont_pred = tree.predict_row(X, i)
+        var bin_pred = tree.predict_binned(binned, i)
+        assert_almost_equal(cont_pred, bin_pred)
 
 
 def main() raises:
