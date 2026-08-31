@@ -89,7 +89,8 @@ struct HistGradientBoostingRegressor[
         tol: Float64 = 1e-7,
         random_state: Int = 42,
     ) raises:
-        """Initializes a HistGradientBoostingRegressor with validated hyperparameters."""
+        """Initializes a HistGradientBoostingRegressor with validated hyperparameters.
+        """
         if loss != "squared_error":
             raise InvalidParameterError.error(
                 "loss",
@@ -130,9 +131,8 @@ struct HistGradientBoostingRegressor[
                 "max_bins",
                 "max_bins must be between 2 and 256, got " + String(max_bins),
             )
-        if (
-            early_stopping
-            and (validation_fraction <= 0.0 or validation_fraction >= 1.0)
+        if early_stopping and (
+            validation_fraction <= 0.0 or validation_fraction >= 1.0
         ):
             raise InvalidParameterError.error(
                 "validation_fraction",
@@ -206,11 +206,7 @@ struct HistGradientBoostingRegressor[
 
     def fit[
         feat_dtype: DType, target_dtype: DType
-    ](
-        mut self,
-        X: Matrix[feat_dtype],
-        y: List[Scalar[target_dtype]],
-    ) raises:
+    ](mut self, X: Matrix[feat_dtype], y: List[Scalar[target_dtype]],) raises:
         """Fits the ensemble of histogram gradient boosted trees on training data $(X, y)$.
 
         Args:
@@ -382,7 +378,8 @@ struct HistGradientBoostingRegressor[
         X: Matrix[feat_dtype],
         y: List[Scalar[target_dtype]],
     ) raises -> Float64:
-        """Returns the coefficient of determination $R^2$ on test data $(X, y)$."""
+        """Returns the coefficient of determination $R^2$ on test data $(X, y)$.
+        """
         var preds = self.predict(X)
         var N = len(y)
         if N == 0:

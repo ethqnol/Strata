@@ -107,7 +107,8 @@ struct HistGradientBoostingClassifier[
         tol: Float64 = 1e-7,
         random_state: Int = 42,
     ) raises:
-        """Initializes a HistGradientBoostingClassifier with validated hyperparameters."""
+        """Initializes a HistGradientBoostingClassifier with validated hyperparameters.
+        """
         if loss != "log_loss" and loss != "auto":
             raise InvalidParameterError.error(
                 "loss",
@@ -148,9 +149,8 @@ struct HistGradientBoostingClassifier[
                 "max_bins",
                 "max_bins must be between 2 and 256, got " + String(max_bins),
             )
-        if (
-            early_stopping
-            and (validation_fraction <= 0.0 or validation_fraction >= 1.0)
+        if early_stopping and (
+            validation_fraction <= 0.0 or validation_fraction >= 1.0
         ):
             raise InvalidParameterError.error(
                 "validation_fraction",
@@ -230,11 +230,7 @@ struct HistGradientBoostingClassifier[
 
     def fit[
         feat_dtype: DType, target_dtype: DType
-    ](
-        mut self,
-        X: Matrix[feat_dtype],
-        y: List[Scalar[target_dtype]],
-    ) raises:
+    ](mut self, X: Matrix[feat_dtype], y: List[Scalar[target_dtype]],) raises:
         """Fits the ensemble of classification trees on training data $(X, y)$.
 
         Args:
@@ -448,9 +444,9 @@ struct HistGradientBoostingClassifier[
 
                     for i in range(n_val):
                         for k in range(K):
-                            raw_val_all[
-                                i * K + k
-                            ] += round_trees[k].predict_binned(binned_val, i)
+                            raw_val_all[i * K + k] += round_trees[
+                                k
+                            ].predict_binned(binned_val, i)
                             sample_val_logits[k] = raw_val_all[i * K + k]
                         val_loss_total += loss_multi.loss(
                             y_val[i], sample_val_logits

@@ -5,7 +5,8 @@ from ..exceptions.errors import InvalidParameterError
 
 
 struct FeatureHistogram(Copyable, Movable):
-    """Accumulated 1st and 2nd order statistics across discrete bins for a single feature."""
+    """Accumulated 1st and 2nd order statistics across discrete bins for a single feature.
+    """
 
     var grad_sum: List[Float64]
     var hess_sum: List[Float64]
@@ -28,7 +29,8 @@ struct FeatureHistogram(Copyable, Movable):
         self.count = copy.count.copy()
 
     def subtract(self, child: FeatureHistogram) -> FeatureHistogram:
-        """Computes sibling histogram via $O(K)$ subtraction: $\\text{Parent} - \\text{Child}$."""
+        """Computes sibling histogram via $O(K)$ subtraction: $\\text{Parent} - \\text{Child}$.
+        """
         var n_bins = len(self.grad_sum)
         var res = FeatureHistogram(n_bins)
         for b in range(n_bins):
@@ -182,7 +184,8 @@ def _find_best_split_in_histograms(
     min_samples_leaf: Int,
     min_gain_to_split: Float64,
 ) -> HistSplit:
-    """Finds the optimal split maximizing Gain = 0.5 * (GL^2/(HL+lam) + GR^2/(HR+lam) - GP^2/(HP+lam))."""
+    """Finds the optimal split maximizing Gain = 0.5 * (GL^2/(HL+lam) + GR^2/(HR+lam) - GP^2/(HP+lam)).
+    """
     var D = len(hists)
     var best_split = HistSplit()
     var max_gain = min_gain_to_split
@@ -286,7 +289,8 @@ struct HistTree(Copyable, Movable):
         self.shrinkage = copy.shrinkage
 
     def _compute_leaf_value(self, sum_g: Float64, sum_h: Float64) -> Float64:
-        """Computes optimal regularized leaf step: $v = -\\frac{\\sum g}{\\sum h + \\lambda} \\times \\text{shrinkage}$."""
+        """Computes optimal regularized leaf step: $v = -\\frac{\\sum g}{\\sum h + \\lambda} \\times \\text{shrinkage}$.
+        """
         var denom = sum_h + self.l2_regularization
         if denom <= 0.0:
             return 0.0
@@ -298,7 +302,8 @@ struct HistTree(Copyable, Movable):
         gradients: List[Float64],
         hessians: List[Float64],
     ):
-        """Builds the tree using histogram aggregation and the histogram subtraction trick."""
+        """Builds the tree using histogram aggregation and the histogram subtraction trick.
+        """
         self.nodes.clear()
         var N = binned_matrix.rows
         if N == 0:
@@ -456,7 +461,8 @@ struct HistTree(Copyable, Movable):
     def predict_row[
         dtype: DType = DType.float64
     ](self, X: Matrix[dtype], r: Int) -> Float64:
-        """Traverses the tree to predict the scalar leaf value for a single sample row."""
+        """Traverses the tree to predict the scalar leaf value for a single sample row.
+        """
         if len(self.nodes) == 0:
             return 0.0
 
@@ -481,10 +487,9 @@ struct HistTree(Copyable, Movable):
             preds.append(self.predict_row[dtype](X, r))
         return preds^
 
-    def predict_binned(
-        self, binned_matrix: BinnedMatrix, r: Int
-    ) -> Float64:
-        """Fast prediction traversal using integer UInt8 comparisons on binned data."""
+    def predict_binned(self, binned_matrix: BinnedMatrix, r: Int) -> Float64:
+        """Fast prediction traversal using integer UInt8 comparisons on binned data.
+        """
         if len(self.nodes) == 0:
             return 0.0
 

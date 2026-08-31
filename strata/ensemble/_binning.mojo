@@ -109,8 +109,7 @@ struct BinnedMatrix(Copyable, Movable):
             res.append(self.data[r * self.cols + c])
         return res^
 
-
-    def unsafe_ptr(ref [_]self) -> Pointer[UInt8, origin_of(self.data)]:
+    def unsafe_ptr(ref[_] self) -> Pointer[UInt8, origin_of(self.data)]:
         """Returns the raw pointer to the underlying contiguous UInt8 buffer."""
         return self.data.unsafe_ptr()
 
@@ -214,9 +213,7 @@ def _compute_bin_thresholds[
             thresholds.reserve(n_thresholds)
             for k in range(1, max_bins):
                 var idx = Int(
-                    round(
-                        Float64(k) * Float64(M - 1) / Float64(max_bins)
-                    )
+                    round(Float64(k) * Float64(M - 1) / Float64(max_bins))
                 )
                 if idx >= M - 1:
                     idx = M - 2
@@ -286,6 +283,4 @@ def _map_to_bins[
     for j in range(D):
         thresholds_copy.append(bin_thresholds[j].copy())
 
-    return BinnedMatrix(
-        N, D, binned_data^, thresholds_copy^, n_bins^
-    )
+    return BinnedMatrix(N, D, binned_data^, thresholds_copy^, n_bins^)

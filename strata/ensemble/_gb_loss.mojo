@@ -4,7 +4,8 @@ from ..exceptions.errors import InvalidParameterError, DimensionMismatchError
 
 
 struct LeastSquaresLoss(Copyable, Movable):
-    """Least-squares loss for regression gradient boosting: $L(y, \\hat{y}) = \\frac{1}{2}(y - \\hat{y})^2$."""
+    """Least-squares loss for regression gradient boosting: $L(y, \\hat{y}) = \\frac{1}{2}(y - \\hat{y})^2$.
+    """
 
     def __init__(out self):
         """Initializes the LeastSquaresLoss instance."""
@@ -20,15 +21,18 @@ struct LeastSquaresLoss(Copyable, Movable):
         return 0.5 * diff * diff
 
     def gradient(self, y_true: Float64, raw_pred: Float64) -> Float64:
-        """Computes 1st order derivative $\\frac{\\partial L}{\\partial \\hat{y}} = \\hat{y} - y$."""
+        """Computes 1st order derivative $\\frac{\\partial L}{\\partial \\hat{y}} = \\hat{y} - y$.
+        """
         return raw_pred - y_true
 
     def hessian(self, y_true: Float64, raw_pred: Float64) -> Float64:
-        """Computes 2nd order derivative $\\frac{\\partial^2 L}{\\partial \\hat{y}^2} = 1.0$."""
+        """Computes 2nd order derivative $\\frac{\\partial^2 L}{\\partial \\hat{y}^2} = 1.0$.
+        """
         return 1.0
 
     def init_raw_prediction(self, y: List[Float64]) -> Float64:
-        """Computes baseline initial prediction as target sample mean $\\bar{y}$."""
+        """Computes baseline initial prediction as target sample mean $\\bar{y}$.
+        """
         var n = len(y)
         if n == 0:
             return 0.0
@@ -56,7 +60,8 @@ struct LeastSquaresLoss(Copyable, Movable):
 
 
 struct BinaryCrossEntropyLoss(Copyable, Movable):
-    """Binary logistic cross-entropy loss: $L(y, \\hat{y}) = \\ln(1 + e^{\\hat{y}}) - y\\hat{y}$."""
+    """Binary logistic cross-entropy loss: $L(y, \\hat{y}) = \\ln(1 + e^{\\hat{y}}) - y\\hat{y}$.
+    """
 
     def __init__(out self):
         """Initializes the BinaryCrossEntropyLoss instance."""
@@ -83,13 +88,15 @@ struct BinaryCrossEntropyLoss(Copyable, Movable):
         return p - y_true
 
     def hessian(self, y_true: Float64, raw_pred: Float64) -> Float64:
-        """Computes 2nd order derivative $h = p(1 - p)$, bounded below by $10^{-16}$."""
+        """Computes 2nd order derivative $h = p(1 - p)$, bounded below by $10^{-16}$.
+        """
         var p = Float64(sigmoid[DType.float64](raw_pred))
         var h = p * (1.0 - p)
         return max(h, 1e-16)
 
     def init_raw_prediction(self, y: List[Float64]) -> Float64:
-        """Computes baseline initial prediction as empirical log-odds $\\ln \\frac{\\bar{y}}{1 - \\bar{y}}$."""
+        """Computes baseline initial prediction as empirical log-odds $\\ln \\frac{\\bar{y}}{1 - \\bar{y}}$.
+        """
         var n = len(y)
         if n == 0:
             return 0.0
@@ -124,12 +131,14 @@ struct BinaryCrossEntropyLoss(Copyable, Movable):
 
 
 struct MulticlassCrossEntropyLoss(Copyable, Movable):
-    """Categorical cross-entropy loss with Softmax probabilities for $K$-class classification."""
+    """Categorical cross-entropy loss with Softmax probabilities for $K$-class classification.
+    """
 
     var n_classes: Int
 
     def __init__(out self, n_classes: Int):
-        """Initializes the MulticlassCrossEntropyLoss instance with $K$ classes."""
+        """Initializes the MulticlassCrossEntropyLoss instance with $K$ classes.
+        """
         self.n_classes = n_classes
 
     def __init__(out self, *, copy: Self):
@@ -137,7 +146,8 @@ struct MulticlassCrossEntropyLoss(Copyable, Movable):
         self.n_classes = copy.n_classes
 
     def predict_proba(self, raw_preds: List[Float64]) -> List[Float64]:
-        """Calculates normalized Softmax probability distribution over all $K$ classes."""
+        """Calculates normalized Softmax probability distribution over all $K$ classes.
+        """
         var raw_scalars = List[Scalar[DType.float64]](capacity=len(raw_preds))
         for k in range(len(raw_preds)):
             raw_scalars.append(Scalar[DType.float64](raw_preds[k]))
@@ -148,7 +158,8 @@ struct MulticlassCrossEntropyLoss(Copyable, Movable):
         return probs^
 
     def loss(self, y_true: Int, raw_preds: List[Float64]) -> Float64:
-        """Evaluates negative log-likelihood $-\\ln p_{y_{\\text{true}}}$ for a single sample."""
+        """Evaluates negative log-likelihood $-\\ln p_{y_{\\text{true}}}$ for a single sample.
+        """
         var probs = self.predict_proba(raw_preds)
         if y_true < 0 or y_true >= len(probs):
             return 0.0
@@ -156,7 +167,8 @@ struct MulticlassCrossEntropyLoss(Copyable, Movable):
         return -log(p_y)
 
     def init_raw_predictions(self, y: List[Int]) -> List[Float64]:
-        """Computes initial baseline log-prior margins $\\ln \\frac{\\text{count}(k)}{N}$ per class."""
+        """Computes initial baseline log-prior margins $\\ln \\frac{\\text{count}(k)}{N}$ per class.
+        """
         var counts = List[Float64](capacity=self.n_classes)
         for _ in range(self.n_classes):
             counts.append(0.0)
