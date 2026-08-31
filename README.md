@@ -1,3 +1,5 @@
+[![CodeQL](https://github.com/ethqnol/Strata/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/ethqnol/Strata/actions/workflows/github-code-scanning/codeql) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 # Strata
 
 Strata is a native machine learning and linear algebra library written in [Mojo](https://docs.modular.com/mojo/). It provides scikit-learn-compatible estimators, dense and sparse matrix containers, and composable pipelines with native SIMD and LAPACK acceleration.

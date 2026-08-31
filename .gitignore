@@ -6,3 +6,4 @@ skills-lock.json
 *.mojoc
 *bin/
 __pycache__
+output/
