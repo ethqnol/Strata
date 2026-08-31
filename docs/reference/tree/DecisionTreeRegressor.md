@@ -29,20 +29,24 @@ $$
 
 ---
 
-## Arguments (Runtime)
+## Constructors
 
-| Argument | Description |
-| :--- | :--- |
-| **`criterion`** | The function to measure split quality ('squared_error', 'friedman_mse', 'absolute_error'). Default 'squared_error'. |
-| **`splitter`** | Strategy used to choose the split at each node ('best', 'random'). Default 'best'. |
-| **`max_depth`** | Maximum tree depth. -1 indicates unlimited depth. Default -1. |
-| **`min_samples_split`** | Minimum samples required to split an internal node. Default 2. |
-| **`min_samples_leaf`** | Minimum samples required to be at a leaf node. Default 1. |
-| **`min_impurity_decrease`** | Split threshold if impurity decrease >= this value. Default 0.0. |
-| **`max_features`** | Number of features to consider when looking for best split ('all', 'sqrt', 'log2', 'custom'). Default 'all'. |
-| **`max_features_count`** | Explicit number of features to evaluate when max_features='custom'. Default -1. |
-| **`max_features_ratio`** | Proportion of features to evaluate when max_features='custom'. Default 0.0. |
-| **`random_state`** | PRNG seed for deterministic feature and split selection. Default 42. |
+```mojo
+def __init__(out self, criterion: String = "squared_error", splitter: String = "best", max_depth: Int = -1, min_samples_split: Int = 2, min_samples_leaf: Int = 1, min_impurity_decrease: Float64 = 0.0, max_features: String = "all", max_features_count: Int = -1, max_features_ratio: Float64 = 0.0, random_state: Int = 42)
+```
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`criterion`** | `String` | — |
+| **`splitter`** | `String` | — |
+| **`max_depth`** | `Int` | — |
+| **`min_samples_split`** | `Int` | — |
+| **`min_samples_leaf`** | `Int` | — |
+| **`min_impurity_decrease`** | `Float64` | — |
+| **`max_features`** | `String` | — |
+| **`max_features_count`** | `Int` | — |
+| **`max_features_ratio`** | `Float64` | — |
+| **`random_state`** | `Int` | — |
 
 ---
 
@@ -74,6 +78,7 @@ $$
 def fit[feat_dtype: DType, target_dtype: DType](mut self, X: Matrix[feat_dtype], y: List[Scalar[target_dtype]])
 def fit[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype])
 ```
+> **Overload Note**: This method accepts either standard `(X, y)` inputs or a unified `dataset: Dataset` container.
 
 Fits the decision tree regressor on (X, y).
 
@@ -81,7 +86,7 @@ Fits the decision tree regressor on (X, y).
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[feat_dtype]` | Feature matrix. |
 | **`y`** | `List[Scalar[target_dtype]]` | Target vector / class labels. |
-| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix and targets. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix and targets. *(Can be provided alternatively in place of (X, y))*  |
 
 ---
 
@@ -91,13 +96,14 @@ Fits the decision tree regressor on (X, y).
 def predict[feat_dtype: DType](self, X: Matrix[feat_dtype]) -> List[Scalar[feat_dtype]]
 def predict[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> List[Scalar[feat_dtype]]
 ```
+> **Overload Note**: This method accepts either standard `(X, y)` inputs or a unified `dataset: Dataset` container.
 
 Generates regression predictions for input matrix X.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[feat_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature records. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix and targets. *(Can be provided alternatively in place of (X, y))*  |
 
 **Returns**: `List[Scalar[feat_dtype]]`
 
@@ -108,7 +114,6 @@ Generates regression predictions for input matrix X.
 ```mojo
 def get_depth(self) -> Int
 ```
-
 Returns the maximum depth of the fitted tree.
 
 **Returns**: `Int`
@@ -120,7 +125,6 @@ Returns the maximum depth of the fitted tree.
 ```mojo
 def get_n_leaves(self) -> Int
 ```
-
 Returns the total number of leaf nodes in the fitted tree.
 
 **Returns**: `Int`

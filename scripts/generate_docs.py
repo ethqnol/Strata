@@ -68,9 +68,18 @@ MODULE_METADATA = {
     },
     "ensemble": {
         "title": "Ensemble Methods",
-        "description": "Random Forest Regressors and Classifiers with bootstrap aggregation, decoupled PRNG streams, batched OOB scoring, and MDI feature importances.",
+        "description": "Random Forest Regressors/Classifiers with bootstrap aggregation, and Histogram-based Gradient Tree Boosting (HistGradientBoostingRegressor & HistGradientBoostingClassifier) with fast binning and regularized leaf steps.",
         "files": [
             "ensemble/forest.mojo",
+            "ensemble/hist_gradient_boosting_regressor.mojo",
+            "ensemble/hist_gradient_boosting_classifier.mojo",
+        ]
+    },
+    "compose": {
+        "title": "Composite Feature Pipelines",
+        "description": "ColumnTransformer for routing heterogeneous feature column subsets to distinct transformers and horizontal concatenation.",
+        "files": [
+            "compose/column_transformer.mojo",
         ]
     },
     "cluster": {
@@ -153,6 +162,31 @@ def clean_docstring(doc: str) -> str:
     lines = doc.strip().split("\n")
     cleaned = [line.rstrip() for line in lines]
     return "\n".join(cleaned)
+
+
+def split_args_safe(args_str: str) -> list:
+    """Splits an argument string by comma while respecting nested brackets [], (), {}."""
+    items = []
+    current = []
+    depth = 0
+    for char in args_str:
+        if char in "([{<":
+            depth += 1
+            current.append(char)
+        elif char in ")]}>":
+            depth -= 1
+            current.append(char)
+        elif char == "," and depth == 0:
+            item = "".join(current).strip()
+            if item:
+                items.append(item)
+            current = []
+        else:
+            current.append(char)
+    last_item = "".join(current).strip()
+    if last_item:
+        items.append(last_item)
+    return items
 
 
 
@@ -306,18 +340,31 @@ def extract_mojo_symbols(filepath: Path):
         type_spans.append((match.start(), type_end))
         type_body = content[type_start:type_end]
 
+        constructors = []
         methods = []
         for fn_match in fn_pattern.finditer(type_body):
             fn_name = fn_match.group(1)
-            if fn_name.startswith("_"):
-                continue
-
             raw_fn_params = fn_match.group(2) or ""
             raw_fn_args = fn_match.group(3) or ""
             raw_fn_ret = fn_match.group(4) or ""
             fn_doc = fn_match.group(5) or ""
 
-            if fn_name == "__init__" and "copy: Self" in raw_fn_args:
+            if fn_name == "__init__":
+                if "copy: Self" in raw_fn_args:
+                    continue
+                fn_params_clean = " ".join([p.strip() for p in raw_fn_params.split("\n") if p.strip()]).rstrip(", ")
+                fn_args_clean = " ".join([a.strip() for a in raw_fn_args.split("\n") if a.strip()]).rstrip(", ")
+                fn_parsed_doc = parse_docstring_sections(clean_docstring(fn_doc))
+                constructors.append({
+                    "name": "__init__",
+                    "type_params": fn_params_clean,
+                    "args": fn_args_clean,
+                    "docstring": clean_docstring(fn_doc),
+                    "parsed_doc": fn_parsed_doc,
+                })
+                continue
+
+            if fn_name.startswith("_"):
                 continue
 
             fn_params_clean = " ".join([p.strip() for p in raw_fn_params.split("\n") if p.strip()]).rstrip(", ")
@@ -346,7 +393,7 @@ def extract_mojo_symbols(filepath: Path):
                     "args": "mut self, dataset: Dataset[feat_dtype, target_dtype]",
                     "returns": "",
                     "docstring": "Fits the classifier using a unified Dataset container.",
-                    "parsed_doc": {"summary": "Fits the classifier using a unified Dataset container.", "parameters": [{"name": "dataset", "type": "Dataset[feat_dtype, target_dtype]", "description": "Dataset container holding feature matrix and target labels."}], "returns": "", "details": "", "attributes": [], "examples": ""}
+                    "parsed_doc": {"summary": "Fits the classifier using a unified Dataset container.", "parameters": [{"name": "dataset", "type": "Dataset[feat_dtype, target_dtype]", "description": "**[Overloaded Alternative: Dataset Input]** Unified dataset container holding feature matrix and target labels. (Can be supplied alternatively in place of (X, y))"}], "returns": "", "details": "", "attributes": [], "examples": ""}
                 })
             if ("predict", True) not in existing_signatures:
                 methods.append({
@@ -355,7 +402,7 @@ def extract_mojo_symbols(filepath: Path):
                     "args": "self, dataset: Dataset[feat_dtype, target_dtype]",
                     "returns": "List[Int]",
                     "docstring": "Predicts class labels for a Dataset container.",
-                    "parsed_doc": {"summary": "Predicts class labels for a Dataset container.", "parameters": [{"name": "dataset", "type": "Dataset[feat_dtype, target_dtype]", "description": "Dataset container holding feature records."}], "returns": "List[Int] of discrete predicted class labels.", "details": "", "attributes": [], "examples": ""}
+                    "parsed_doc": {"summary": "Predicts class labels for a Dataset container.", "parameters": [{"name": "dataset", "type": "Dataset[feat_dtype, target_dtype]", "description": "**[Overloaded Alternative: Dataset Input]** Unified dataset container holding feature records."}], "returns": "List[Int] of discrete predicted class labels.", "details": "", "attributes": [], "examples": ""}
                 })
             if ("predict_proba", True) not in existing_signatures:
                 methods.append({
@@ -364,7 +411,7 @@ def extract_mojo_symbols(filepath: Path):
                     "args": "self, dataset: Dataset[feat_dtype, target_dtype]",
                     "returns": "Matrix[feat_dtype]",
                     "docstring": "Predicts class probability distributions for a Dataset container.",
-                    "parsed_doc": {"summary": "Predicts class probability distributions for a Dataset container.", "parameters": [{"name": "dataset", "type": "Dataset[feat_dtype, target_dtype]", "description": "Dataset container holding feature records."}], "returns": "Matrix[feat_dtype] of predicted class probabilities.", "details": "", "attributes": [], "examples": ""}
+                    "parsed_doc": {"summary": "Predicts class probability distributions for a Dataset container.", "parameters": [{"name": "dataset", "type": "Dataset[feat_dtype, target_dtype]", "description": "**[Overloaded Alternative: Dataset Input]** Unified dataset container holding feature records."}], "returns": "Matrix[feat_dtype] of predicted class probabilities.", "details": "", "attributes": [], "examples": ""}
                 })
 
         elif "Regressor" in trait_tokens:
@@ -375,7 +422,7 @@ def extract_mojo_symbols(filepath: Path):
                     "args": "mut self, dataset: Dataset[feat_dtype, target_dtype]",
                     "returns": "",
                     "docstring": "Fits the regressor using a unified Dataset container.",
-                    "parsed_doc": {"summary": "Fits the regressor using a unified Dataset container.", "parameters": [{"name": "dataset", "type": "Dataset[feat_dtype, target_dtype]", "description": "Dataset container holding feature matrix and targets."}], "returns": "", "details": "", "attributes": [], "examples": ""}
+                    "parsed_doc": {"summary": "Fits the regressor using a unified Dataset container.", "parameters": [{"name": "dataset", "type": "Dataset[feat_dtype, target_dtype]", "description": "**[Overloaded Alternative: Dataset Input]** Unified dataset container holding feature matrix and targets. (Can be supplied alternatively in place of (X, y))"}], "returns": "", "details": "", "attributes": [], "examples": ""}
                 })
             if ("predict", True) not in existing_signatures:
                 methods.append({
@@ -384,7 +431,7 @@ def extract_mojo_symbols(filepath: Path):
                     "args": "self, dataset: Dataset[feat_dtype, target_dtype]",
                     "returns": "List[Scalar[feat_dtype]]",
                     "docstring": "Predicts continuous targets for a Dataset container.",
-                    "parsed_doc": {"summary": "Predicts continuous targets for a Dataset container.", "parameters": [{"name": "dataset", "type": "Dataset[feat_dtype, target_dtype]", "description": "Dataset container holding feature records."}], "returns": "List[Scalar[feat_dtype]] of predicted values.", "details": "", "attributes": [], "examples": ""}
+                    "parsed_doc": {"summary": "Predicts continuous targets for a Dataset container.", "parameters": [{"name": "dataset", "type": "Dataset[feat_dtype, target_dtype]", "description": "**[Overloaded Alternative: Dataset Input]** Unified dataset container holding feature records."}], "returns": "List[Scalar[feat_dtype]] of predicted values.", "details": "", "attributes": [], "examples": ""}
                 })
 
         elif "Transformer" in trait_tokens:
@@ -395,7 +442,7 @@ def extract_mojo_symbols(filepath: Path):
                     "args": "mut self, dataset: Dataset[feat_dtype, target_dtype]",
                     "returns": "",
                     "docstring": "Fits the transformer on Dataset feature records.",
-                    "parsed_doc": {"summary": "Fits the transformer on Dataset feature records.", "parameters": [{"name": "dataset", "type": "Dataset[feat_dtype, target_dtype]", "description": "Dataset container holding feature records."}], "returns": "", "details": "", "attributes": [], "examples": ""}
+                    "parsed_doc": {"summary": "Fits the transformer on Dataset feature records.", "parameters": [{"name": "dataset", "type": "Dataset[feat_dtype, target_dtype]", "description": "**[Overloaded Alternative: Dataset Input]** Unified dataset container holding feature records. (Can be supplied alternatively in place of X)"}], "returns": "", "details": "", "attributes": [], "examples": ""}
                 })
             if ("transform", True) not in existing_signatures:
                 methods.append({
@@ -404,7 +451,7 @@ def extract_mojo_symbols(filepath: Path):
                     "args": "self, dataset: Dataset[feat_dtype, target_dtype]",
                     "returns": "Dataset[feat_dtype, target_dtype]",
                     "docstring": "Transforms dataset records, preserving column names and target metadata.",
-                    "parsed_doc": {"summary": "Transforms dataset records, preserving column names and target metadata.", "parameters": [{"name": "dataset", "type": "Dataset[feat_dtype, target_dtype]", "description": "Dataset container to transform."}], "returns": "Dataset[feat_dtype, target_dtype] with transformed feature records.", "details": "", "attributes": [], "examples": ""}
+                    "parsed_doc": {"summary": "Transforms dataset records, preserving column names and target metadata.", "parameters": [{"name": "dataset", "type": "Dataset[feat_dtype, target_dtype]", "description": "**[Overloaded Alternative: Dataset Input]** Unified dataset container to transform."}], "returns": "Dataset[feat_dtype, target_dtype] with transformed feature records.", "details": "", "attributes": [], "examples": ""}
                 })
             if ("fit_transform", True) not in existing_signatures:
                 methods.append({
@@ -413,7 +460,7 @@ def extract_mojo_symbols(filepath: Path):
                     "args": "mut self, dataset: Dataset[feat_dtype, target_dtype]",
                     "returns": "Dataset[feat_dtype, target_dtype]",
                     "docstring": "Fits transformer and transforms dataset records.",
-                    "parsed_doc": {"summary": "Fits transformer and transforms dataset records.", "parameters": [{"name": "dataset", "type": "Dataset[feat_dtype, target_dtype]", "description": "Dataset container to fit and transform."}], "returns": "Dataset[feat_dtype, target_dtype] with transformed feature records.", "details": "", "attributes": [], "examples": ""}
+                    "parsed_doc": {"summary": "Fits transformer and transforms dataset records.", "parameters": [{"name": "dataset", "type": "Dataset[feat_dtype, target_dtype]", "description": "**[Overloaded Alternative: Dataset Input]** Unified dataset container to fit and transform."}], "returns": "Dataset[feat_dtype, target_dtype] with transformed feature records.", "details": "", "attributes": [], "examples": ""}
                 })
 
         elif "Clusterer" in trait_tokens:
@@ -424,7 +471,7 @@ def extract_mojo_symbols(filepath: Path):
                     "args": "mut self, dataset: Dataset[feat_dtype, target_dtype]",
                     "returns": "",
                     "docstring": "Fits cluster centroids on Dataset feature records.",
-                    "parsed_doc": {"summary": "Fits cluster centroids on Dataset feature records.", "parameters": [{"name": "dataset", "type": "Dataset[feat_dtype, target_dtype]", "description": "Dataset container holding feature records."}], "returns": "", "details": "", "attributes": [], "examples": ""}
+                    "parsed_doc": {"summary": "Fits cluster centroids on Dataset feature records.", "parameters": [{"name": "dataset", "type": "Dataset[feat_dtype, target_dtype]", "description": "**[Overloaded Alternative: Dataset Input]** Unified dataset container holding feature records."}], "returns": "", "details": "", "attributes": [], "examples": ""}
                 })
             if ("predict", True) not in existing_signatures:
                 methods.append({
@@ -433,7 +480,7 @@ def extract_mojo_symbols(filepath: Path):
                     "args": "self, dataset: Dataset[feat_dtype, target_dtype]",
                     "returns": "List[Int]",
                     "docstring": "Predicts closest cluster assignments for a Dataset container.",
-                    "parsed_doc": {"summary": "Predicts closest cluster assignments for a Dataset container.", "parameters": [{"name": "dataset", "type": "Dataset[feat_dtype, target_dtype]", "description": "Dataset container holding feature records."}], "returns": "List[Int] of predicted cluster indices.", "details": "", "attributes": [], "examples": ""}
+                    "parsed_doc": {"summary": "Predicts closest cluster assignments for a Dataset container.", "parameters": [{"name": "dataset", "type": "Dataset[feat_dtype, target_dtype]", "description": "**[Overloaded Alternative: Dataset Input]** Unified dataset container holding feature records."}], "returns": "List[Int] of predicted cluster indices.", "details": "", "attributes": [], "examples": ""}
                 })
 
         symbols.append({
@@ -443,6 +490,7 @@ def extract_mojo_symbols(filepath: Path):
             "traits": traits_clean,
             "docstring": clean_docstring(doc),
             "parsed_doc": parsed_doc,
+            "constructors": constructors,
             "methods": methods,
             "file": str(filepath.relative_to(ROOT_DIR))
         })
@@ -586,16 +634,59 @@ def generate_symbol_markdown_page(mod_key: str, s: dict) -> str:
                     md.append(f"| **`{p_name}`** | {p_desc} |")
             md.append("")
 
-        # Arguments Table (Runtime Constructor / Function Arguments)
-        args_list = pdoc.get("args", [])
-        if not args_list and s.get("methods"):
-            init_m = next((m for m in s["methods"] if m["name"] == "__init__"), None)
-            if init_m and init_m.get("parsed_doc", {}).get("args"):
-                args_list = init_m["parsed_doc"]["args"]
-            elif init_m and init_m.get("parsed_doc", {}).get("parameters"):
-                args_list = init_m["parsed_doc"]["parameters"]
+        # Constructors Section
+        constructors = s.get("constructors", [])
+        if constructors:
+            md.append("---")
+            md.append("")
+            md.append("## Constructors")
+            md.append("")
+            for c in constructors:
+                c_tparams = f"[{c['type_params']}]" if c.get("type_params") else ""
+                c_args = c["args"]
+                md.append("```mojo")
+                md.append(f"def __init__{c_tparams}({c_args})")
+                md.append("```")
+                md.append("")
+                c_pdoc = c.get("parsed_doc", {})
+                c_sum = c_pdoc.get("summary") or c.get("docstring", "")
+                if c_sum:
+                    md.append(f"{c_sum}")
+                    md.append("")
 
-        if args_list:
+                sig_types = {}
+                for arg in split_args_safe(c_args):
+                    if arg not in ("self", "mut self", "out self", "var self"):
+                        m_arg = re.match(r"^([a-zA-Z0-9_]+)\s*:\s*(.+)$", arg)
+                        if m_arg:
+                            sig_types[m_arg.group(1)] = m_arg.group(2).split("=")[0].strip()
+
+                c_params = c_pdoc.get("parameters", []) or c_pdoc.get("args", [])
+                if not c_params and sig_types:
+                    for s_name, s_type in sig_types.items():
+                        c_params.append({"name": s_name, "type": s_type, "description": "—"})
+
+                if c_params:
+                    md.append("| Argument | Type | Description |")
+                    md.append("| :--- | :--- | :--- |")
+                    for cp in c_params:
+                        cp_name = cp["name"]
+                        inferred_type = cp.get("type") or sig_types.get(cp_name, "")
+                        cp_type = f"`{inferred_type}`" if inferred_type else "—"
+                        cp_desc = cp.get("description", "") or "—"
+                        md.append(f"| **`{cp_name}`** | {cp_type} | {cp_desc} |")
+                    md.append("")
+
+        # Arguments Table (Runtime Struct / Hyperparameter Arguments)
+        args_list = pdoc.get("args", [])
+        if not args_list and s.get("constructors"):
+            c_first = s["constructors"][0]
+            if c_first.get("parsed_doc", {}).get("args"):
+                args_list = c_first["parsed_doc"]["args"]
+            elif c_first.get("parsed_doc", {}).get("parameters"):
+                args_list = c_first["parsed_doc"]["parameters"]
+
+        if args_list and not constructors:
             md.append("---")
             md.append("")
             header_title = "## Arguments (Runtime)" if params else "## Arguments"
@@ -677,7 +768,6 @@ def generate_symbol_markdown_page(mod_key: str, s: dict) -> str:
                     md.append(f"### `{name}.{m_name}()`")
                     md.append("")
 
-
                     # Show all overload signatures in a single code block
                     md.append("```mojo")
                     for m in overloads:
@@ -686,7 +776,15 @@ def generate_symbol_markdown_page(mod_key: str, s: dict) -> str:
                         m_ret = f" -> {m['returns']}" if m["returns"] else ""
                         md.append(f"def {m_name}{m_tparams}({m_args}){m_ret}")
                     md.append("```")
-                    md.append("")
+                    if len(overloads) > 1:
+                        traits_str = s.get("traits", "")
+                        if "Transformer" in traits_str:
+                            md.append("> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.")
+                        elif "Regressor" in traits_str or "Classifier" in traits_str:
+                            md.append("> **Overload Note**: This method accepts either standard `(X, y)` inputs or a unified `dataset: Dataset` container.")
+                        else:
+                            md.append("> **Overload Note**: This method supports multiple overloaded call signatures.")
+                        md.append("")
 
                     # Find any docstring summary across overloads
                     summary_text = ""
@@ -711,7 +809,7 @@ def generate_symbol_markdown_page(mod_key: str, s: dict) -> str:
                         m_pdoc = m.get("parsed_doc", {})
                         m_params = m_pdoc.get("parameters", [])
                         if not m_params and m["args"]:
-                            raw_args = [a.strip() for a in m["args"].split(",") if a.strip()]
+                            raw_args = split_args_safe(m["args"])
                             for arg in raw_args:
                                 if arg in ("self", "mut self", "out self", "var self"):
                                     continue
@@ -723,9 +821,24 @@ def generate_symbol_markdown_page(mod_key: str, s: dict) -> str:
                                     m_params.append({"name": aname, "type": atype, "description": adesc})
 
                         for p in m_params:
-                            if p["name"] not in seen_p_names:
-                                seen_p_names.add(p["name"])
-                                combined_params.append(p)
+                            p_copy = dict(p)
+                            p_name = p_copy["name"]
+                            traits_str = s.get("traits", "")
+                            if p_name == "dataset":
+                                if "Transformer" in traits_str:
+                                    p_copy["description"] = "Dataset container holding feature matrix. *(Can be provided alternatively in place of X)*"
+                                elif "Classifier" in traits_str or "Regressor" in traits_str:
+                                    p_copy["description"] = "Dataset container holding feature matrix and targets. *(Can be provided alternatively in place of (X, y))* "
+                                else:
+                                    p_copy["description"] = "Dataset container holding data records. *(Overloaded alternative)*"
+                            elif p_name == "X" and not p_copy["description"]:
+                                p_copy["description"] = "Feature matrix of shape $(N, D)$."
+                            elif p_name == "y" and not p_copy["description"]:
+                                p_copy["description"] = "Target vector / class labels of length $N$."
+
+                            if p_name not in seen_p_names:
+                                seen_p_names.add(p_name)
+                                combined_params.append(p_copy)
 
                     if combined_params:
                         md.append("| Parameter | Type | Description |")

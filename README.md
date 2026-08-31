@@ -67,7 +67,7 @@ def main() raises:
     # Build a StandardScaler -> PCA -> LinearRegression pipeline
     var scaler = StandardScaler()
     var pca = PCA(n_components=2)
-    var prep = PipelineTransformer(scaler^, pca^)
+    var prep = PipelineTransformer((scaler^, pca^))
     var reg = LinearRegression(solver="cholesky")
     var pipe = PipelineRegressor(prep^, reg^)
 

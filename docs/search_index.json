@@ -297,6 +297,33 @@
     "file": "strata/ensemble/forest.mojo"
   },
   {
+    "module": "ensemble",
+    "name": "HistGradientBoostingRegressor",
+    "kind": "struct",
+    "summary": "Histogram-based Gradient Boosting Regressor.",
+    "ref_file": "reference/ensemble/HistGradientBoostingRegressor",
+    "traits": "Copyable, Movable, Regressor",
+    "file": "strata/ensemble/hist_gradient_boosting_regressor.mojo"
+  },
+  {
+    "module": "ensemble",
+    "name": "HistGradientBoostingClassifier",
+    "kind": "struct",
+    "summary": "Histogram-based Gradient Boosting Classifier.",
+    "ref_file": "reference/ensemble/HistGradientBoostingClassifier",
+    "traits": "Classifier, Copyable, Movable",
+    "file": "strata/ensemble/hist_gradient_boosting_classifier.mojo"
+  },
+  {
+    "module": "compose",
+    "name": "ColumnTransformer",
+    "kind": "struct",
+    "summary": "Applies a heterogeneous variadic sequence of transformers to column subsets of a feature matrix.",
+    "ref_file": "reference/compose/ColumnTransformer",
+    "traits": "Copyable, Movable, Transformer",
+    "file": "strata/compose/column_transformer.mojo"
+  },
+  {
     "module": "cluster",
     "name": "KMeans",
     "kind": "struct",
@@ -831,7 +858,7 @@
     "module": "base",
     "name": "PipelineTransformer",
     "kind": "struct",
-    "summary": "Chains two data transformers into a single composite transformer.",
+    "summary": "Chains an arbitrary variadic sequence of data transformers into a single composite transformer.",
     "ref_file": "reference/base/PipelineTransformer",
     "traits": "Copyable, Movable, Transformer",
     "file": "strata/base/pipeline.mojo"

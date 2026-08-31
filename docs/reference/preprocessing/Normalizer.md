@@ -35,11 +35,17 @@ Rows of all zeros remain all zeros.
 
 ---
 
-## Arguments (Runtime)
+## Constructors
 
-| Argument | Description |
-| :--- | :--- |
-| **`norm`** | The norm to use to normalize each non-zero sample ('l1', 'l2', or 'max'). Default 'l2'. |
+```mojo
+def __init__(out self, norm: String = "l2")
+```
+
+Initialize the Normalizer.
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`norm`** | `String` | The norm to normalize each sample with ('l1', 'l2', or 'max'). Default 'l2'. |
 
 ---
 
@@ -70,13 +76,14 @@ Rows of all zeros remain all zeros.
 def fit[in_dtype: DType](mut self, X: Matrix[in_dtype])
 def fit[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype])
 ```
+> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.
 
 Fit the transformer on feature matrix X.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature records. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 ---
 
@@ -86,13 +93,14 @@ Fit the transformer on feature matrix X.
 def transform[in_dtype: DType](self, X: Matrix[in_dtype]) -> Matrix[in_dtype]
 def transform[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> Dataset[feat_dtype, target_dtype]
 ```
+> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.
 
 Scale each non-zero sample in X to unit norm.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container to transform. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 **Returns**: `Matrix[in_dtype]` — Matrix[in_dtype]: Normalized feature matrix.
 
@@ -104,13 +112,14 @@ Scale each non-zero sample in X to unit norm.
 def fit_transform[in_dtype: DType](mut self, X: Matrix[in_dtype]) -> Matrix[in_dtype]
 def fit_transform[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype]) -> Dataset[feat_dtype, target_dtype]
 ```
+> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.
 
 Fit to data, then transform it.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container to fit and transform. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 **Returns**: `Matrix[in_dtype]` — Matrix[in_dtype]: Normalized feature matrix.
 ---

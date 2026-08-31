@@ -18,6 +18,22 @@ the same percentage of samples for each target class.
 
 ---
 
+## Constructors
+
+```mojo
+def __init__(out self, n_splits: Int = 5, shuffle: Bool = False, random_state: Int = 42)
+```
+
+Initializes the StratifiedKFold cross-validator.
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`n_splits`** | `Int` | Number of folds (must be at least 2). |
+| **`shuffle`** | `Bool` | Whether to shuffle each class's samples before splitting. |
+| **`random_state`** | `Int` | Random state seed when shuffle is True. |
+
+---
+
 ## Methods Overview
 
 | Method | Description |
@@ -34,7 +50,6 @@ the same percentage of samples for each target class.
 ```mojo
 def get_n_splits(self) -> Int
 ```
-
 Returns the number of splitting iterations.
 
 **Returns**: `Int`
@@ -47,6 +62,7 @@ Returns the number of splitting iterations.
 def split[target_dtype: DType](self, y: List[Scalar[target_dtype]]) -> List[Split]
 def split[feat_dtype: DType, target_dtype: DType](self, X: Matrix[feat_dtype], y: List[Scalar[target_dtype]]) -> List[Split]
 ```
+> **Overload Note**: This method supports multiple overloaded call signatures.
 
 Generates stratified train and test indices from target labels.
 

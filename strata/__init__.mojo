@@ -143,3 +143,5 @@ from .neighbors import (
     KNeighborsRegressor,
     KDTree,
 )
+from .compose import ColumnTransformer
+

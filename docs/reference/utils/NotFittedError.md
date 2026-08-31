@@ -31,7 +31,6 @@ from strata.utils import NotFittedError
 ```mojo
 def error(estimator_name: String, msg: String = "") -> Error
 ```
-
 Create a formatted NotFittedError message.
 
 | Parameter | Type | Description |
@@ -48,5 +47,4 @@ Create a formatted NotFittedError message.
 ```mojo
 def write_to(self, mut writer: Some[Writer])
 ```
-
 ---

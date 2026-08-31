@@ -28,15 +28,21 @@ $$
 
 ---
 
-## Arguments (Runtime)
+## Constructors
 
-| Argument | Description |
-| :--- | :--- |
-| **`alpha`** | Regularization strength ($\alpha \ge 0$). Higher values encourage sparser solutions. Default 1.0. |
-| **`fit_intercept`** | Whether to calculate the independent intercept bias term. Default True. |
-| **`max_iter`** | Maximum number of coordinate descent iterations. Default 1000. |
-| **`tol`** | Convergence tolerance threshold for maximum coefficient update. Default 1e-4. |
-| **`positive`** | When set to True, forces coefficients to be non-negative. Default False. |
+```mojo
+def __init__(out self, alpha: Scalar[Self.compute_dtype] = 1.0, fit_intercept: Bool = True, max_iter: Int = 1000, tol: Scalar[Self.compute_dtype] = 1e-4, positive: Bool = False)
+```
+
+Initialize the Lasso regression estimator.
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`alpha`** | `Scalar[Self.compute_dtype]` | Regularization strength (must be non-negative). Default 1.0. |
+| **`fit_intercept`** | `Bool` | Whether to fit an intercept term. Default True. |
+| **`max_iter`** | `Int` | Maximum iterations for coordinate descent. Default 1000. |
+| **`tol`** | `Scalar[Self.compute_dtype]` | Convergence tolerance threshold. Default 1e-4. |
+| **`positive`** | `Bool` | Force non-negative coefficients. Default False. |
 
 ---
 
@@ -69,6 +75,7 @@ $$
 def fit[feat_dtype: DType, in_target_dtype: DType](mut self, X: Matrix[feat_dtype], y: List[Scalar[in_target_dtype]])
 def fit[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype])
 ```
+> **Overload Note**: This method accepts either standard `(X, y)` inputs or a unified `dataset: Dataset` container.
 
 Fit the Lasso linear model via coordinate descent.
 
@@ -76,7 +83,7 @@ Fit the Lasso linear model via coordinate descent.
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[feat_dtype]` | Feature matrix. |
 | **`y`** | `List[Scalar[in_target_dtype]]` | Target vector / class labels. |
-| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix and targets. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix and targets. *(Can be provided alternatively in place of (X, y))*  |
 
 ---
 
@@ -86,13 +93,14 @@ Fit the Lasso linear model via coordinate descent.
 def predict[feat_dtype: DType](self, X: Matrix[feat_dtype]) -> List[Scalar[feat_dtype]]
 def predict[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> List[Scalar[feat_dtype]]
 ```
+> **Overload Note**: This method accepts either standard `(X, y)` inputs or a unified `dataset: Dataset` container.
 
 Predict continuous target values using the fitted Lasso model.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[feat_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature records. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix and targets. *(Can be provided alternatively in place of (X, y))*  |
 
 **Returns**: `List[Scalar[feat_dtype]]` — List[Scalar[feat_dtype]]: Predicted target vector of length $N$.
 ---

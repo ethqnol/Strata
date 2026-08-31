@@ -15,6 +15,18 @@ from strata.decomposition import TruncatedSVD
 
 ---
 
+## Constructors
+
+```mojo
+def __init__(out self, n_components: Int = 2)
+```
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`n_components`** | `Int` | — |
+
+---
+
 ## Methods Overview
 
 | Method | Description |
@@ -35,13 +47,14 @@ def fit[in_dtype: DType](mut self, X: Matrix[in_dtype])
 def fit[in_dtype: DType](mut self, X: CSRMatrix[in_dtype])
 def fit[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype])
 ```
+> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.
 
 Fits TruncatedSVD on dense matrix X.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 ---
 
@@ -52,13 +65,14 @@ def transform[in_dtype: DType](self, X: Matrix[in_dtype]) -> Matrix[in_dtype]
 def transform[in_dtype: DType](self, X: CSRMatrix[in_dtype]) -> Matrix[in_dtype]
 def transform[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> Dataset[ feat_dtype, target_dtype ]
 ```
+> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.
 
 Projects dense matrix X onto the truncated components.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 **Returns**: `Matrix[in_dtype]`
 
@@ -71,13 +85,14 @@ def fit_transform[in_dtype: DType](mut self, X: Matrix[in_dtype]) -> Matrix[in_d
 def fit_transform[in_dtype: DType](mut self, X: CSRMatrix[in_dtype]) -> Matrix[in_dtype]
 def fit_transform[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype]) -> Dataset[ feat_dtype, target_dtype ]
 ```
+> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.
 
 Fits TruncatedSVD to X and returns the projected data.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 **Returns**: `Matrix[in_dtype]`
 
@@ -88,7 +103,6 @@ Fits TruncatedSVD to X and returns the projected data.
 ```mojo
 def inverse_transform[in_dtype: DType](self, X: Matrix[in_dtype]) -> Matrix[in_dtype]
 ```
-
 Transforms data back to its original space.
 
 | Parameter | Type | Description |

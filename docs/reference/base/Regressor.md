@@ -31,7 +31,6 @@ from strata.base import Regressor
 ```mojo
 def fit[feat_dtype: DType, target_dtype: DType](mut self, X: Matrix[feat_dtype], y: List[Scalar[target_dtype]])
 ```
-
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[feat_dtype]` | Feature matrix. |
@@ -44,7 +43,6 @@ def fit[feat_dtype: DType, target_dtype: DType](mut self, X: Matrix[feat_dtype],
 ```mojo
 def predict[feat_dtype: DType](self, X: Matrix[feat_dtype]) -> List[Scalar[feat_dtype]]
 ```
-
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[feat_dtype]` | Feature matrix. |

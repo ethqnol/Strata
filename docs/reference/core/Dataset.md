@@ -27,6 +27,29 @@ feature/target name metadata.
 
 ---
 
+## Constructors
+
+```mojo
+def __init__(out self, var records: Matrix[Self.feat_dtype], var targets: List[Scalar[Self.target_dtype]])
+```
+
+Initialize a Dataset from records and targets.
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`records`** | — | Feature matrix of shape $(N, D)$. |
+| **`targets`** | — | Target vector of length $N$. |
+
+```mojo
+def __init__(out self, var records: Matrix[Self.feat_dtype], var targets: List[Scalar[Self.target_dtype]], var feature_names: List[String], var target_names: List[String])
+```
+
+```mojo
+def __init__(out self, *, deinit move: Self)
+```
+
+---
+
 ## Attributes
 
 | Attribute | Description |
@@ -55,7 +78,6 @@ feature/target name metadata.
 ```mojo
 def n_samples(self) -> Int
 ```
-
 **Returns**: `Int`
 
 ---
@@ -65,7 +87,6 @@ def n_samples(self) -> Int
 ```mojo
 def n_features(self) -> Int
 ```
-
 **Returns**: `Int`
 
 ---
@@ -75,7 +96,6 @@ def n_features(self) -> Int
 ```mojo
 def split_with_ratio(self, ratio: Float64 = 0.25, shuffle: Bool = True, seed: Int = 42) -> DatasetSplit[Self.feat_dtype, Self.target_dtype]
 ```
-
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`ratio`** | `Float64` | — |

@@ -15,6 +15,18 @@ from strata.utils import PRNG
 
 ---
 
+## Constructors
+
+```mojo
+def __init__(out self, seed: Int = 42)
+```
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`seed`** | `Int` | — |
+
+---
+
 ## Methods Overview
 
 | Method | Description |
@@ -33,7 +45,6 @@ from strata.utils import PRNG
 ```mojo
 def next_u64(mut self) -> UInt64
 ```
-
 **Returns**: `UInt64`
 
 ---
@@ -43,7 +54,6 @@ def next_u64(mut self) -> UInt64
 ```mojo
 def next_int(mut self, upper_bound: Int) -> Int
 ```
-
 Returns a pseudo-random integer in [0, upper_bound).
 
 | Parameter | Type | Description |
@@ -59,7 +69,6 @@ Returns a pseudo-random integer in [0, upper_bound).
 ```mojo
 def permutation(n: Int, seed: Int = 42) -> List[Int]
 ```
-
 Generates a pseudo-random permutation of range(0, n) using Fisher-Yates shuffle.
 
 | Parameter | Type | Description |
@@ -76,7 +85,6 @@ Generates a pseudo-random permutation of range(0, n) using Fisher-Yates shuffle.
 ```mojo
 def shuffle[T: Deinitable & Copyable](mut list: List[T], seed: Int = 42)
 ```
-
 In-place Fisher-Yates shuffle on a List.
 
 | Parameter | Type | Description |

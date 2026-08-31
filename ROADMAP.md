@@ -54,7 +54,7 @@ Strata is a native machine learning library for Mojo designed around familiar sc
 - [x] Sparse Matrices (`CSRMatrix[DType]`, `CSCMatrix[DType]`) and Sparse Ops
 - [x] Memory-efficient `Dataset[feat_dtype, target_dtype]` container
 - [x] Sequential `Pipeline` chaining (`PipelineTransformer`, `PipelineRegressor`, `PipelineClassifier`)
-- [ ] `ColumnTransformer` (sub-matrix slicing for heterogeneous features)
+- [x] `ColumnTransformer` (sub-matrix slicing for heterogeneous features)
 - [ ] Zero-copy buffer views and Python/NumPy array interop
 - [ ] Multi-threaded matrix multiplication and batch ops via `parallel_for`
 - [ ] Model Persistence (`dump` & `load` binary/safetensors serialization for estimators and pipelines)

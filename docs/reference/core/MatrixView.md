@@ -15,6 +15,22 @@ from strata.core import MatrixView
 
 ---
 
+## Constructors
+
+```mojo
+def __init__(out self, ptr: Pointer[Scalar[Self.dtype], Self.origin], rows: Int, cols: Int, row_stride: Int, col_stride: Int = 1)
+```
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`ptr`** | `Pointer[Scalar[Self.dtype], Self.origin]` | — |
+| **`rows`** | `Int` | — |
+| **`cols`** | `Int` | — |
+| **`row_stride`** | `Int` | — |
+| **`col_stride`** | `Int` | — |
+
+---
+
 ## Methods Overview
 
 | Method | Description |
@@ -37,7 +53,6 @@ from strata.core import MatrixView
 ```mojo
 def num_rows(self) -> Int
 ```
-
 **Returns**: `Int`
 
 ---
@@ -47,7 +62,6 @@ def num_rows(self) -> Int
 ```mojo
 def num_cols(self) -> Int
 ```
-
 **Returns**: `Int`
 
 ---
@@ -57,7 +71,6 @@ def num_cols(self) -> Int
 ```mojo
 def num_elements(self) -> Int
 ```
-
 **Returns**: `Int`
 
 ---
@@ -67,7 +80,6 @@ def num_elements(self) -> Int
 ```mojo
 def shape(self) -> Tuple[Int, Int]
 ```
-
 **Returns**: `Tuple[Int, Int]`
 
 ---
@@ -77,7 +89,6 @@ def shape(self) -> Tuple[Int, Int]
 ```mojo
 def slice_rows(self, start_row: Int, end_row: Int) -> MatrixView[Self.dtype, Self.origin]
 ```
-
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`start_row`** | `Int` | — |
@@ -92,7 +103,6 @@ def slice_rows(self, start_row: Int, end_row: Int) -> MatrixView[Self.dtype, Sel
 ```mojo
 def slice_cols(self, start_col: Int, end_col: Int) -> MatrixView[Self.dtype, Self.origin]
 ```
-
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`start_col`** | `Int` | — |
@@ -107,7 +117,6 @@ def slice_cols(self, start_col: Int, end_col: Int) -> MatrixView[Self.dtype, Sel
 ```mojo
 def slice_2d(self, start_row: Int, end_row: Int, start_col: Int, end_col: Int) -> MatrixView[Self.dtype, Self.origin]
 ```
-
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`start_row`** | `Int` | — |
@@ -124,7 +133,6 @@ def slice_2d(self, start_row: Int, end_row: Int, start_col: Int, end_col: Int) -
 ```mojo
 def to_matrix(self) -> Matrix[Self.dtype]
 ```
-
 **Returns**: `Matrix[Self.dtype]`
 
 ---

@@ -29,12 +29,18 @@ where $\mu$ is the mean of the training samples and $\sigma$ is the standard dev
 
 ---
 
-## Arguments (Runtime)
+## Constructors
 
-| Argument | Description |
-| :--- | :--- |
-| **`with_mean`** | If True, center the data before scaling. Default True. |
-| **`with_std`** | If True, scale the data to unit variance (unit standard deviation). Default True. |
+```mojo
+def __init__(out self, with_mean: Bool = True, with_std: Bool = True)
+```
+
+Initialize the StandardScaler.
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`with_mean`** | `Bool` | Whether to center data by subtracting feature means. Default True. |
+| **`with_std`** | `Bool` | Whether to scale data to unit variance. Default True. |
 
 ---
 
@@ -66,11 +72,12 @@ where $\mu$ is the mean of the training samples and $\sigma$ is the standard dev
 def fit[in_dtype: DType](mut self, X: Matrix[in_dtype])
 def fit[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype])
 ```
+> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 ---
 
@@ -80,11 +87,12 @@ def fit[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_
 def transform[in_dtype: DType](self, X: Matrix[in_dtype]) -> Matrix[in_dtype]
 def transform[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> Dataset[ feat_dtype, target_dtype ]
 ```
+> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 **Returns**: `Matrix[in_dtype]`
 
@@ -96,11 +104,12 @@ def transform[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[fea
 def fit_transform[in_dtype: DType](mut self, X: Matrix[in_dtype]) -> Matrix[in_dtype]
 def fit_transform[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype]) -> Dataset[ feat_dtype, target_dtype ]
 ```
+> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 **Returns**: `Matrix[in_dtype]`
 ---

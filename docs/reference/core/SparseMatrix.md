@@ -35,7 +35,6 @@ sparsity counts (`nnz`) for Compressed Sparse Row (CSR) and Compressed Sparse Co
 ```mojo
 def num_rows(self) -> Int
 ```
-
 **Returns**: `Int`
 
 ---
@@ -45,7 +44,6 @@ def num_rows(self) -> Int
 ```mojo
 def num_cols(self) -> Int
 ```
-
 **Returns**: `Int`
 
 ---
@@ -55,7 +53,6 @@ def num_cols(self) -> Int
 ```mojo
 def nnz(self) -> Int
 ```
-
 **Returns**: `Int`
 
 ---

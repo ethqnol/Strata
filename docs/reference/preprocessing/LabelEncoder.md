@@ -26,6 +26,16 @@ into continuous integer labels for classification tasks.
 
 ---
 
+## Constructors
+
+```mojo
+def __init__(out self)
+```
+
+Initialize the LabelEncoder.
+
+---
+
 ## Attributes
 
 | Attribute | Description |
@@ -53,7 +63,6 @@ into continuous integer labels for classification tasks.
 ```mojo
 def fit[in_dtype: DType](mut self, y: List[Scalar[in_dtype]])
 ```
-
 Fit label encoder on target vector y.
 
 | Parameter | Type | Description |
@@ -67,7 +76,6 @@ Fit label encoder on target vector y.
 ```mojo
 def transform[in_dtype: DType](self, y: List[Scalar[in_dtype]]) -> List[Int]
 ```
-
 Transform target labels to normalized encoding indices.
 
 | Parameter | Type | Description |
@@ -83,7 +91,6 @@ Transform target labels to normalized encoding indices.
 ```mojo
 def fit_transform[in_dtype: DType](mut self, y: List[Scalar[in_dtype]]) -> List[Int]
 ```
-
 Fit label encoder and return encoded integer labels.
 
 | Parameter | Type | Description |
@@ -99,7 +106,6 @@ Fit label encoder and return encoded integer labels.
 ```mojo
 def inverse_transform[out_dtype: DType = Self.compute_dtype](self, y: List[Int]) -> List[Scalar[out_dtype]]
 ```
-
 Transform integer labels back to original encoding.
 
 | Parameter | Type | Description |

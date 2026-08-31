@@ -15,6 +15,16 @@ from strata.core import QRResult
 
 ---
 
+## Constructors
+
+```mojo
+def __init__(out self, var Q: Matrix[Self.dtype], var R: Matrix[Self.dtype])
+```
+
+Initialize a QRResult container.
+
+---
+
 ## Attributes
 
 | Attribute | Description |

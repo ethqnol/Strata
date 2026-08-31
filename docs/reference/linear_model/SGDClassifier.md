@@ -30,23 +30,29 @@ $$
 
 ---
 
-## Arguments (Runtime)
+## Constructors
 
-| Argument | Description |
-| :--- | :--- |
-| **`loss`** | Loss function to use ('hinge', 'log_loss', 'modified_huber', 'squared_hinge'). Default 'hinge'. |
-| **`penalty`** | Regularization penalty ('l2', 'l1', 'elasticnet', 'none'). Default 'l2'. |
-| **`alpha`** | Regularization constant multiplier ($\alpha \ge 0$). Default 1e-4. |
-| **`l1_ratio`** | ElasticNet mixing parameter in [0, 1]. Default 0.15. |
-| **`fit_intercept`** | Whether to estimate an independent intercept term. Default True. |
-| **`max_iter`** | Maximum number of passes over training data (epochs). Default 1000. |
-| **`tol`** | Stopping criterion threshold for loss changes. Default 1e-3. |
-| **`shuffle_data`** | Whether to shuffle data per epoch. Default True. |
-| **`epsilon`** | Epsilon parameter for huber loss. Default 0.1. |
-| **`random_state`** | Seed for random shuffling. Default 42. |
-| **`learning_rate`** | Learning rate schedule ('optimal', 'constant', 'invscaling', 'adaptive'). Default 'optimal'. |
-| **`eta0`** | Initial learning rate. Default 0.0. |
-| **`power_t`** | Exponent for inverse scaling schedule. Default 0.5. |
+```mojo
+def __init__(out self, loss: String = "hinge", penalty: String = "l2", alpha: Scalar[Self.compute_dtype] = 1e-4, l1_ratio: Scalar[Self.compute_dtype] = 0.15, fit_intercept: Bool = True, max_iter: Int = 1000, tol: Scalar[Self.compute_dtype] = 1e-3, shuffle_data: Bool = True, epsilon: Scalar[Self.compute_dtype] = 0.1, random_state: Int = 42, learning_rate: String = "optimal", eta0: Scalar[Self.compute_dtype] = 0.01, power_t: Scalar[Self.compute_dtype] = 0.5)
+```
+
+Initialize the SGDClassifier estimator.
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`loss`** | `String` | — |
+| **`penalty`** | `String` | — |
+| **`alpha`** | `Scalar[Self.compute_dtype]` | — |
+| **`l1_ratio`** | `Scalar[Self.compute_dtype]` | — |
+| **`fit_intercept`** | `Bool` | — |
+| **`max_iter`** | `Int` | — |
+| **`tol`** | `Scalar[Self.compute_dtype]` | — |
+| **`shuffle_data`** | `Bool` | — |
+| **`epsilon`** | `Scalar[Self.compute_dtype]` | — |
+| **`random_state`** | `Int` | — |
+| **`learning_rate`** | `String` | — |
+| **`eta0`** | `Scalar[Self.compute_dtype]` | — |
+| **`power_t`** | `Scalar[Self.compute_dtype]` | — |
 
 ---
 
@@ -82,6 +88,7 @@ $$
 def fit[feat_dtype: DType, in_target_dtype: DType](mut self, X: Matrix[feat_dtype], y: List[Scalar[in_target_dtype]])
 def fit[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype])
 ```
+> **Overload Note**: This method accepts either standard `(X, y)` inputs or a unified `dataset: Dataset` container.
 
 Fit linear model classifier with Stochastic Gradient Descent.
 
@@ -89,7 +96,7 @@ Fit linear model classifier with Stochastic Gradient Descent.
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[feat_dtype]` | Feature matrix. |
 | **`y`** | `List[Scalar[in_target_dtype]]` | Target vector / class labels. |
-| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix and target labels. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix and targets. *(Can be provided alternatively in place of (X, y))*  |
 
 ---
 
@@ -98,7 +105,6 @@ Fit linear model classifier with Stochastic Gradient Descent.
 ```mojo
 def decision_function[feat_dtype: DType](self, X: Matrix[feat_dtype]) -> Matrix[feat_dtype]
 ```
-
 Predict linear margin decision function.
 
 | Parameter | Type | Description |
@@ -115,13 +121,14 @@ Predict linear margin decision function.
 def predict_proba[feat_dtype: DType](self, X: Matrix[feat_dtype]) -> Matrix[feat_dtype]
 def predict_proba[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> Matrix[feat_dtype]
 ```
+> **Overload Note**: This method accepts either standard `(X, y)` inputs or a unified `dataset: Dataset` container.
 
 Probability estimates for each class.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[feat_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature records. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix and targets. *(Can be provided alternatively in place of (X, y))*  |
 
 **Returns**: `Matrix[feat_dtype]`
 
@@ -133,13 +140,14 @@ Probability estimates for each class.
 def predict[feat_dtype: DType](self, X: Matrix[feat_dtype]) -> List[Int]
 def predict[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> List[Int]
 ```
+> **Overload Note**: This method accepts either standard `(X, y)` inputs or a unified `dataset: Dataset` container.
 
 Predict class labels for samples in X.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[feat_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature records. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix and targets. *(Can be provided alternatively in place of (X, y))*  |
 
 **Returns**: `List[Int]`
 ---

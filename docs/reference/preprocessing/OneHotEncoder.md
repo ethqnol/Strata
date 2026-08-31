@@ -27,12 +27,18 @@ categorical features. The features are encoded using a one-hot (also known as
 
 ---
 
-## Arguments (Runtime)
+## Constructors
 
-| Argument | Description |
-| :--- | :--- |
-| **`drop`** | Category dropping strategy ('none', 'first', 'if_binary'). Default 'none'. |
-| **`handle_unknown`** | Behavior for unseen categories during transform ('error', 'ignore'). Default 'error'. |
+```mojo
+def __init__(out self, drop: String = "none", handle_unknown: String = "error")
+```
+
+Initialize the OneHotEncoder.
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`drop`** | `String` | Category dropping strategy ('none', 'first', 'if_binary'). Default 'none'. |
+| **`handle_unknown`** | `String` | Behavior for unseen categories ('error', 'ignore'). Default 'error'. |
 
 ---
 
@@ -67,7 +73,6 @@ categorical features. The features are encoded using a one-hot (also known as
 ```mojo
 def n_features_out(self) -> Int
 ```
-
 Number of indicator columns produced by transform.
 
 **Returns**: `Int`
@@ -80,11 +85,12 @@ Number of indicator columns produced by transform.
 def fit[in_dtype: DType](mut self, X: Matrix[in_dtype])
 def fit[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype])
 ```
+> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 ---
 
@@ -94,11 +100,12 @@ def fit[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_
 def transform[in_dtype: DType](self, X: Matrix[in_dtype]) -> Matrix[in_dtype]
 def transform[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> Dataset[ feat_dtype, target_dtype ]
 ```
+> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 **Returns**: `Matrix[in_dtype]`
 
@@ -109,7 +116,6 @@ def transform[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[fea
 ```mojo
 def get_feature_names_out(self, input_features: List[String] = List[String]()) -> List[String]
 ```
-
 Output column names as '<feature>_<category>' pairs.
 
 | Parameter | Type | Description |
@@ -126,11 +132,12 @@ Output column names as '<feature>_<category>' pairs.
 def fit_transform[in_dtype: DType](mut self, X: Matrix[in_dtype]) -> Matrix[in_dtype]
 def fit_transform[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype]) -> Dataset[ feat_dtype, target_dtype ]
 ```
+> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 **Returns**: `Matrix[in_dtype]`
 
@@ -141,7 +148,6 @@ def fit_transform[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dat
 ```mojo
 def inverse_transform[in_dtype: DType](self, X: Matrix[in_dtype]) -> Matrix[in_dtype]
 ```
-
 Recovers the original categorical values from a one-hot matrix.
 
 | Parameter | Type | Description |

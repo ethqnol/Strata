@@ -15,6 +15,16 @@ from strata.core import SVDResult
 
 ---
 
+## Constructors
+
+```mojo
+def __init__(out self, var U: Matrix[Self.dtype], var S: List[Scalar[Self.dtype]], var Vt: Matrix[Self.dtype])
+```
+
+Initialize an SVDResult container.
+
+---
+
 ## Attributes
 
 | Attribute | Description |

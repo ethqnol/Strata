@@ -9,6 +9,8 @@ from strata import (
     Matrix,
     Dataset,
     StandardScaler,
+    MinMaxScaler,
+    RobustScaler,
     PipelineTransformer,
     PipelineRegressor,
     PipelineClassifier,
@@ -82,7 +84,7 @@ def test_pipeline_transformer_chaining() raises:
     # Scale with mean then scale with std in 2 chained steps
     var s1 = StandardScaler(with_mean=True, with_std=False)
     var s2 = StandardScaler(with_mean=False, with_std=True)
-    var prep = PipelineTransformer(s1^, s2^)
+    var prep = PipelineTransformer((s1^, s2^))
 
     var X = Matrix[DType.float64](4, 1, 0)
     X[0, 0] = 10.0
@@ -301,7 +303,7 @@ def test_pipeline_classifier_copy_constructor() raises:
 def test_pipeline_transformer_copy_constructor() raises:
     var s1 = StandardScaler(with_mean=True, with_std=False)
     var s2 = StandardScaler(with_mean=False, with_std=True)
-    var t1 = PipelineTransformer(s1^, s2^)
+    var t1 = PipelineTransformer((s1^, s2^))
 
     var X = Matrix[DType.float64](3, 1, 10.0)
     _ = t1.fit_transform(X)
@@ -416,7 +418,7 @@ def test_pipeline_classifier_dataset_fit_predict_proba() raises:
 def test_pipeline_transformer_dataset_transform() raises:
     var s1 = StandardScaler()
     var s2 = StandardScaler(with_mean=False, with_std=False)
-    var pipe = PipelineTransformer(s1^, s2^)
+    var pipe = PipelineTransformer((s1^, s2^))
 
     var X = Matrix[DType.float64](3, 2, 5.0)
     var y: List[Scalar[DType.float64]] = [1.0, 2.0, 3.0]
@@ -483,6 +485,52 @@ def test_pipeline_repeated_fit_reset() raises:
 
     var preds = pipe.predict(X2)
     assert_almost_equal(preds[0], 10.0, rtol=1e-3)
+
+
+def test_pipeline_transformer_three_steps() raises:
+    # Test variadic chaining of 3 transformers in series
+    var pipe_trans = PipelineTransformer(
+        (
+            StandardScaler(),
+            MinMaxScaler(),
+            RobustScaler(),
+        )
+    )
+    var X = Matrix[DType.float64](4, 2, 0)
+    X[0, 0] = 10.0
+    X[0, 1] = 100.0
+    X[1, 0] = 20.0
+    X[1, 1] = 200.0
+    X[2, 0] = 30.0
+    X[2, 1] = 300.0
+    X[3, 0] = 40.0
+    X[3, 1] = 400.0
+
+    var Xt = pipe_trans.fit_transform(X)
+    assert_equal(Xt.rows, 4)
+    assert_equal(Xt.cols, 2)
+    assert_true(pipe_trans.is_fitted)
+
+
+def test_pipeline_transformer_variadic_regressor() raises:
+    var pipe_trans = PipelineTransformer(
+        (
+            StandardScaler(),
+            MinMaxScaler(),
+        )
+    )
+    var reg = MockLinearRegressor(1.0, 0.0)
+    var pipe = PipelineRegressor(pipe_trans^, reg^)
+
+    var X = Matrix[DType.float64](3, 1, 0)
+    X[0, 0] = 1.0
+    X[1, 0] = 2.0
+    X[2, 0] = 3.0
+    var y: List[Scalar[DType.float64]] = [1.0, 2.0, 3.0]
+
+    pipe.fit(X, y)
+    var preds = pipe.predict(X)
+    assert_equal(len(preds), 3)
 
 
 def main() raises:

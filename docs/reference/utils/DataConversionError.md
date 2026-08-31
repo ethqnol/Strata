@@ -31,7 +31,6 @@ from strata.utils import DataConversionError
 ```mojo
 def error(msg: String) -> Error
 ```
-
 Create a formatted DataConversionError message.
 
 | Parameter | Type | Description |
@@ -47,5 +46,4 @@ Create a formatted DataConversionError message.
 ```mojo
 def write_to(self, mut writer: Some[Writer])
 ```
-
 ---

@@ -4,6 +4,7 @@ from std.testing import (
     assert_true,
     assert_raises,
     assert_almost_equal,
+)
 from strata import (
     Matrix,
     gemm,

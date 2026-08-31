@@ -1,5 +1,6 @@
 from std.math import sqrt
 from std.python import PythonObject
+from .types import ArrayLike
 from .view import MatrixView
 from ..exceptions.errors import DimensionMismatchError, InvalidParameterError
 

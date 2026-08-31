@@ -29,12 +29,18 @@ $$
 
 ---
 
-## Arguments (Runtime)
+## Constructors
 
-| Argument | Description |
-| :--- | :--- |
-| **`fit_intercept`** | Whether to calculate the intercept bias term. Default True. |
-| **`solver`** | Solver algorithm to use ('lstsq', 'qr', 'cholesky', 'solve'). Default 'lstsq'. |
+```mojo
+def __init__(out self, fit_intercept: Bool = True, solver: String = "lstsq")
+```
+
+Initialize the linear regression estimator.
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`fit_intercept`** | `Bool` | Whether to calculate the intercept bias term. Default True. |
+| **`solver`** | `String` | Solver algorithm ('lstsq', 'qr', 'cholesky', 'solve'). Default 'lstsq'. |
 
 ---
 
@@ -65,6 +71,7 @@ $$
 def fit[feat_dtype: DType, in_target_dtype: DType](mut self, X: Matrix[feat_dtype], y: List[Scalar[in_target_dtype]])
 def fit[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype])
 ```
+> **Overload Note**: This method accepts either standard `(X, y)` inputs or a unified `dataset: Dataset` container.
 
 Fit the linear model from training data.
 
@@ -72,7 +79,7 @@ Fit the linear model from training data.
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[feat_dtype]` | Feature matrix. |
 | **`y`** | `List[Scalar[in_target_dtype]]` | Target vector / class labels. |
-| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix and targets. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix and targets. *(Can be provided alternatively in place of (X, y))*  |
 
 ---
 
@@ -82,13 +89,14 @@ Fit the linear model from training data.
 def predict[feat_dtype: DType](self, X: Matrix[feat_dtype]) -> List[Scalar[feat_dtype]]
 def predict[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> List[Scalar[feat_dtype]]
 ```
+> **Overload Note**: This method accepts either standard `(X, y)` inputs or a unified `dataset: Dataset` container.
 
 Predict continuous target values using the fitted linear model.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[feat_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature records. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix and targets. *(Can be provided alternatively in place of (X, y))*  |
 
 **Returns**: `List[Scalar[feat_dtype]]` — List[Scalar[feat_dtype]]: Predicted target vector of length $N$.
 ---

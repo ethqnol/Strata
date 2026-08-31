@@ -26,15 +26,21 @@ using brute-force or index-backed spatial distance metrics.
 
 ---
 
-## Arguments (Runtime)
+## Constructors
 
-| Argument | Description |
-| :--- | :--- |
-| **`n_neighbors`** | Number of neighbors to use by default for `kneighbors` queries. Default 5. |
-| **`radius`** | Range of parameter space to use by default for `radius_neighbors` queries. Default 1.0. |
-| **`algorithm`** | Algorithm used to compute nearest neighbors ('auto', 'brute'). Default 'auto'. |
-| **`metric`** | Distance metric to use ('euclidean', 'sqeuclidean', 'manhattan', 'chebyshev', 'minkowski', 'cosine'). Default 'euclidean'. |
-| **`p`** | Parameter for the Minkowski metric. Default 2.0. |
+```mojo
+def __init__(out self, n_neighbors: Int = 5, radius: Float64 = 1.0, algorithm: String = "auto", metric: String = "euclidean", p: Float64 = 2.0)
+```
+
+Initialize NearestNeighbors estimator.
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`n_neighbors`** | `Int` | Number of nearest neighbors to query (>= 1). Default 5. |
+| **`radius`** | `Float64` | Spatial neighborhood radius (> 0.0). Default 1.0. |
+| **`algorithm`** | `String` | Neighbor search algorithm ('auto', 'brute'). Default 'auto'. |
+| **`metric`** | `String` | Distance metric name. Default 'euclidean'. |
+| **`p`** | `Float64` | Minkowski metric exponent (>= 1.0). Default 2.0. |
 
 ---
 
@@ -65,7 +71,6 @@ using brute-force or index-backed spatial distance metrics.
 ```mojo
 def fit[in_dtype: DType](mut self, X: Matrix[in_dtype])
 ```
-
 Fit the nearest neighbors estimator from the training dataset.
 
 | Parameter | Type | Description |
@@ -80,6 +85,7 @@ Fit the nearest neighbors estimator from the training dataset.
 def kneighbors[in_dtype: DType](self, X: Matrix[in_dtype], n_neighbors: Int = -1) -> Tuple[ Matrix[in_dtype], Matrix[DType.int32] ]
 def kneighbors[in_dtype: DType = DType.float64](self, n_neighbors: Int = -1) -> Tuple[ Matrix[in_dtype], Matrix[DType.int32] ]
 ```
+> **Overload Note**: This method supports multiple overloaded call signatures.
 
 Find the K-neighbors of points in X.
 
@@ -97,7 +103,6 @@ Find the K-neighbors of points in X.
 ```mojo
 def radius_neighbors[in_dtype: DType](self, X: Matrix[in_dtype], radius: Float64 = -1.0) -> Tuple[ List[List[Scalar[in_dtype]]], List[List[Int]] ]
 ```
-
 Find the neighbors within a given radius of points in X.
 
 | Parameter | Type | Description |

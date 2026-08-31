@@ -32,7 +32,6 @@ from strata.base import Transformer
 ```mojo
 def fit[in_dtype: DType](mut self, X: Matrix[in_dtype])
 ```
-
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
@@ -44,7 +43,6 @@ def fit[in_dtype: DType](mut self, X: Matrix[in_dtype])
 ```mojo
 def transform[in_dtype: DType](self, X: Matrix[in_dtype]) -> Matrix[in_dtype]
 ```
-
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
@@ -58,7 +56,6 @@ def transform[in_dtype: DType](self, X: Matrix[in_dtype]) -> Matrix[in_dtype]
 ```mojo
 def fit_transform[in_dtype: DType](mut self, X: Matrix[in_dtype]) -> Matrix[in_dtype]
 ```
-
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |

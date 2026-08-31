@@ -19,6 +19,23 @@ overlap. Sizes are expressed as proportions of the total sample count.
 
 ---
 
+## Constructors
+
+```mojo
+def __init__(out self, n_splits: Int = 10, test_size: Float64 = 0.1, train_size: Float64 = 0.0, random_state: Int = 42)
+```
+
+Initializes the ShuffleSplit cross-validator.
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`n_splits`** | `Int` | Number of re-shuffling and splitting iterations. |
+| **`test_size`** | `Float64` | Proportion of samples held out for testing, in (0, 1). |
+| **`train_size`** | `Float64` | Proportion of samples used for training, in (0, 1), or 0.0 to use the complement of test_size. |
+| **`random_state`** | `Int` | Base seed controlling the permutation of each split. |
+
+---
+
 ## Methods Overview
 
 | Method | Description |
@@ -35,7 +52,6 @@ overlap. Sizes are expressed as proportions of the total sample count.
 ```mojo
 def get_n_splits(self) -> Int
 ```
-
 Returns the number of splitting iterations in the cross-validator.
 
 **Returns**: `Int`
@@ -48,6 +64,7 @@ Returns the number of splitting iterations in the cross-validator.
 def split(self, n_samples: Int) -> List[Split]
 def split[dtype: DType](self, X: Matrix[dtype]) -> List[Split]
 ```
+> **Overload Note**: This method supports multiple overloaded call signatures.
 
 Generates randomly permuted train and test indices for each split.
 

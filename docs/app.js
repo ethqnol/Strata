@@ -323,9 +323,27 @@
         }
       }
 
-      // Blockquotes
+      // Blockquotes & Callouts
       if (line.trim().startsWith('>')) {
-        html.push(`<blockquote><p>${formatInline(line.trim().substring(1).trim())}</p></blockquote>`);
+        let bqLines = [];
+        let j = i;
+        while (j < lines.length && lines[j].trim().startsWith('>')) {
+          bqLines.push(lines[j].trim().substring(1).trim());
+          j++;
+        }
+        i = j - 1;
+
+        let firstLine = bqLines[0] || '';
+        let calloutMatch = firstLine.match(/^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/i);
+        if (calloutMatch) {
+          let type = calloutMatch[1].toLowerCase();
+          bqLines.shift();
+          html.push(`<div class="callout callout-${type}"><p>${bqLines.map(l => formatInline(l)).join('<br>')}</p></div>`);
+        } else if (firstLine.includes('**Overload Note**:') || firstLine.includes('**Overloaded Method**:')) {
+          html.push(`<div class="overload-note"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: var(--accent-primary);"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg><span>${bqLines.map(l => formatInline(l)).join(' ')}</span></div>`);
+        } else {
+          html.push(`<blockquote><p>${bqLines.map(l => formatInline(l)).join('<br>')}</p></blockquote>`);
+        }
         continue;
       }
 
