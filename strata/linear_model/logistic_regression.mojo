@@ -8,11 +8,18 @@ from ..utils.validation import (
 )
 from ..utils.math import softmax
 from ..exceptions.errors import InvalidParameterError, DimensionMismatchError
+from ..io.serializer import (
+    BufferWriter,
+    BufferReader,
+    Serializable,
+    write_header,
+    check_header,
+)
 
 
 struct LogisticRegression[
     compute_dtype: DType = DType.float64,
-](Classifier, Copyable, Movable):
+](Classifier, Copyable, Movable, Serializable):
     """Logistic Regression classifier with L2 regularization.
 
     Supports binary and multiclass (multinomial) classification by minimizing
@@ -339,3 +346,47 @@ struct LogisticRegression[
             preds.append(self.classes_[best_k])
 
         return preds^
+
+    def serialize(self, mut writer: BufferWriter):
+        """Serializes LogisticRegression parameters and fitted state into BufferWriter.
+        """
+        write_header(writer, "LogisticRegression")
+        writer.write_bool(self.is_fitted)
+        writer.write_string(self.penalty)
+        writer.write_float64(self.C.cast[DType.float64]())
+        writer.write_bool(self.fit_intercept)
+        writer.write_int(self.max_iter)
+        writer.write_float64(self.tol.cast[DType.float64]())
+        writer.write_float64(self.learning_rate.cast[DType.float64]())
+        writer.write_int_list(self.classes_)
+        writer.write_matrix[Self.compute_dtype](self.coef_)
+        writer.write_float_list[Self.compute_dtype](self.intercept_)
+
+    @staticmethod
+    def deserialize(mut reader: BufferReader) raises -> Self:
+        """Deserializes LogisticRegression from BufferReader."""
+        check_header(reader, "LogisticRegression")
+        var is_fitted = reader.read_bool()
+        var penalty = reader.read_string()
+        var C = Scalar[Self.compute_dtype](reader.read_float64())
+        var fit_intercept = reader.read_bool()
+        var max_iter = reader.read_int()
+        var tol = Scalar[Self.compute_dtype](reader.read_float64())
+        var learning_rate = Scalar[Self.compute_dtype](reader.read_float64())
+        var classes_ = reader.read_int_list()
+        var coef_ = reader.read_matrix[Self.compute_dtype]()
+        var intercept_ = reader.read_float_list[Self.compute_dtype]()
+
+        var model = Self(
+            penalty=penalty,
+            C=C,
+            fit_intercept=fit_intercept,
+            max_iter=max_iter,
+            tol=tol,
+            learning_rate=learning_rate,
+        )
+        model.is_fitted = is_fitted
+        model.classes_ = classes_^
+        model.coef_ = coef_^
+        model.intercept_ = intercept_^
+        return model^

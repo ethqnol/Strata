@@ -5,7 +5,15 @@ from std.testing import (
     assert_raises,
     assert_almost_equal,
 )
-from strata import Matrix, gemm, dense_dot_vec, DimensionMismatchError
+from strata import (
+    Matrix,
+    gemm,
+    dense_dot_vec,
+    hstack,
+    vstack,
+    DimensionMismatchError,
+    InvalidParameterError,
+)
 
 
 def test_matrix_construction_and_access() raises:
@@ -493,6 +501,99 @@ def test_matrix_transpose_symmetry_for_identity() raises:
     for r in range(4):
         for c in range(4):
             assert_equal(Eye[r, c], Eye_t[r, c])
+
+
+def test_matrix_select_columns_and_rows() raises:
+    # 3x4 Matrix
+    # [ 1,  2,  3,  4 ]
+    # [ 5,  6,  7,  8 ]
+    # [ 9, 10, 11, 12 ]
+    var A = Matrix[DType.float64](3, 4, 0)
+    for r in range(3):
+        for c in range(4):
+            A[r, c] = Float64(r * 4 + c + 1)
+
+    # 1. Select columns [0, 2] -> 3x2 submatrix
+    var cols_idx: List[Int] = [0, 2]
+    var sub_cols = A.select_columns(cols_idx)
+    assert_equal(sub_cols.rows, 3)
+    assert_equal(sub_cols.cols, 2)
+    assert_equal(sub_cols[0, 0], 1.0)
+    assert_equal(sub_cols[0, 1], 3.0)
+    assert_equal(sub_cols[1, 0], 5.0)
+    assert_equal(sub_cols[1, 1], 7.0)
+    assert_equal(sub_cols[2, 0], 9.0)
+    assert_equal(sub_cols[2, 1], 11.0)
+
+    # 2. Select rows [2, 0] (permutation) -> 2x4 submatrix
+    var rows_idx: List[Int] = [2, 0]
+    var sub_rows = A.select_rows(rows_idx)
+    assert_equal(sub_rows.rows, 2)
+    assert_equal(sub_rows.cols, 4)
+    assert_equal(sub_rows[0, 0], 9.0)
+    assert_equal(sub_rows[0, 3], 12.0)
+    assert_equal(sub_rows[1, 0], 1.0)
+    assert_equal(sub_rows[1, 3], 4.0)
+
+
+def test_matrix_hstack_and_vstack() raises:
+    var A = Matrix[DType.float64](2, 2, 0)
+    A[0, 0] = 1.0
+    A[0, 1] = 2.0
+    A[1, 0] = 3.0
+    A[1, 1] = 4.0
+
+    var B = Matrix[DType.float64](2, 3, 0)
+    B[0, 0] = 10.0
+    B[0, 1] = 20.0
+    B[0, 2] = 30.0
+    B[1, 0] = 40.0
+    B[1, 1] = 50.0
+    B[1, 2] = 60.0
+
+    # 1. Horizontal stacking (2x2) hstack (2x3) -> (2x5)
+    var H = hstack(A, B)
+    assert_equal(H.rows, 2)
+    assert_equal(H.cols, 5)
+    assert_equal(H[0, 0], 1.0)
+    assert_equal(H[0, 1], 2.0)
+    assert_equal(H[0, 2], 10.0)
+    assert_equal(H[0, 4], 30.0)
+    assert_equal(H[1, 0], 3.0)
+    assert_equal(H[1, 4], 60.0)
+
+    # 2. Vertical stacking (2x2) vstack (2x2) -> (4x2)
+    var V = vstack(A, A)
+    assert_equal(V.rows, 4)
+    assert_equal(V.cols, 2)
+    assert_equal(V[0, 0], 1.0)
+    assert_equal(V[1, 1], 4.0)
+    assert_equal(V[2, 0], 1.0)
+    assert_equal(V[3, 1], 4.0)
+
+
+def test_matrix_ops_bounds_and_mismatch() raises:
+    var A = Matrix[DType.float64](2, 2, 1.0)
+
+    # Invalid column index
+    var bad_cols: List[Int] = [0, 5]
+    with assert_raises():
+        _ = A.select_columns(bad_cols)
+
+    # Invalid row index
+    var bad_rows: List[Int] = [-1, 0]
+    with assert_raises():
+        _ = A.select_rows(bad_rows)
+
+    # hstack row count mismatch
+    var C_3rows = Matrix[DType.float64](3, 2, 1.0)
+    with assert_raises():
+        _ = hstack(A, C_3rows)
+
+    # vstack col count mismatch
+    var D_3cols = Matrix[DType.float64](2, 3, 1.0)
+    with assert_raises():
+        _ = vstack(A, D_3cols)
 
 
 def main() raises:

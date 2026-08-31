@@ -67,7 +67,7 @@ def main() raises:
     # Build a StandardScaler -> PCA -> LinearRegression pipeline
     var scaler = StandardScaler()
     var pca = PCA(n_components=2)
-    var prep = PipelineTransformer(scaler^, pca^)
+    var prep = PipelineTransformer((scaler^, pca^))
     var reg = LinearRegression(solver="cholesky")
     var pipe = PipelineRegressor(prep^, reg^)
 
@@ -94,6 +94,23 @@ def main() raises:
     mbk.partial_fit(X)
 ```
 
+### Model Persistence & Serialization
+
+```mojo
+from strata import dump, load, LinearRegression, Matrix
+
+def main() raises:
+    var reg = LinearRegression(solver="cholesky")
+    reg.fit(X_train, y_train)
+
+    # Save fitted model to disk
+    dump(reg, "model.strata")
+
+    # Load model back with exact type inference and fitted state intact
+    var loaded_reg = load[LinearRegression]("model.strata")
+    var preds = loaded_reg.predict(X_test)
+```
+
 ---
 
 ## Implemented Modules
@@ -108,6 +125,8 @@ def main() raises:
 - **`strata.linear_model`**: `LinearRegression`, `Ridge`, `Lasso` (coordinate descent), `ElasticNet`, `LogisticRegression` (binary and multinomial), `SGDRegressor`, `SGDClassifier`.
 - **`strata.tree`**: `DecisionTreeClassifier`, `DecisionTreeRegressor` (with Gini, Entropy, MSE, MAE criteria).
 - **`strata.ensemble`**: `RandomForestClassifier`, `RandomForestRegressor` (with OOB evaluation and soft voting), `HistGradientBoostingClassifier`, `HistGradientBoostingRegressor` (with UInt8 binning, histogram subtraction, and early stopping).
+- **`strata.compose`**: `ColumnTransformer` (heterogeneous feature transformers applied to designated subsets of columns with configurable remainder routing).
+- **`strata.io`**: `BufferWriter`, `BufferReader`, `Serializable`, `dump`, `load`, `dumps`, `loads` (zero-copy, endian-safe binary model persistence).
 - **`strata.neighbors`**: `NearestNeighbors`, `KNeighborsClassifier`, `KNeighborsRegressor`, `KDTree`, and distance metrics (`euclidean`, `manhattan`, `chebyshev`, `minkowski`, `cosine`, `pairwise_distances`).
 - **`strata.decomposition`**: `PCA` (with whitening and sign-flip), `TruncatedSVD` (dense and sparse CSR via SpMM).
 - **`strata.cluster`**: `KMeans` (k-means++, Lloyd's algorithm, distance-space transforms), `MiniBatchKMeans` (streaming online updates, EWMA inertia smoothing, `partial_fit`).
@@ -136,3 +155,4 @@ pixi run build
 
 See [CONTRIBUTORS.md](./CONTRIBUTORS.md) for development setup and codebase conventions.  
 See [ROADMAP.md](./ROADMAP.md) for planned features and progress.
+

@@ -29,11 +29,17 @@ $$
 
 ---
 
-## Arguments (Runtime)
+## Constructors
 
-| Argument | Description |
-| :--- | :--- |
-| **`threshold`** | Feature values greater than this are mapped to 1. Default 0.0. |
+```mojo
+def __init__(out self, threshold: Scalar[Self.compute_dtype] = 0.0)
+```
+
+Initialize the Binarizer.
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`threshold`** | `Scalar[Self.compute_dtype]` | Feature threshold boundary. Values greater than this map to 1. Default 0.0. |
 
 ---
 
@@ -64,11 +70,12 @@ $$
 def fit[in_dtype: DType](mut self, X: Matrix[in_dtype])
 def fit[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype])
 ```
+> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 ---
 
@@ -78,11 +85,12 @@ def fit[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_
 def transform[in_dtype: DType](self, X: Matrix[in_dtype]) -> Matrix[in_dtype]
 def transform[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> Dataset[ feat_dtype, target_dtype ]
 ```
+> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 **Returns**: `Matrix[in_dtype]`
 
@@ -94,11 +102,12 @@ def transform[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[fea
 def fit_transform[in_dtype: DType](mut self, X: Matrix[in_dtype]) -> Matrix[in_dtype]
 def fit_transform[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype]) -> Dataset[ feat_dtype, target_dtype ]
 ```
+> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 **Returns**: `Matrix[in_dtype]`
 ---

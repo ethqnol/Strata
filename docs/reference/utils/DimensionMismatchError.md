@@ -31,7 +31,6 @@ from strata.utils import DimensionMismatchError
 ```mojo
 def error(expected: String, actual: String, context: String = "") -> Error
 ```
-
 Create a formatted DimensionMismatchError message.
 
 | Parameter | Type | Description |
@@ -49,5 +48,4 @@ Create a formatted DimensionMismatchError message.
 ```mojo
 def write_to(self, mut writer: Some[Writer])
 ```
-
 ---

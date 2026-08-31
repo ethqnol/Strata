@@ -15,6 +15,16 @@ from strata.core import EigResult
 
 ---
 
+## Constructors
+
+```mojo
+def __init__(out self, var eigenvalues: List[Scalar[Self.dtype]], var eigenvectors: Matrix[Self.dtype])
+```
+
+Initialize an EigResult container.
+
+---
+
 ## Attributes
 
 | Attribute | Description |
@@ -49,7 +59,6 @@ from strata.core import EigResult
 ```mojo
 def gemm[dtype: DType = DType.float64](A: Matrix[dtype], B: Matrix[dtype]) -> Matrix[dtype]
 ```
-
 Compute dense matrix product $C = A B$.
 
 | Parameter | Type | Description |
@@ -66,7 +75,6 @@ Compute dense matrix product $C = A B$.
 ```mojo
 def dense_dot_vec[dtype: DType = DType.float64](A: Matrix[dtype], x: List[Scalar[dtype]], bias: Scalar[dtype] = 0) -> List[Scalar[dtype]]
 ```
-
 Dense matrix-vector product: y = A @ x + bias.
 
 | Parameter | Type | Description |
@@ -84,7 +92,6 @@ Dense matrix-vector product: y = A @ x + bias.
 ```mojo
 def svd[dtype: DType = DType.float64](A: Matrix[dtype], full_matrices: Bool = False) -> SVDResult[dtype]
 ```
-
 Computes the Singular Value Decomposition (SVD) of a matrix A = U * S * Vt.
 
 | Parameter | Type | Description |
@@ -101,7 +108,6 @@ Computes the Singular Value Decomposition (SVD) of a matrix A = U * S * Vt.
 ```mojo
 def qr[dtype: DType = DType.float64](A: Matrix[dtype]) -> QRResult[dtype]
 ```
-
 Computes the QR Decomposition of matrix A = Q * R using LAPACK Householder reflectors (dgeqrf/dorgqr).
 
 | Parameter | Type | Description |
@@ -117,7 +123,6 @@ Computes the QR Decomposition of matrix A = Q * R using LAPACK Householder refle
 ```mojo
 def cholesky[dtype: DType = DType.float64](A: Matrix[dtype], lower: Bool = True) -> Matrix[dtype]
 ```
-
 Computes the Cholesky factorization of a symmetric positive-definite matrix A = L * L^T.
 
 | Parameter | Type | Description |
@@ -134,7 +139,6 @@ Computes the Cholesky factorization of a symmetric positive-definite matrix A = 
 ```mojo
 def lstsq[dtype: DType = DType.float64](A: Matrix[dtype], b: List[Scalar[dtype]], rcond: Float64 = -1.0) -> List[Scalar[dtype]]
 ```
-
 Solve linear least-squares problem $\min_x \|A x - b\|_2$ using SVD.
 
 | Parameter | Type | Description |
@@ -152,7 +156,6 @@ Solve linear least-squares problem $\min_x \|A x - b\|_2$ using SVD.
 ```mojo
 def solve[dtype: DType = DType.float64](A: Matrix[dtype], b: List[Scalar[dtype]]) -> List[Scalar[dtype]]
 ```
-
 Solves a square linear system A * x = b using LU decomposition (dgesv/sgesv).
 
 | Parameter | Type | Description |
@@ -169,7 +172,6 @@ Solves a square linear system A * x = b using LU decomposition (dgesv/sgesv).
 ```mojo
 def solve_cholesky[dtype: DType = DType.float64](A: Matrix[dtype], b: List[Scalar[dtype]], lower: Bool = True) -> List[ Scalar[dtype] ]
 ```
-
 Solves a symmetric positive definite linear system A * x = b using Cholesky (dposv/sposv).
 
 | Parameter | Type | Description |
@@ -187,7 +189,6 @@ Solves a symmetric positive definite linear system A * x = b using Cholesky (dpo
 ```mojo
 def inv[dtype: DType = DType.float64](A: Matrix[dtype]) -> Matrix[dtype]
 ```
-
 Computes the multiplicative inverse of a square matrix A using LU decomposition (dgetrf/dgetri).
 
 | Parameter | Type | Description |
@@ -203,7 +204,6 @@ Computes the multiplicative inverse of a square matrix A using LU decomposition 
 ```mojo
 def norm[dtype: DType = DType.float64](A: Matrix[dtype], ord: String = "fro") -> Float64
 ```
-
 Computes the Frobenius matrix norm: ||A||_F = sqrt(sum(A_ij^2)).
 
 | Parameter | Type | Description |
@@ -220,7 +220,6 @@ Computes the Frobenius matrix norm: ||A||_F = sqrt(sum(A_ij^2)).
 ```mojo
 def eigh[dtype: DType = DType.float64](A: Matrix[dtype], UPLO: String = "L") -> EigResult[dtype]
 ```
-
 Computes the eigenvalues and eigenvectors of a real symmetric matrix.
 
 | Parameter | Type | Description |

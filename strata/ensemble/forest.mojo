@@ -8,6 +8,13 @@ from ..utils.validation import (
 )
 from ..utils.random import PRNG
 from ..exceptions.errors import InvalidParameterError, DimensionMismatchError
+from ..io.serializer import (
+    BufferWriter,
+    BufferReader,
+    Serializable,
+    write_header,
+    check_header,
+)
 from ..tree.regressor import DecisionTreeRegressor
 from ..tree.classifier import DecisionTreeClassifier
 from ._forest import (
@@ -35,7 +42,7 @@ def _find_class_index(classes: List[Int], target: Int) -> Int:
 
 struct RandomForestRegressor[
     compute_dtype: DType = DType.float64,
-](Copyable, Movable, Regressor):
+](Copyable, Movable, Regressor, Serializable):
     """Random Forest Regressor ensemble estimator.
 
     An ensemble of decision trees trained via bootstrap aggregation (bagging).
@@ -454,10 +461,92 @@ struct RandomForestRegressor[
             )
         return self.oob_score_
 
+    def serialize(self, mut writer: BufferWriter):
+        """Serializes RandomForestRegressor parameters and fitted state into BufferWriter.
+        """
+        write_header(writer, "RandomForestRegressor")
+        writer.write_bool(self.is_fitted)
+        writer.write_int(self.n_estimators)
+        writer.write_string(self.criterion)
+        writer.write_int(self.max_depth)
+        writer.write_int(self.min_samples_split)
+        writer.write_int(self.min_samples_leaf)
+        writer.write_float64(self.min_impurity_decrease)
+        writer.write_string(self.max_features)
+        writer.write_int(self.max_features_count)
+        writer.write_float64(self.max_features_ratio)
+        writer.write_bool(self.bootstrap)
+        writer.write_float64(self.max_samples_ratio)
+        writer.write_int(self.max_samples_count)
+        writer.write_bool(self.oob_score)
+        writer.write_int(self.random_state)
+        writer.write_int(self.n_features_in_)
+        writer.write_float64_list(self.feature_importances_)
+        writer.write_float64(self.oob_score_)
+
+        writer.write_int(len(self.estimators_))
+        for i in range(len(self.estimators_)):
+            self.estimators_[i].serialize(writer)
+
+    @staticmethod
+    def deserialize(mut reader: BufferReader) raises -> Self:
+        """Deserializes RandomForestRegressor from BufferReader."""
+        check_header(reader, "RandomForestRegressor")
+        var is_fitted = reader.read_bool()
+        var n_estimators = reader.read_int()
+        var criterion = reader.read_string()
+        var max_depth = reader.read_int()
+        var min_samples_split = reader.read_int()
+        var min_samples_leaf = reader.read_int()
+        var min_impurity_decrease = reader.read_float64()
+        var max_features = reader.read_string()
+        var max_features_count = reader.read_int()
+        var max_features_ratio = reader.read_float64()
+        var bootstrap = reader.read_bool()
+        var max_samples_ratio = reader.read_float64()
+        var max_samples_count = reader.read_int()
+        var oob_score = reader.read_bool()
+        var random_state = reader.read_int()
+        var n_features_in_ = reader.read_int()
+        var feature_importances_ = reader.read_float64_list()
+        var oob_score_ = reader.read_float64()
+
+        var n_trees = reader.read_int()
+        var estimators_ = List[DecisionTreeRegressor[Self.compute_dtype]](
+            capacity=n_trees
+        )
+        for _ in range(n_trees):
+            estimators_.append(
+                DecisionTreeRegressor[Self.compute_dtype].deserialize(reader)
+            )
+
+        var model = Self(
+            n_estimators=n_estimators,
+            criterion=criterion,
+            max_depth=max_depth,
+            min_samples_split=min_samples_split,
+            min_samples_leaf=min_samples_leaf,
+            min_impurity_decrease=min_impurity_decrease,
+            max_features=max_features,
+            max_features_count=max_features_count,
+            max_features_ratio=max_features_ratio,
+            bootstrap=bootstrap,
+            max_samples_ratio=max_samples_ratio,
+            max_samples_count=max_samples_count,
+            oob_score=oob_score,
+            random_state=random_state,
+        )
+        model.is_fitted = is_fitted
+        model.n_features_in_ = n_features_in_
+        model.feature_importances_ = feature_importances_^
+        model.oob_score_ = oob_score_
+        model.estimators_ = estimators_^
+        return model^
+
 
 struct RandomForestClassifier[
     compute_dtype: DType = DType.float64,
-](Classifier, Copyable, Movable):
+](Classifier, Copyable, Movable, Serializable):
     """Random Forest Classifier ensemble estimator.
 
     An ensemble of decision trees trained via bootstrap aggregation (bagging).
@@ -946,3 +1035,91 @@ struct RandomForestClassifier[
         """Returns the sorted list of known class labels."""
         check_is_fitted("RandomForestClassifier", self.is_fitted)
         return self.classes_.copy()
+
+    def serialize(self, mut writer: BufferWriter):
+        """Serializes RandomForestClassifier parameters and fitted state into BufferWriter.
+        """
+        write_header(writer, "RandomForestClassifier")
+        writer.write_bool(self.is_fitted)
+        writer.write_int(self.n_estimators)
+        writer.write_string(self.criterion)
+        writer.write_int(self.max_depth)
+        writer.write_int(self.min_samples_split)
+        writer.write_int(self.min_samples_leaf)
+        writer.write_float64(self.min_impurity_decrease)
+        writer.write_string(self.max_features)
+        writer.write_int(self.max_features_count)
+        writer.write_float64(self.max_features_ratio)
+        writer.write_bool(self.bootstrap)
+        writer.write_float64(self.max_samples_ratio)
+        writer.write_int(self.max_samples_count)
+        writer.write_bool(self.oob_score)
+        writer.write_int(self.random_state)
+        writer.write_int(self.n_features_in_)
+        writer.write_int(self.n_classes_)
+        writer.write_int_list(self.classes_)
+        writer.write_float64_list(self.feature_importances_)
+        writer.write_float64(self.oob_score_)
+
+        writer.write_int(len(self.estimators_))
+        for i in range(len(self.estimators_)):
+            self.estimators_[i].serialize(writer)
+
+    @staticmethod
+    def deserialize(mut reader: BufferReader) raises -> Self:
+        """Deserializes RandomForestClassifier from BufferReader."""
+        check_header(reader, "RandomForestClassifier")
+        var is_fitted = reader.read_bool()
+        var n_estimators = reader.read_int()
+        var criterion = reader.read_string()
+        var max_depth = reader.read_int()
+        var min_samples_split = reader.read_int()
+        var min_samples_leaf = reader.read_int()
+        var min_impurity_decrease = reader.read_float64()
+        var max_features = reader.read_string()
+        var max_features_count = reader.read_int()
+        var max_features_ratio = reader.read_float64()
+        var bootstrap = reader.read_bool()
+        var max_samples_ratio = reader.read_float64()
+        var max_samples_count = reader.read_int()
+        var oob_score = reader.read_bool()
+        var random_state = reader.read_int()
+        var n_features_in_ = reader.read_int()
+        var n_classes_ = reader.read_int()
+        var classes_ = reader.read_int_list()
+        var feature_importances_ = reader.read_float64_list()
+        var oob_score_ = reader.read_float64()
+
+        var n_trees = reader.read_int()
+        var estimators_ = List[DecisionTreeClassifier[Self.compute_dtype]](
+            capacity=n_trees
+        )
+        for _ in range(n_trees):
+            estimators_.append(
+                DecisionTreeClassifier[Self.compute_dtype].deserialize(reader)
+            )
+
+        var model = Self(
+            n_estimators=n_estimators,
+            criterion=criterion,
+            max_depth=max_depth,
+            min_samples_split=min_samples_split,
+            min_samples_leaf=min_samples_leaf,
+            min_impurity_decrease=min_impurity_decrease,
+            max_features=max_features,
+            max_features_count=max_features_count,
+            max_features_ratio=max_features_ratio,
+            bootstrap=bootstrap,
+            max_samples_ratio=max_samples_ratio,
+            max_samples_count=max_samples_count,
+            oob_score=oob_score,
+            random_state=random_state,
+        )
+        model.is_fitted = is_fitted
+        model.n_features_in_ = n_features_in_
+        model.n_classes_ = n_classes_
+        model.classes_ = classes_^
+        model.feature_importances_ = feature_importances_^
+        model.oob_score_ = oob_score_
+        model.estimators_ = estimators_^
+        return model^

@@ -1,4 +1,5 @@
 from ..core.matrix import Matrix
+from ..io.serializer import BufferWriter, BufferReader
 
 
 struct Node(Copyable, Movable):
@@ -292,3 +293,45 @@ struct Tree(Copyable, Movable):
                         data.append(Scalar[out_dtype](0.0))
 
         return Matrix[out_dtype](n_rows, n_cols, data^)
+
+    def serialize(self, mut writer: BufferWriter):
+        """Serializes tree nodes, class counts, and probabilities into BufferWriter.
+        """
+        writer.write_int(self.n_classes)
+        writer.write_int_list(self.classes_)
+        writer.write_int(len(self.nodes))
+        for i in range(len(self.nodes)):
+            var node = self.nodes[i].copy()
+            writer.write_int(node.feature_idx)
+            writer.write_float64(node.threshold)
+            writer.write_int(node.left_child)
+            writer.write_int(node.right_child)
+            writer.write_float64(node.value_reg)
+            writer.write_int_list(node.class_counts)
+            writer.write_float64_list(node.class_probabilities)
+            writer.write_float64(node.impurity)
+            writer.write_int(node.n_node_samples)
+            writer.write_bool(node.is_leaf)
+
+    @staticmethod
+    def deserialize(mut reader: BufferReader) raises -> Self:
+        """Deserializes Tree from BufferReader."""
+        var n_classes = reader.read_int()
+        var classes_ = reader.read_int_list()
+        var n_nodes = reader.read_int()
+        var tree = Self(n_classes, classes_^)
+        tree.nodes = List[Node](capacity=n_nodes)
+        for _ in range(n_nodes):
+            var node = Node()
+            node.feature_idx = reader.read_int()
+            node.threshold = reader.read_float64()
+            node.left_child = reader.read_int()
+            node.right_child = reader.read_int()
+            node.value_reg = reader.read_float64()
+            node.class_counts = reader.read_int_list()
+            node.class_probabilities = reader.read_float64_list()
+            node.impurity = reader.read_float64()
+            node.n_node_samples = reader.read_int()
+            node.is_leaf = reader.read_bool()
+            tree.nodes.append(node^)
+        return tree^

@@ -14,11 +14,18 @@ from ..utils.validation import (
     check_is_fitted,
 )
 from ..exceptions.errors import InvalidParameterError, DimensionMismatchError
+from ..io.serializer import (
+    BufferWriter,
+    BufferReader,
+    Serializable,
+    write_header,
+    check_header,
+)
 
 
 struct Ridge[
     compute_dtype: DType = DType.float64,
-](Copyable, Movable, Regressor):
+](Copyable, Movable, Regressor, Serializable):
     """Ridge regression with L2 regularization.
 
     Minimizes the penalized objective function:
@@ -252,3 +259,34 @@ struct Ridge[
             for i in range(len(preds_comp)):
                 preds.append(Scalar[feat_dtype](preds_comp[i]))
             return preds^
+
+    def serialize(self, mut writer: BufferWriter):
+        """Serializes Ridge parameters and fitted state into BufferWriter."""
+        write_header(writer, "Ridge")
+        writer.write_bool(self.is_fitted)
+        writer.write_float64(self.alpha.cast[DType.float64]())
+        writer.write_bool(self.fit_intercept)
+        writer.write_string(self.solver)
+        writer.write_float_list[Self.compute_dtype](self.coef_)
+        writer.write_float64(self.intercept_.cast[DType.float64]())
+
+    @staticmethod
+    def deserialize(mut reader: BufferReader) raises -> Self:
+        """Deserializes Ridge from BufferReader."""
+        check_header(reader, "Ridge")
+        var is_fitted = reader.read_bool()
+        var alpha = Scalar[Self.compute_dtype](reader.read_float64())
+        var fit_intercept = reader.read_bool()
+        var solver = reader.read_string()
+        var coef_ = reader.read_float_list[Self.compute_dtype]()
+        var intercept_ = Scalar[Self.compute_dtype](reader.read_float64())
+
+        var model = Self(
+            alpha=alpha,
+            fit_intercept=fit_intercept,
+            solver=solver,
+        )
+        model.is_fitted = is_fitted
+        model.coef_ = coef_^
+        model.intercept_ = intercept_
+        return model^

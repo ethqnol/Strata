@@ -12,3 +12,16 @@ from strata.neighbors import NeighborDistIdx
 ```
 
 **Container holding a sample distance and its training dataset row index.**
+
+---
+
+## Constructors
+
+```mojo
+def __init__(out self, dist: Float64, idx: Int)
+```
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`dist`** | `Float64` | — |
+| **`idx`** | `Int` | — |

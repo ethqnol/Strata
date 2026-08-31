@@ -1,10 +1,10 @@
 # `MinMaxScaler`
 
-**Module**: [`strata.preprocessing`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable, Transformer`  
+**Module**: [`strata.preprocessing`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Copyable, Movable, Serializable, Transformer`  
 **Source**: [`strata/preprocessing/scaler.mojo`](file:////home/ewu/Code/Strata/strata/preprocessing/scaler.mojo)
 
 ```mojo
-struct MinMaxScaler[compute_dtype: DType = DType.float64](Copyable, Movable, Transformer)
+struct MinMaxScaler[compute_dtype: DType = DType.float64](Copyable, Movable, Serializable, Transformer)
 ```
 
 ```mojo
@@ -29,13 +29,19 @@ $$
 
 ---
 
-## Arguments (Runtime)
+## Constructors
 
-| Argument | Description |
-| :--- | :--- |
-| **`feature_range_min`** | Lower bound of the desired transformed range. Default 0.0. |
-| **`feature_range_max`** | Upper bound of the desired transformed range. Default 1.0. |
-| **`clip`** | Whether to clip transformed values to the feature range. Default False. |
+```mojo
+def __init__(out self, feature_range_min: Scalar[Self.compute_dtype] = 0.0, feature_range_max: Scalar[Self.compute_dtype] = 1.0, clip: Bool = False)
+```
+
+Initialize the MinMaxScaler.
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`feature_range_min`** | `Scalar[Self.compute_dtype]` | Lower bound of the transformed range. Default 0.0. |
+| **`feature_range_max`** | `Scalar[Self.compute_dtype]` | Upper bound of the transformed range. Default 1.0. |
+| **`clip`** | `Bool` | Whether to clip transformed values to the feature range. Default False. |
 
 ---
 
@@ -60,6 +66,8 @@ $$
 | [`MinMaxScaler.transform()`](#transform) | — |
 | [`MinMaxScaler.fit_transform()`](#fit_transform) | — |
 | [`MinMaxScaler.inverse_transform()`](#inverse_transform) | Undoes the scaling of X according to the fitted feature range. |
+| [`MinMaxScaler.serialize()`](#serialize) | Serializes MinMaxScaler parameters and fitted state into BufferWriter. |
+| [`MinMaxScaler.deserialize()`](#deserialize) | Deserializes MinMaxScaler from BufferReader. |
 
 ---
 
@@ -71,11 +79,12 @@ $$
 def fit[in_dtype: DType](mut self, X: Matrix[in_dtype])
 def fit[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype])
 ```
+> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 ---
 
@@ -85,11 +94,12 @@ def fit[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_
 def transform[in_dtype: DType](self, X: Matrix[in_dtype]) -> Matrix[in_dtype]
 def transform[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> Dataset[ feat_dtype, target_dtype ]
 ```
+> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 **Returns**: `Matrix[in_dtype]`
 
@@ -101,11 +111,12 @@ def transform[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[fea
 def fit_transform[in_dtype: DType](mut self, X: Matrix[in_dtype]) -> Matrix[in_dtype]
 def fit_transform[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype]) -> Dataset[ feat_dtype, target_dtype ]
 ```
+> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 **Returns**: `Matrix[in_dtype]`
 
@@ -116,7 +127,6 @@ def fit_transform[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dat
 ```mojo
 def inverse_transform[in_dtype: DType](self, X: Matrix[in_dtype]) -> Matrix[in_dtype]
 ```
-
 Undoes the scaling of X according to the fitted feature range.
 
 | Parameter | Type | Description |
@@ -124,6 +134,26 @@ Undoes the scaling of X according to the fitted feature range.
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
 
 **Returns**: `Matrix[in_dtype]`
+
+---
+
+### `MinMaxScaler.serialize()`
+
+```mojo
+def serialize(self, mut writer: BufferWriter)
+```
+Serializes MinMaxScaler parameters and fitted state into BufferWriter.
+
+---
+
+### `MinMaxScaler.deserialize()`
+
+```mojo
+def deserialize(mut reader: BufferReader) -> Self
+```
+Deserializes MinMaxScaler from BufferReader.
+
+**Returns**: `Self`
 ---
 
 ## Example

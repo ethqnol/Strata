@@ -1,10 +1,10 @@
 # `LogisticRegression`
 
-**Module**: [`strata.linear_model`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Classifier, Copyable, Movable`  
+**Module**: [`strata.linear_model`](index.md) &bull; **Kind**: `struct` &bull; **Traits**: `Classifier, Copyable, Movable, Serializable`  
 **Source**: [`strata/linear_model/logistic_regression.mojo`](file:////home/ewu/Code/Strata/strata/linear_model/logistic_regression.mojo)
 
 ```mojo
-struct LogisticRegression[compute_dtype: DType = DType.float64](Classifier, Copyable, Movable)
+struct LogisticRegression[compute_dtype: DType = DType.float64](Classifier, Copyable, Movable, Serializable)
 ```
 
 ```mojo
@@ -29,16 +29,22 @@ $$
 
 ---
 
-## Arguments (Runtime)
+## Constructors
 
-| Argument | Description |
-| :--- | :--- |
-| **`penalty`** | Regularization norm ('l2' or 'none'). Default 'l2'. |
-| **`C`** | Inverse regularization strength ($C > 0$). Smaller values specify stronger regularization. Default 1.0. |
-| **`fit_intercept`** | Whether to calculate the intercept bias vector. Default True. |
-| **`max_iter`** | Maximum number of gradient optimization iterations. Default 100. |
-| **`tol`** | Tolerance threshold for stopping criterion based on gradient norm. Default 1e-4. |
-| **`learning_rate`** | Step size for gradient descent optimization updates. Default 0.1. |
+```mojo
+def __init__(out self, penalty: String = "l2", C: Scalar[Self.compute_dtype] = 1.0, fit_intercept: Bool = True, max_iter: Int = 100, tol: Scalar[Self.compute_dtype] = 1e-4, learning_rate: Scalar[Self.compute_dtype] = 0.1)
+```
+
+Initialize the LogisticRegression estimator.
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`penalty`** | `String` | Regularization norm ('l2' or 'none'). Default 'l2'. |
+| **`C`** | `Scalar[Self.compute_dtype]` | Inverse regularization strength (must be strictly positive). Default 1.0. |
+| **`fit_intercept`** | `Bool` | Whether to calculate the intercept bias term. Default True. |
+| **`max_iter`** | `Int` | Maximum number of optimization iterations. Default 100. |
+| **`tol`** | `Scalar[Self.compute_dtype]` | Tolerance for stopping criterion. Default 1e-4. |
+| **`learning_rate`** | `Scalar[Self.compute_dtype]` | Initial step size for gradient updates. Default 0.1. |
 
 ---
 
@@ -60,6 +66,8 @@ $$
 | [`LogisticRegression.fit()`](#fit) | Fits the logistic regression model on training data (X, y). |
 | [`LogisticRegression.predict_proba()`](#predict_proba) | Predict class probability distributions for samples in X. |
 | [`LogisticRegression.predict()`](#predict) | Predict discrete class labels for samples in X. |
+| [`LogisticRegression.serialize()`](#serialize) | Serializes LogisticRegression parameters and fitted state into BufferWriter. |
+| [`LogisticRegression.deserialize()`](#deserialize) | Deserializes LogisticRegression from BufferReader. |
 
 ---
 
@@ -71,6 +79,7 @@ $$
 def fit[feat_dtype: DType, target_dtype: DType](mut self, X: Matrix[feat_dtype], y: List[Scalar[target_dtype]])
 def fit[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype])
 ```
+> **Overload Note**: This method accepts either standard `(X, y)` inputs or a unified `dataset: Dataset` container.
 
 Fits the logistic regression model on training data (X, y).
 
@@ -78,7 +87,7 @@ Fits the logistic regression model on training data (X, y).
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[feat_dtype]` | Feature matrix. |
 | **`y`** | `List[Scalar[target_dtype]]` | Target vector / class labels. |
-| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix and target labels. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix and targets. *(Can be provided alternatively in place of (X, y))*  |
 
 ---
 
@@ -88,13 +97,14 @@ Fits the logistic regression model on training data (X, y).
 def predict_proba[feat_dtype: DType](self, X: Matrix[feat_dtype]) -> Matrix[feat_dtype]
 def predict_proba[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> Matrix[feat_dtype]
 ```
+> **Overload Note**: This method accepts either standard `(X, y)` inputs or a unified `dataset: Dataset` container.
 
 Predict class probability distributions for samples in X.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[feat_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature records. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix and targets. *(Can be provided alternatively in place of (X, y))*  |
 
 **Returns**: `Matrix[feat_dtype]` — Matrix[feat_dtype]: Probability matrix of shape $(N, K)$, where row $i$ contains the normalized probability distribution over $K$ classes.
 
@@ -106,15 +116,36 @@ Predict class probability distributions for samples in X.
 def predict[feat_dtype: DType](self, X: Matrix[feat_dtype]) -> List[Int]
 def predict[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> List[Int]
 ```
+> **Overload Note**: This method accepts either standard `(X, y)` inputs or a unified `dataset: Dataset` container.
 
 Predict discrete class labels for samples in X.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[feat_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature records. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix and targets. *(Can be provided alternatively in place of (X, y))*  |
 
 **Returns**: `List[Int]` — List[Int]: Predicted class labels vector of length $N$.
+
+---
+
+### `LogisticRegression.serialize()`
+
+```mojo
+def serialize(self, mut writer: BufferWriter)
+```
+Serializes LogisticRegression parameters and fitted state into BufferWriter.
+
+---
+
+### `LogisticRegression.deserialize()`
+
+```mojo
+def deserialize(mut reader: BufferReader) -> Self
+```
+Deserializes LogisticRegression from BufferReader.
+
+**Returns**: `Self`
 ---
 
 ## Example

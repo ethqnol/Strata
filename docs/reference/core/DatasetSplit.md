@@ -12,3 +12,18 @@ from strata.core import DatasetSplit
 ```
 
 **Container holding train and test partitions of a Dataset.**
+
+---
+
+## Constructors
+
+```mojo
+def __init__(out self, var train: Dataset[Self.feat_dtype, Self.target_dtype], var test: Dataset[Self.feat_dtype, Self.target_dtype])
+```
+
+Initialize a DatasetSplit container.
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`train`** | — | Training partition Dataset. |
+| **`test`** | — | Testing partition Dataset. |

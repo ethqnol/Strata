@@ -42,7 +42,7 @@ Strata is a native machine learning library for Mojo designed around familiar sc
   - Classification: `accuracy_score`, `precision_score`, `recall_score`, `f1_score` (binary, micro, macro, weighted), `confusion_matrix`, `log_loss`
   - Ranking & clustering: rank-based `roc_auc_score` with tie correction, `silhouette_score`
 - **Test Coverage**:
-  - 23 modular test suites (930+ passing tests)
+  - 30 modular test suites (1,166+ passing tests)
 
 
 ---
@@ -54,10 +54,10 @@ Strata is a native machine learning library for Mojo designed around familiar sc
 - [x] Sparse Matrices (`CSRMatrix[DType]`, `CSCMatrix[DType]`) and Sparse Ops
 - [x] Memory-efficient `Dataset[feat_dtype, target_dtype]` container
 - [x] Sequential `Pipeline` chaining (`PipelineTransformer`, `PipelineRegressor`, `PipelineClassifier`)
-- [ ] `ColumnTransformer` (sub-matrix slicing for heterogeneous features)
-- [ ] Zero-copy buffer views and Python/NumPy array interop
+- [x] `ColumnTransformer` (sub-matrix slicing for heterogeneous features)
+- [x] Zero-copy buffer views and Python/NumPy array interop
+- [x] Model Persistence (`dump` & `load` binary serialization for estimators and transformers via `strata.io`)
 - [ ] Multi-threaded matrix multiplication and batch ops via `parallel_for`
-- [ ] Model Persistence (`dump` & `load` binary/safetensors serialization for estimators and pipelines)
 - [ ] ONNX export / inference runtime integration for tree and linear models
 
 ### Preprocessing & Encoders

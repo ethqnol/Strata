@@ -28,13 +28,19 @@ degree-2 polynomial features with bias are $[1, a, b, a^2, ab, b^2]$.
 
 ---
 
-## Arguments (Runtime)
+## Constructors
 
-| Argument | Description |
-| :--- | :--- |
-| **`degree`** | The maximal degree of polynomial features. Default 2. |
-| **`interaction_only`** | If True, only interaction features are produced: products of at most `degree` distinct input features. Default False. |
-| **`include_bias`** | If True, includes a bias column (all 1s) acting as an intercept term. Default True. |
+```mojo
+def __init__(out self, degree: Int = 2, interaction_only: Bool = False, include_bias: Bool = True)
+```
+
+Initialize the PolynomialFeatures transformer.
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`degree`** | `Int` | Maximum polynomial degree (>= 0). Default 2. |
+| **`interaction_only`** | `Bool` | Whether to produce only interaction terms. Default False. |
+| **`include_bias`** | `Bool` | Whether to include a bias column (degree 0). Default True. |
 
 ---
 
@@ -67,13 +73,14 @@ degree-2 polynomial features with bias are $[1, a, b, a^2, ab, b^2]$.
 def fit[in_dtype: DType](mut self, X: Matrix[in_dtype])
 def fit[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype])
 ```
+> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.
 
 Compute the number of output features and combination powers.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature records. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 ---
 
@@ -83,13 +90,14 @@ Compute the number of output features and combination powers.
 def transform[in_dtype: DType](self, X: Matrix[in_dtype]) -> Matrix[in_dtype]
 def transform[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> Dataset[feat_dtype, target_dtype]
 ```
+> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.
 
 Transform data matrix X to polynomial feature combinations.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container to transform. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 **Returns**: `Matrix[in_dtype]` — Matrix[in_dtype]: Expanded polynomial matrix with shape (n_samples, n_output_features_).
 
@@ -101,13 +109,14 @@ Transform data matrix X to polynomial feature combinations.
 def fit_transform[in_dtype: DType](mut self, X: Matrix[in_dtype]) -> Matrix[in_dtype]
 def fit_transform[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype]) -> Dataset[feat_dtype, target_dtype]
 ```
+> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.
 
 Fit to data, then transform it.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container to fit and transform. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 **Returns**: `Matrix[in_dtype]` — Matrix[in_dtype]: Expanded polynomial matrix.
 ---

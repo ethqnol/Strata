@@ -38,6 +38,8 @@ from .core import (
     spmm,
     spgemm,
     sddmm,
+    hstack,
+    vstack,
     matrix_to_numpy,
     matrix_from_numpy,
     csr_to_scipy,
@@ -140,4 +142,13 @@ from .neighbors import (
     KNeighborsClassifier,
     KNeighborsRegressor,
     KDTree,
+)
+from .compose import ColumnTransformer
+from .io import (
+    BufferWriter,
+    BufferReader,
+    dump,
+    load,
+    dumps,
+    loads,
 )

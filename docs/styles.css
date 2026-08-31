@@ -650,6 +650,25 @@ code, kbd, pre {
   font-size: 0.9375rem;
 }
 
+.overload-note {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  margin-bottom: 1.25rem;
+  border-radius: var(--radius-md);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-left: 3px solid var(--accent-primary);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.overload-note strong {
+  color: var(--text-primary);
+}
+
 
 /* Inline Code */
 .markdown-body code:not(pre code) {

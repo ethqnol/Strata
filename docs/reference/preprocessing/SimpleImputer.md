@@ -31,13 +31,19 @@ Strategies:
 
 ---
 
-## Arguments (Runtime)
+## Constructors
 
-| Argument | Description |
-| :--- | :--- |
-| **`missing_values`** | The placeholder for missing values. Can be `NaN` or a scalar value. Default `NaN`. |
-| **`strategy`** | The imputation strategy ('mean', 'median', 'most_frequent', 'constant'). Default 'mean'. |
-| **`fill_value`** | Value used when strategy='constant'. Default 0.0. |
+```mojo
+def __init__(out self, missing_values: Float64 = nan[DType.float64](), strategy: String = "mean", fill_value: Scalar[Self.compute_dtype] = 0.0)
+```
+
+Initialize the SimpleImputer.
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`missing_values`** | `Float64` | Value representing missing entries (default NaN). |
+| **`strategy`** | `String` | Imputation strategy ('mean', 'median', 'most_frequent', 'constant'). Default 'mean'. |
+| **`fill_value`** | `Scalar[Self.compute_dtype]` | Value to substitute when strategy='constant'. Default 0.0. |
 
 ---
 
@@ -69,13 +75,14 @@ Strategies:
 def fit[in_dtype: DType](mut self, X: Matrix[in_dtype])
 def fit[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype])
 ```
+> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.
 
 Fit the imputer on feature matrix X.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature records. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 ---
 
@@ -85,13 +92,14 @@ Fit the imputer on feature matrix X.
 def transform[in_dtype: DType](self, X: Matrix[in_dtype]) -> Matrix[in_dtype]
 def transform[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> Dataset[feat_dtype, target_dtype]
 ```
+> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.
 
 Impute all missing values in X.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container to transform. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 **Returns**: `Matrix[in_dtype]` — Matrix[in_dtype]: Matrix with missing values imputed.
 
@@ -103,13 +111,14 @@ Impute all missing values in X.
 def fit_transform[in_dtype: DType](mut self, X: Matrix[in_dtype]) -> Matrix[in_dtype]
 def fit_transform[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype]) -> Dataset[feat_dtype, target_dtype]
 ```
+> **Overload Note**: This method accepts either a standard `X: Matrix` or a unified `dataset: Dataset` container.
 
 Fit to data, then transform it.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container to fit and transform. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix. *(Can be provided alternatively in place of X)* |
 
 **Returns**: `Matrix[in_dtype]` — Matrix[in_dtype]: Matrix with missing values imputed.
 ---

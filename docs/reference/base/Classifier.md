@@ -32,7 +32,6 @@ from strata.base import Classifier
 ```mojo
 def fit[feat_dtype: DType, target_dtype: DType](mut self, X: Matrix[feat_dtype], y: List[Scalar[target_dtype]])
 ```
-
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[feat_dtype]` | Feature matrix. |
@@ -45,7 +44,6 @@ def fit[feat_dtype: DType, target_dtype: DType](mut self, X: Matrix[feat_dtype],
 ```mojo
 def predict[feat_dtype: DType](self, X: Matrix[feat_dtype]) -> List[Int]
 ```
-
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[feat_dtype]` | Feature matrix. |
@@ -59,7 +57,6 @@ def predict[feat_dtype: DType](self, X: Matrix[feat_dtype]) -> List[Int]
 ```mojo
 def predict_proba[feat_dtype: DType](self, X: Matrix[feat_dtype]) -> Matrix[feat_dtype]
 ```
-
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[feat_dtype]` | Feature matrix. |

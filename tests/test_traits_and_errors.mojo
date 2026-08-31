@@ -123,7 +123,7 @@ def test_pipeline_and_traits() raises:
     # Test N-step composable PipelineTransformer
     var scaler1 = StandardScaler(with_mean=True, with_std=False)
     var scaler2 = StandardScaler(with_mean=False, with_std=True)
-    var chained_prep = PipelineTransformer(scaler1^, scaler2^)
+    var chained_prep = PipelineTransformer((scaler1^, scaler2^))
     var reg2 = MockRegressor(3.0)
     var deep_pipe = PipelineRegressor(chained_prep^, reg2^)
 

@@ -13,10 +13,17 @@ from ..exceptions.errors import (
     DimensionMismatchError,
     InvalidParameterError,
 )
+from ..io.serializer import (
+    BufferWriter,
+    BufferReader,
+    Serializable,
+    write_header,
+    check_header,
+)
 
 
 struct StandardScaler[compute_dtype: DType = DType.float64](
-    Copyable, Movable, Transformer
+    Copyable, Movable, Serializable, Transformer
 ):
     """Standardize features by removing the mean and scaling to unit variance.
 
@@ -175,9 +182,35 @@ struct StandardScaler[compute_dtype: DType = DType.float64](
         self.fit[feat_dtype, target_dtype](dataset)
         return self.transform[feat_dtype, target_dtype](dataset)
 
+    def serialize(self, mut writer: BufferWriter):
+        """Serializes StandardScaler parameters and fitted state into BufferWriter.
+        """
+        write_header(writer, "StandardScaler")
+        writer.write_bool(self.is_fitted)
+        writer.write_bool(self.with_mean)
+        writer.write_bool(self.with_std)
+        writer.write_float_list[Self.compute_dtype](self.mean_)
+        writer.write_float_list[Self.compute_dtype](self.scale_)
+
+    @staticmethod
+    def deserialize(mut reader: BufferReader) raises -> Self:
+        """Deserializes StandardScaler from BufferReader."""
+        check_header(reader, "StandardScaler")
+        var is_fitted = reader.read_bool()
+        var with_mean = reader.read_bool()
+        var with_std = reader.read_bool()
+        var mean_ = reader.read_float_list[Self.compute_dtype]()
+        var scale_ = reader.read_float_list[Self.compute_dtype]()
+
+        var scaler = Self(with_mean=with_mean, with_std=with_std)
+        scaler.is_fitted = is_fitted
+        scaler.mean_ = mean_^
+        scaler.scale_ = scale_^
+        return scaler^
+
 
 struct MinMaxScaler[compute_dtype: DType = DType.float64](
-    Copyable, Movable, Transformer
+    Copyable, Movable, Serializable, Transformer
 ):
     """Transform features by scaling each feature to a specified range.
 
@@ -416,6 +449,45 @@ struct MinMaxScaler[compute_dtype: DType = DType.float64](
                 res[r, c] = Scalar[in_dtype](val)
         return res^
 
+    def serialize(self, mut writer: BufferWriter):
+        """Serializes MinMaxScaler parameters and fitted state into BufferWriter.
+        """
+        write_header(writer, "MinMaxScaler")
+        writer.write_bool(self.is_fitted)
+        writer.write_float64(self.feature_range_min.cast[DType.float64]())
+        writer.write_float64(self.feature_range_max.cast[DType.float64]())
+        writer.write_bool(self.clip)
+        writer.write_float_list[Self.compute_dtype](self.data_min_)
+        writer.write_float_list[Self.compute_dtype](self.data_max_)
+        writer.write_float_list[Self.compute_dtype](self.data_range_)
+        writer.write_float_list[Self.compute_dtype](self.scale_)
+        writer.write_float_list[Self.compute_dtype](self.min_)
+
+    @staticmethod
+    def deserialize(mut reader: BufferReader) raises -> Self:
+        """Deserializes MinMaxScaler from BufferReader."""
+        check_header(reader, "MinMaxScaler")
+        var is_fitted = reader.read_bool()
+        var f_min = Scalar[Self.compute_dtype](reader.read_float64())
+        var f_max = Scalar[Self.compute_dtype](reader.read_float64())
+        var clip = reader.read_bool()
+        var data_min_ = reader.read_float_list[Self.compute_dtype]()
+        var data_max_ = reader.read_float_list[Self.compute_dtype]()
+        var data_range_ = reader.read_float_list[Self.compute_dtype]()
+        var scale_ = reader.read_float_list[Self.compute_dtype]()
+        var min_ = reader.read_float_list[Self.compute_dtype]()
+
+        var scaler = Self(
+            feature_range_min=f_min, feature_range_max=f_max, clip=clip
+        )
+        scaler.is_fitted = is_fitted
+        scaler.data_min_ = data_min_^
+        scaler.data_max_ = data_max_^
+        scaler.data_range_ = data_range_^
+        scaler.scale_ = scale_^
+        scaler.min_ = min_^
+        return scaler^
+
 
 def _quantile[
     dtype: DType
@@ -438,7 +510,7 @@ def _quantile[
 
 
 struct RobustScaler[compute_dtype: DType = DType.float64](
-    Copyable, Movable, Transformer
+    Copyable, Movable, Serializable, Transformer
 ):
     """Scale features using statistics that are robust to outliers.
 
@@ -663,3 +735,38 @@ struct RobustScaler[compute_dtype: DType = DType.float64](
                     val += self.center_[c]
                 res[r, c] = Scalar[in_dtype](val)
         return res^
+
+    def serialize(self, mut writer: BufferWriter):
+        """Serializes RobustScaler parameters and fitted state into BufferWriter.
+        """
+        write_header(writer, "RobustScaler")
+        writer.write_bool(self.is_fitted)
+        writer.write_bool(self.with_centering)
+        writer.write_bool(self.with_scaling)
+        writer.write_float64(self.quantile_min)
+        writer.write_float64(self.quantile_max)
+        writer.write_float_list[Self.compute_dtype](self.center_)
+        writer.write_float_list[Self.compute_dtype](self.scale_)
+
+    @staticmethod
+    def deserialize(mut reader: BufferReader) raises -> Self:
+        """Deserializes RobustScaler from BufferReader."""
+        check_header(reader, "RobustScaler")
+        var is_fitted = reader.read_bool()
+        var with_centering = reader.read_bool()
+        var with_scaling = reader.read_bool()
+        var q_min = reader.read_float64()
+        var q_max = reader.read_float64()
+        var center_ = reader.read_float_list[Self.compute_dtype]()
+        var scale_ = reader.read_float_list[Self.compute_dtype]()
+
+        var scaler = Self(
+            with_centering=with_centering,
+            with_scaling=with_scaling,
+            quantile_min=q_min,
+            quantile_max=q_max,
+        )
+        scaler.is_fitted = is_fitted
+        scaler.center_ = center_^
+        scaler.scale_ = scale_^
+        return scaler^

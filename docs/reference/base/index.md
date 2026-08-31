@@ -8,7 +8,7 @@ Unified estimator traits (Transformer, Regressor, Classifier, Clusterer) and seq
 
 | Struct | Description |
 | :--- | :--- |
-| [`PipelineTransformer`](PipelineTransformer.md) | Chains two data transformers into a single composite transformer. |
+| [`PipelineTransformer`](PipelineTransformer.md) | Chains an arbitrary variadic sequence of data transformers into a single composite transformer. |
 | [`PipelineRegressor`](PipelineRegressor.md) | Sequentially applies a transformer pipeline before fitting a regressor. |
 | [`PipelineClassifier`](PipelineClassifier.md) | Sequentially applies a transformer pipeline before fitting a classifier. |
 

@@ -33,15 +33,21 @@ $$
 
 ---
 
-## Arguments (Runtime)
+## Constructors
 
-| Argument | Description |
-| :--- | :--- |
-| **`n_neighbors`** | Number of neighbors to use for prediction. Default 5. |
-| **`weights`** | Weight function used in prediction ('uniform', 'distance'). Default 'uniform'. |
-| **`algorithm`** | Neighbor search algorithm ('auto', 'brute'). Default 'auto'. |
-| **`metric`** | Distance metric to use ('euclidean', 'sqeuclidean', 'manhattan', 'chebyshev', 'minkowski', 'cosine'). Default 'euclidean'. |
-| **`p`** | Power parameter for the Minkowski metric. Default 2.0. |
+```mojo
+def __init__(out self, n_neighbors: Int = 5, weights: String = "uniform", algorithm: String = "auto", metric: String = "euclidean", p: Float64 = 2.0)
+```
+
+Initialize KNeighborsRegressor.
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`n_neighbors`** | `Int` | Number of nearest neighbors (>= 1). Default 5. |
+| **`weights`** | `String` | Voting weight policy ('uniform', 'distance'). Default 'uniform'. |
+| **`algorithm`** | `String` | Neighbor search algorithm ('auto', 'brute'). Default 'auto'. |
+| **`metric`** | `String` | Distance metric identifier. Default 'euclidean'. |
+| **`p`** | `Float64` | Minkowski metric exponent (>= 1.0). Default 2.0. |
 
 ---
 
@@ -72,6 +78,7 @@ $$
 def fit[feat_dtype: DType, target_dtype: DType](mut self, X: Matrix[feat_dtype], y: List[Scalar[target_dtype]])
 def fit[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype])
 ```
+> **Overload Note**: This method accepts either standard `(X, y)` inputs or a unified `dataset: Dataset` container.
 
 Fit the k-nearest neighbors regressor from the training dataset.
 
@@ -79,7 +86,7 @@ Fit the k-nearest neighbors regressor from the training dataset.
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[feat_dtype]` | Feature matrix. |
 | **`y`** | `List[Scalar[target_dtype]]` | Target vector / class labels. |
-| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix and targets. *(Can be provided alternatively in place of (X, y))*  |
 
 ---
 
@@ -89,13 +96,14 @@ Fit the k-nearest neighbors regressor from the training dataset.
 def predict[feat_dtype: DType](self, X: Matrix[feat_dtype]) -> List[Scalar[feat_dtype]]
 def predict[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> List[ Scalar[feat_dtype] ]
 ```
+> **Overload Note**: This method accepts either standard `(X, y)` inputs or a unified `dataset: Dataset` container.
 
 Predict the continuous target values for the provided data.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[feat_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype` | Dataset container. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature matrix and targets. *(Can be provided alternatively in place of (X, y))*  |
 
 **Returns**: `List[Scalar[feat_dtype]]` — List[Scalar[feat_dtype]]: Predicted regression values.
 ---

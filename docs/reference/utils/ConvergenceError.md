@@ -31,7 +31,6 @@ from strata.utils import ConvergenceError
 ```mojo
 def error(estimator_name: String, max_iter: Int, loss: Float64 = 0.0) -> Error
 ```
-
 Create a formatted ConvergenceError message.
 
 | Parameter | Type | Description |
@@ -49,5 +48,4 @@ Create a formatted ConvergenceError message.
 ```mojo
 def write_to(self, mut writer: Some[Writer])
 ```
-
 ---

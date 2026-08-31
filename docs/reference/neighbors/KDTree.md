@@ -26,12 +26,18 @@ tree for $O(K \log N)$ neighbor lookups.
 
 ---
 
-## Arguments (Runtime)
+## Constructors
 
-| Argument | Description |
-| :--- | :--- |
-| **`data`** | Matrix of training points with shape (n_samples, n_features). |
-| **`metric`** | Distance metric to use ('euclidean', 'manhattan', 'chebyshev'). Default 'euclidean'. |
+```mojo
+def __init__(out self, data: Matrix[Self.compute_dtype], metric: String = "euclidean")
+```
+
+Construct a KDTree from a matrix of spatial coordinates.
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`data`** | `Matrix[Self.compute_dtype]` | Input point matrix of shape (n_samples, n_features). |
+| **`metric`** | `String` | Distance metric ('euclidean', 'manhattan', 'chebyshev'). Default 'euclidean'. |
 
 ---
 
@@ -61,7 +67,6 @@ tree for $O(K \log N)$ neighbor lookups.
 ```mojo
 def query[in_dtype: DType](self, X: Matrix[in_dtype], k: Int = 1) -> Tuple[ Matrix[in_dtype], Matrix[DType.int32] ]
 ```
-
 Query the KDTree for the k-nearest neighbors of points in X.
 
 | Parameter | Type | Description |
@@ -78,7 +83,6 @@ Query the KDTree for the k-nearest neighbors of points in X.
 ```mojo
 def query_radius[in_dtype: DType](self, X: Matrix[in_dtype], r: Float64) -> Tuple[ List[List[Scalar[in_dtype]]], List[List[Int]] ]
 ```
-
 Find all points within distance r of points in X.
 
 | Parameter | Type | Description |

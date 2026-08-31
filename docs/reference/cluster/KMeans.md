@@ -29,17 +29,23 @@ $$
 
 ---
 
-## Arguments (Runtime)
+## Constructors
 
-| Argument | Description |
-| :--- | :--- |
-| **`n_clusters`** | The number of clusters to form as well as the number of centroids to generate. Default 8. |
-| **`init`** | Method for initialization ('k-means++', 'random'). Default 'k-means++'. |
-| **`n_init`** | Number of times the k-means algorithm will be run with different centroid seeds. Default 10. |
-| **`max_iter`** | Maximum number of iterations of the k-means algorithm for a single run. Default 300. |
-| **`tol`** | Relative tolerance with regards to Frobenius norm of the difference in cluster centers. Default 1e-4. |
-| **`algorithm`** | K-means algorithm to use ('lloyd'). Default 'lloyd'. |
-| **`random_state`** | PRNG seed for centroid initialization. Default 42. |
+```mojo
+def __init__(out self, n_clusters: Int = 8, init: String = "k-means++", n_init: Int = 10, max_iter: Int = 300, tol: Float64 = 1e-4, algorithm: String = "lloyd", random_state: Int = 42)
+```
+
+Initialize the KMeans estimator.
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`n_clusters`** | `Int` | Number of clusters to form. Default 8. |
+| **`init`** | `String` | Centroid initialization strategy ('k-means++', 'random'). Default 'k-means++'. |
+| **`n_init`** | `Int` | Number of initializations to run. Default 10. |
+| **`max_iter`** | `Int` | Maximum iterations per run. Default 300. |
+| **`tol`** | `Float64` | Convergence tolerance threshold. Default 1e-4. |
+| **`algorithm`** | `String` | Algorithm variant ('lloyd'). Default 'lloyd'. |
+| **`random_state`** | `Int` | PRNG seed for deterministic centroid placement. Default 42. |
 
 ---
 
@@ -77,13 +83,14 @@ $$
 def fit[in_dtype: DType](mut self, X: Matrix[in_dtype])
 def fit[feat_dtype: DType, target_dtype: DType](mut self, dataset: Dataset[feat_dtype, target_dtype])
 ```
+> **Overload Note**: This method supports multiple overloaded call signatures.
 
 Fits cluster centroids on Dataset feature records.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature records. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding data records. *(Overloaded alternative)* |
 
 ---
 
@@ -93,13 +100,14 @@ Fits cluster centroids on Dataset feature records.
 def predict[in_dtype: DType](self, X: Matrix[in_dtype]) -> List[Int]
 def predict[feat_dtype: DType, target_dtype: DType](self, dataset: Dataset[feat_dtype, target_dtype]) -> List[Int]
 ```
+> **Overload Note**: This method supports multiple overloaded call signatures.
 
 Predicts closest cluster assignments for a Dataset container.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
-| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding feature records. |
+| **`dataset`** | `Dataset[feat_dtype, target_dtype]` | Dataset container holding data records. *(Overloaded alternative)* |
 
 **Returns**: `List[Int]`
 
@@ -110,7 +118,6 @@ Predicts closest cluster assignments for a Dataset container.
 ```mojo
 def fit_predict[in_dtype: DType](mut self, X: Matrix[in_dtype]) -> List[Int]
 ```
-
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
@@ -124,7 +131,6 @@ def fit_predict[in_dtype: DType](mut self, X: Matrix[in_dtype]) -> List[Int]
 ```mojo
 def transform[in_dtype: DType](self, X: Matrix[in_dtype]) -> Matrix[in_dtype]
 ```
-
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
@@ -138,7 +144,6 @@ def transform[in_dtype: DType](self, X: Matrix[in_dtype]) -> Matrix[in_dtype]
 ```mojo
 def fit_transform[in_dtype: DType](mut self, X: Matrix[in_dtype]) -> Matrix[in_dtype]
 ```
-
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |
@@ -152,7 +157,6 @@ def fit_transform[in_dtype: DType](mut self, X: Matrix[in_dtype]) -> Matrix[in_d
 ```mojo
 def score[in_dtype: DType](self, X: Matrix[in_dtype]) -> Scalar[Self.compute_dtype]
 ```
-
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | **`X`** | `Matrix[in_dtype]` | Feature matrix. |

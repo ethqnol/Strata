@@ -10,3 +10,16 @@ struct _AxisIndexPair(Comparable, Copyable, Movable)
 ```mojo
 from strata.neighbors import _AxisIndexPair
 ```
+
+---
+
+## Constructors
+
+```mojo
+def __init__(out self, val: Float64, idx: Int)
+```
+
+| Argument | Type | Description |
+| :--- | :--- | :--- |
+| **`val`** | `Float64` | — |
+| **`idx`** | `Int` | — |
