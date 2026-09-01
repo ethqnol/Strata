@@ -1,4 +1,5 @@
 from ..core.matrix import Matrix
+from ..core.linalg import gemm
 from ..base.estimator import Classifier
 from ..utils.validation import (
     check_X_y,
@@ -7,6 +8,7 @@ from ..utils.validation import (
     check_is_fitted,
 )
 from ..utils.math import softmax
+from std.math import exp
 from ..exceptions.errors import InvalidParameterError, DimensionMismatchError
 from ..io.serializer import (
     BufferWriter,
@@ -202,50 +204,103 @@ struct LogisticRegression[
             1.0 / (self.C * n_samples) if use_l2 else 0.0
         )
 
+        var E = Matrix[Self.compute_dtype](N, K, 0)
+        var grad_b = List[Scalar[Self.compute_dtype]](capacity=K)
+        for _ in range(K):
+            grad_b.append(0)
+
         for _ in range(self.max_iter):
-            var grad_W = Matrix[Self.compute_dtype](K, D, 0)
-            var grad_b = List[Scalar[Self.compute_dtype]](capacity=K)
-            for _ in range(K):
-                grad_b.append(0)
+            var W_T = W.transpose()
+            var Z = gemm(X_comp, W_T)
+
+            var z_ptr = Z.data.unsafe_ptr()
+            var e_ptr = E.data.unsafe_ptr()
+
+            for k in range(K):
+                grad_b[k] = 0
 
             for i in range(N):
-                var logits = List[Scalar[Self.compute_dtype]](capacity=K)
-                for k in range(K):
-                    var z: Scalar[Self.compute_dtype] = b[
-                        k
-                    ] if self.fit_intercept else 0
-                    for j in range(D):
-                        z += W[k, j] * X_comp[i, j]
-                    logits.append(z)
+                var z_offset = i * K
+                var max_logit: Float64 = Float64(
+                    z_ptr.unsafe_offset(z_offset).unsafe_load()
+                ) + (Float64(b[0]) if self.fit_intercept else 0.0)
+                for k in range(1, K):
+                    var lk: Float64 = Float64(
+                        z_ptr.unsafe_offset(z_offset + k).unsafe_load()
+                    ) + (Float64(b[k]) if self.fit_intercept else 0.0)
+                    if lk > max_logit:
+                        max_logit = lk
 
-                var probs = softmax[Self.compute_dtype](logits)
-
+                var sum_exp: Float64 = 0.0
                 for k in range(K):
-                    var target_k: Scalar[Self.compute_dtype] = (
-                        1.0 if y_idx[i] == k else 0.0
+                    var lk: Float64 = Float64(
+                        z_ptr.unsafe_offset(z_offset + k).unsafe_load()
+                    ) + (Float64(b[k]) if self.fit_intercept else 0.0)
+                    var exp_val = exp(lk - max_logit)
+                    e_ptr.unsafe_offset(z_offset + k).unsafe_store(
+                        Scalar[Self.compute_dtype](exp_val)
                     )
-                    var err = probs[k] - target_k
-                    for j in range(D):
-                        grad_W[k, j] += err * X_comp[i, j]
+                    sum_exp += exp_val
+
+                var inv_sum_exp = 1.0 / sum_exp
+                var target = y_idx[i]
+                for k in range(K):
+                    var prob = (
+                        Float64(e_ptr.unsafe_offset(z_offset + k).unsafe_load())
+                        * inv_sum_exp
+                    )
+                    var err = Scalar[Self.compute_dtype](
+                        prob - (1.0 if target == k else 0.0)
+                    )
+                    e_ptr.unsafe_offset(z_offset + k).unsafe_store(err)
                     if self.fit_intercept:
                         grad_b[k] += err
 
-            var grad_norm_sq: Scalar[Self.compute_dtype] = 0
+            var E_T = E.transpose()
+            var grad_W = gemm(E_T, X_comp)
+            var gw_ptr = grad_W.data.unsafe_ptr()
+            var w_ptr = W.data.unsafe_ptr()
+
+            # Check convergence
+            var max_grad: Scalar[Self.compute_dtype] = 0
             for k in range(K):
+                var gw_row_offset = k * D
+                var w_row_offset = k * D
                 for j in range(D):
-                    var g_w = grad_W[k, j] / n_samples + lambda_reg * W[k, j]
-                    grad_norm_sq += g_w * g_w
+                    var g_w = (
+                        gw_ptr.unsafe_offset(gw_row_offset + j).unsafe_load()
+                        / n_samples
+                        + lambda_reg
+                        * w_ptr.unsafe_offset(w_row_offset + j).unsafe_load()
+                    )
+                    var abs_gw = g_w if g_w >= 0 else -g_w
+                    if abs_gw > max_grad:
+                        max_grad = abs_gw
                 if self.fit_intercept:
                     var g_b = grad_b[k] / n_samples
-                    grad_norm_sq += g_b * g_b
+                    var abs_gb = g_b if g_b >= 0 else -g_b
+                    if abs_gb > max_grad:
+                        max_grad = abs_gb
 
-            if grad_norm_sq < self.tol * self.tol:
+            if max_grad < self.tol:
                 break
 
             for k in range(K):
+                var gw_row_offset = k * D
+                var w_row_offset = k * D
                 for j in range(D):
-                    var g_w = grad_W[k, j] / n_samples + lambda_reg * W[k, j]
-                    W[k, j] -= self.learning_rate * g_w
+                    var g_w = (
+                        gw_ptr.unsafe_offset(gw_row_offset + j).unsafe_load()
+                        / n_samples
+                        + lambda_reg
+                        * w_ptr.unsafe_offset(w_row_offset + j).unsafe_load()
+                    )
+                    var cur_w = w_ptr.unsafe_offset(
+                        w_row_offset + j
+                    ).unsafe_load()
+                    w_ptr.unsafe_offset(w_row_offset + j).unsafe_store(
+                        cur_w - self.learning_rate * g_w
+                    )
                 if self.fit_intercept:
                     b[k] -= self.learning_rate * (grad_b[k] / n_samples)
 
@@ -282,21 +337,37 @@ struct LogisticRegression[
         var N = X.rows
         var K = len(self.classes_)
         var X_comp = X.cast[Self.compute_dtype]()
+        var W_T = self.coef_.transpose()
+        var Z = gemm(X_comp, W_T)
+        var z_ptr = Z.data.unsafe_ptr()
+
         var probs_data = List[Scalar[feat_dtype]](capacity=N * K)
-
         for i in range(N):
-            var logits = List[Scalar[Self.compute_dtype]](capacity=K)
-            for k in range(K):
-                var z: Scalar[Self.compute_dtype] = self.intercept_[
-                    k
-                ] if self.fit_intercept else 0
-                for j in range(D):
-                    z += self.coef_[k, j] * X_comp[i, j]
-                logits.append(z)
+            var z_offset = i * K
+            var max_logit: Float64 = Float64(
+                z_ptr.unsafe_offset(z_offset).unsafe_load()
+            ) + (Float64(self.intercept_[0]) if self.fit_intercept else 0.0)
+            for k in range(1, K):
+                var lk: Float64 = Float64(
+                    z_ptr.unsafe_offset(z_offset + k).unsafe_load()
+                ) + (Float64(self.intercept_[k]) if self.fit_intercept else 0.0)
+                if lk > max_logit:
+                    max_logit = lk
 
-            var probs = softmax[Self.compute_dtype](logits)
+            var sum_exp: Float64 = 0.0
             for k in range(K):
-                probs_data.append(Scalar[feat_dtype](probs[k]))
+                var lk: Float64 = Float64(
+                    z_ptr.unsafe_offset(z_offset + k).unsafe_load()
+                ) + (Float64(self.intercept_[k]) if self.fit_intercept else 0.0)
+                sum_exp += exp(lk - max_logit)
+
+            var inv_sum_exp = 1.0 / sum_exp
+            for k in range(K):
+                var lk: Float64 = Float64(
+                    z_ptr.unsafe_offset(z_offset + k).unsafe_load()
+                ) + (Float64(self.intercept_[k]) if self.fit_intercept else 0.0)
+                var p = exp(lk - max_logit) * inv_sum_exp
+                probs_data.append(Scalar[feat_dtype](p))
 
         return Matrix[feat_dtype](N, K, probs_data^)
 
@@ -330,18 +401,23 @@ struct LogisticRegression[
         var K = len(self.classes_)
         var X_comp = X.cast[Self.compute_dtype]()
 
+        var W_T = self.coef_.transpose()
+        var Z = gemm(X_comp, W_T)
+        var z_ptr = Z.data.unsafe_ptr()
+
         var preds = List[Int](capacity=N)
         for i in range(N):
+            var z_offset = i * K
             var best_k = 0
-            var max_logit: Scalar[Self.compute_dtype] = 0
-            for k in range(K):
-                var z: Scalar[Self.compute_dtype] = self.intercept_[
-                    k
-                ] if self.fit_intercept else 0
-                for j in range(D):
-                    z += self.coef_[k, j] * X_comp[i, j]
-                if k == 0 or z > max_logit:
-                    max_logit = z
+            var max_logit: Float64 = Float64(
+                z_ptr.unsafe_offset(z_offset).unsafe_load()
+            ) + (Float64(self.intercept_[0]) if self.fit_intercept else 0.0)
+            for k in range(1, K):
+                var lk: Float64 = Float64(
+                    z_ptr.unsafe_offset(z_offset + k).unsafe_load()
+                ) + (Float64(self.intercept_[k]) if self.fit_intercept else 0.0)
+                if lk > max_logit:
+                    max_logit = lk
                     best_k = k
             preds.append(self.classes_[best_k])
 

@@ -170,9 +170,18 @@ def _build_node_histograms(
 
         for j in range(D):
             var b = Int(b_ptr.unsafe_offset(row_offset + j).unsafe_load())
-            hists[j].grad_sum[b] += g
-            hists[j].hess_sum[b] += h
-            hists[j].count[b] += 1
+            var gp = hists[j].grad_sum.unsafe_ptr()
+            var hp = hists[j].hess_sum.unsafe_ptr()
+            var cp = hists[j].count.unsafe_ptr()
+            gp.unsafe_offset(b).unsafe_store(
+                gp.unsafe_offset(b).unsafe_load() + g
+            )
+            hp.unsafe_offset(b).unsafe_store(
+                hp.unsafe_offset(b).unsafe_load() + h
+            )
+            cp.unsafe_offset(b).unsafe_store(
+                cp.unsafe_offset(b).unsafe_load() + 1
+            )
 
     return hists^
 

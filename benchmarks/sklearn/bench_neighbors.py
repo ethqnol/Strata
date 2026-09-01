@@ -88,14 +88,14 @@ def run_nearest_neighbors(samples, features, warmups, iters):
     X_query = X[:query_samples]
 
     for _ in range(warmups):
-        nn = NearestNeighbors(n_neighbors=5, metric="euclidean", n_jobs=1)
+        nn = NearestNeighbors(n_neighbors=5, algorithm="brute", metric="euclidean", n_jobs=1)
         nn.fit(X)
         _ = nn.kneighbors(X_query)
 
     fit_times, query_times = [], []
 
     for _ in range(iters):
-        nn = NearestNeighbors(n_neighbors=5, metric="euclidean", n_jobs=1)
+        nn = NearestNeighbors(n_neighbors=5, algorithm="brute", metric="euclidean", n_jobs=1)
         t0 = time.perf_counter_ns()
         nn.fit(X)
         t1 = time.perf_counter_ns()
@@ -117,7 +117,7 @@ def run_kneighbors_classifier(samples, features, warmups, iters):
     y_query = y[:query_samples]
 
     for _ in range(warmups):
-        clf = KNeighborsClassifier(n_neighbors=5, metric="euclidean", n_jobs=1)
+        clf = KNeighborsClassifier(n_neighbors=5, algorithm="brute", metric="euclidean", n_jobs=1)
         clf.fit(X, y)
         _ = clf.predict(X_query)
 
@@ -125,7 +125,7 @@ def run_kneighbors_classifier(samples, features, warmups, iters):
     last_acc = 0.0
 
     for _ in range(iters):
-        clf = KNeighborsClassifier(n_neighbors=5, metric="euclidean", n_jobs=1)
+        clf = KNeighborsClassifier(n_neighbors=5, algorithm="brute", metric="euclidean", n_jobs=1)
         t0 = time.perf_counter_ns()
         clf.fit(X, y)
         t1 = time.perf_counter_ns()
@@ -149,7 +149,7 @@ def run_kneighbors_regressor(samples, features, warmups, iters):
     y_query = y[:query_samples]
 
     for _ in range(warmups):
-        reg = KNeighborsRegressor(n_neighbors=5, metric="euclidean", n_jobs=1)
+        reg = KNeighborsRegressor(n_neighbors=5, algorithm="brute", metric="euclidean", n_jobs=1)
         reg.fit(X, y)
         _ = reg.predict(X_query)
 
@@ -157,7 +157,7 @@ def run_kneighbors_regressor(samples, features, warmups, iters):
     last_r2 = 0.0
 
     for _ in range(iters):
-        reg = KNeighborsRegressor(n_neighbors=5, metric="euclidean", n_jobs=1)
+        reg = KNeighborsRegressor(n_neighbors=5, algorithm="brute", metric="euclidean", n_jobs=1)
         t0 = time.perf_counter_ns()
         reg.fit(X, y)
         t1 = time.perf_counter_ns()

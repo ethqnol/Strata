@@ -26,6 +26,8 @@ def main() raises:
         linker_flags.append("-L" + String(conda_prefix) + "/lib")
         linker_flags.append("-Xlinker")
         linker_flags.append("-llapack")
+        linker_flags.append("-Xlinker")
+        linker_flags.append("-lblas")
 
     var cpu_cnt = Int(String(os.cpu_count()))
     var sys_argv = sys.argv

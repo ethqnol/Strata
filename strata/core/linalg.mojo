@@ -109,34 +109,149 @@ def gemm[
 
     var C = Matrix[dtype].zeros(M, N)
 
-    comptime simd_width = 4 if dtype == DType.float64 else 8
+    comptime if dtype == DType.float64:
+        var layout: c_int = 101  # CblasRowMajor
+        var transa: c_int = 111  # CblasNoTrans
+        var transb: c_int = 111  # CblasNoTrans
+        var a_ptr = Pointer[Scalar[dtype], origin_of(A.data)](
+            A.data.unsafe_ptr()
+        )
+        var b_ptr = Pointer[Scalar[dtype], origin_of(B.data)](
+            B.data.unsafe_ptr()
+        )
+        var c_ptr = Pointer[Scalar[dtype], origin_of(C.data)](
+            C.data.unsafe_ptr()
+        )
+        external_call[
+            "cblas_dgemm",
+            NoneType,
+            c_int,
+            c_int,
+            c_int,
+            c_int,
+            c_int,
+            c_int,
+            c_double,
+            Pointer[Scalar[dtype], origin_of(A.data)],
+            c_int,
+            Pointer[Scalar[dtype], origin_of(B.data)],
+            c_int,
+            c_double,
+            Pointer[Scalar[dtype], origin_of(C.data)],
+            c_int,
+        ](
+            layout,
+            transa,
+            transb,
+            c_int(M),
+            c_int(N),
+            c_int(K),
+            c_double(1.0),
+            a_ptr,
+            c_int(K),
+            b_ptr,
+            c_int(N),
+            c_double(0.0),
+            c_ptr,
+            c_int(N),
+        )
+    elif dtype == DType.float32:
+        var layout: c_int = 101  # CblasRowMajor
+        var transa: c_int = 111  # CblasNoTrans
+        var transb: c_int = 111  # CblasNoTrans
+        var a_ptr = Pointer[Scalar[dtype], origin_of(A.data)](
+            A.data.unsafe_ptr()
+        )
+        var b_ptr = Pointer[Scalar[dtype], origin_of(B.data)](
+            B.data.unsafe_ptr()
+        )
+        var c_ptr = Pointer[Scalar[dtype], origin_of(C.data)](
+            C.data.unsafe_ptr()
+        )
+        external_call[
+            "cblas_sgemm",
+            NoneType,
+            c_int,
+            c_int,
+            c_int,
+            c_int,
+            c_int,
+            c_int,
+            c_float,
+            Pointer[Scalar[dtype], origin_of(A.data)],
+            c_int,
+            Pointer[Scalar[dtype], origin_of(B.data)],
+            c_int,
+            c_float,
+            Pointer[Scalar[dtype], origin_of(C.data)],
+            c_int,
+        ](
+            layout,
+            transa,
+            transb,
+            c_int(M),
+            c_int(N),
+            c_int(K),
+            c_float(1.0),
+            a_ptr,
+            c_int(K),
+            b_ptr,
+            c_int(N),
+            c_float(0.0),
+            c_ptr,
+            c_int(N),
+        )
+    else:
+        comptime simd_width = 4 if dtype == DType.float64 else 8
 
-    var b_ptr = B.data.unsafe_ptr()
-    var c_ptr = C.data.unsafe_ptr()
+        var b_ptr = B.data.unsafe_ptr()
+        var c_ptr = C.data.unsafe_ptr()
 
-    for i in range(M):
-        var c_offset = i * N
-        for k in range(K):
-            var a_ik = A[i, k]
-            if a_ik == 0:
-                continue
-            var b_offset = k * N
+        var M_B = 64
+        var K_B = 64
+        var N_B = 64
 
-            var j = 0
-            while j + simd_width <= N:
-                var b_simd = b_ptr.unsafe_offset(b_offset + j).unsafe_load[
-                    width=simd_width
-                ]()
-                var c_simd = c_ptr.unsafe_offset(c_offset + j).unsafe_load[
-                    width=simd_width
-                ]()
-                var res_simd = c_simd + a_ik * b_simd
-                c_ptr.unsafe_offset(c_offset + j).unsafe_store(res_simd)
-                j += simd_width
+        for i0 in range(0, M, M_B):
+            var i_max = min(i0 + M_B, M)
+            for k0 in range(0, K, K_B):
+                var k_max = min(k0 + K_B, K)
+                for j0 in range(0, N, N_B):
+                    var j_max = min(j0 + N_B, N)
 
-            while j < N:
-                C.data[c_offset + j] += a_ik * B.data[b_offset + j]
-                j += 1
+                    for i in range(i0, i_max):
+                        var c_offset = i * N
+                        for k in range(k0, k_max):
+                            var a_ik = A[i, k]
+                            if a_ik == 0:
+                                continue
+                            var b_offset = k * N
+
+                            var j = j0
+                            while j + simd_width <= j_max:
+                                var b_simd = b_ptr.unsafe_offset(
+                                    b_offset + j
+                                ).unsafe_load[width=simd_width]()
+                                var c_simd = c_ptr.unsafe_offset(
+                                    c_offset + j
+                                ).unsafe_load[width=simd_width]()
+                                var res_simd = c_simd + a_ik * b_simd
+                                c_ptr.unsafe_offset(c_offset + j).unsafe_store(
+                                    res_simd
+                                )
+                                j += simd_width
+
+                            while j < j_max:
+                                var cur = c_ptr.unsafe_offset(
+                                    c_offset + j
+                                ).unsafe_load()
+                                c_ptr.unsafe_offset(c_offset + j).unsafe_store(
+                                    cur
+                                    + a_ik
+                                    * b_ptr.unsafe_offset(
+                                        b_offset + j
+                                    ).unsafe_load()
+                                )
+                                j += 1
 
     return C^
 
@@ -150,7 +265,7 @@ def dense_dot_vec[
 ) raises -> List[Scalar[dtype]]:
     """Dense matrix-vector product: y = A @ x + bias.
 
-    Hardware-vectorized with SIMD registers and horizontal reduction.
+    Hardware-vectorized with SIMD registers, dual-row register tiling, and horizontal reduction.
     """
     if A.cols != len(x):
         raise DimensionMismatchError.error(
@@ -164,12 +279,44 @@ def dense_dot_vec[
 
     var a_ptr = A.data.unsafe_ptr()
     var x_ptr = x.unsafe_ptr()
+    var n_cols = A.cols
+    var n_rows = A.rows
 
-    for r in range(A.rows):
-        var row_offset = r * A.cols
+    for r in range(0, n_rows - 1, 2):
+        var r0_offset = r * n_cols
+        var r1_offset = (r + 1) * n_cols
+        var sum0 = SIMD[dtype, simd_width](0)
+        var sum1 = SIMD[dtype, simd_width](0)
+        var c = 0
+        while c + simd_width <= n_cols:
+            var x_simd = x_ptr.unsafe_offset(c).unsafe_load[width=simd_width]()
+            var a0_simd = a_ptr.unsafe_offset(r0_offset + c).unsafe_load[
+                width=simd_width
+            ]()
+            var a1_simd = a_ptr.unsafe_offset(r1_offset + c).unsafe_load[
+                width=simd_width
+            ]()
+            sum0 += a0_simd * x_simd
+            sum1 += a1_simd * x_simd
+            c += simd_width
+
+        var row_sum0: Scalar[dtype] = sum0.reduce_add()
+        var row_sum1: Scalar[dtype] = sum1.reduce_add()
+        while c < n_cols:
+            var x_val = x_ptr.unsafe_offset(c).unsafe_load()
+            row_sum0 += a_ptr.unsafe_offset(r0_offset + c).unsafe_load() * x_val
+            row_sum1 += a_ptr.unsafe_offset(r1_offset + c).unsafe_load() * x_val
+            c += 1
+
+        res.append(row_sum0 + bias)
+        res.append(row_sum1 + bias)
+
+    if n_rows % 2 == 1:
+        var r = n_rows - 1
+        var row_offset = r * n_cols
         var sum_simd = SIMD[dtype, simd_width](0)
         var c = 0
-        while c + simd_width <= A.cols:
+        while c + simd_width <= n_cols:
             var a_simd = a_ptr.unsafe_offset(row_offset + c).unsafe_load[
                 width=simd_width
             ]()
@@ -178,8 +325,11 @@ def dense_dot_vec[
             c += simd_width
 
         var row_sum: Scalar[dtype] = sum_simd.reduce_add()
-        while c < A.cols:
-            row_sum += A.data[row_offset + c] * x[c]
+        while c < n_cols:
+            row_sum += (
+                a_ptr.unsafe_offset(row_offset + c).unsafe_load()
+                * x_ptr.unsafe_offset(c).unsafe_load()
+            )
             c += 1
 
         res.append(row_sum + bias)

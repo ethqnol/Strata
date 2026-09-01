@@ -162,6 +162,8 @@ def run_benchmark_suite(suite_key, scale, env, pixi_prefix):
         f"-L{pixi_prefix}/lib",
         "-Xlinker",
         "-llapack",
+        "-Xlinker",
+        "-lblas",
         mojo_script,
         str(samples),
         str(features),
@@ -322,14 +324,14 @@ def generate_markdown_report(all_results, output_path, scale):
                 speedup_val = f"{r['speedup']:.2f}x"
 
             tput = f"{r['strata_throughput']:,.0f} samples/s"
-            
+
             parity = "Exact Match"
             if r['metric_name'] != "none":
                 if r['metric_diff'] < 1e-4:
                     parity = f"{r['metric_name']}: {r['strata_metric']:.4f} (Exact)"
                 else:
                     parity = f"{r['metric_name']}: {r['strata_metric']:.4f} vs {r['sklearn_metric']:.4f} (Δ={r['metric_diff']:.1e})"
-            
+
             lines.append(f"| {b_name} | {p_name} | {shape} | {strata_time} | {sklearn_time} | {speedup_val} | {tput} | {parity} |")
         lines.append("")
 
