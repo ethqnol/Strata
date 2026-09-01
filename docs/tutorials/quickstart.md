@@ -33,18 +33,17 @@ mojo = ">=1.0.0"
 start = "mojo run -Xlinker -L$CONDA_PREFIX/lib -Xlinker -llapack main.mojo"
 ```
 
+
+> [!IMPORTANT]
+> **Linking LAPACK**: `pixi add strata` automatically installs `liblapack` into `$CONDA_PREFIX/lib/`. When calling LAPACK-backed routines (`svd`, `qr`, `inv`, `eigh`, `PCA`, or `LinearRegression` with Cholesky/QR solvers), pass `-Xlinker -L$CONDA_PREFIX/lib -Xlinker -llapack` to `mojo run`, or define a task in `pixi.toml` as shown. See the section underneath (section 2) for more details
+
+
 You can also develop Strata locally:
 ```bash
 git clone https://github.com/ethqnol/Strata.git
 cd Strata
 pixi install
 ```
-
-> [!IMPORTANT]
-> **Linking LAPACK**: `pixi add strata` automatically installs `liblapack` into `$CONDA_PREFIX/lib/`. When calling LAPACK-backed routines (`svd`, `qr`, `inv`, `eigh`, `PCA`, or `LinearRegression` with Cholesky/QR solvers), pass `-Xlinker -L$CONDA_PREFIX/lib -Xlinker -llapack` to `mojo run`, or define a task in `pixi.toml` as shown (i.e. `pixi run start`...). See the section underneath for more details
-
-
-
 
 ---
 
