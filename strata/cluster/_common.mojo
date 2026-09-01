@@ -8,10 +8,34 @@ def _squared_euclidean_distance[
     dtype: DType
 ](X: Matrix[dtype], row_x: Int, C: Matrix[dtype], row_c: Int,) -> Scalar[dtype]:
     var d = X.cols
-    var sum_sq: Scalar[dtype] = 0
-    for j in range(d):
-        var diff = X[row_x, j] - C[row_c, j]
+    comptime simd_w = 4 if dtype == DType.float64 else 8
+    var x_ptr = X.data.unsafe_ptr()
+    var c_ptr = C.data.unsafe_ptr()
+    var x_offset = row_x * d
+    var c_offset = row_c * d
+
+    var sum_simd = SIMD[dtype, simd_w](0)
+    var j = 0
+    while j + simd_w <= d:
+        var x_simd = x_ptr.unsafe_offset(x_offset + j).unsafe_load[
+            width=simd_w
+        ]()
+        var c_simd = c_ptr.unsafe_offset(c_offset + j).unsafe_load[
+            width=simd_w
+        ]()
+        var diff = x_simd - c_simd
+        sum_simd += diff * diff
+        j += simd_w
+
+    var sum_sq: Scalar[dtype] = sum_simd.reduce_add()
+    while j < d:
+        var diff = (
+            x_ptr.unsafe_offset(x_offset + j).unsafe_load()
+            - c_ptr.unsafe_offset(c_offset + j).unsafe_load()
+        )
         sum_sq += diff * diff
+        j += 1
+
     return sum_sq
 
 

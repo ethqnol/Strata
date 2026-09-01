@@ -1051,6 +1051,7 @@ def build_docs_site_bundle(all_symbols_index: list, module_symbols_map: dict):
                     {"id": "explanation/memory_and_simd", "title": "Memory Model & SIMD", "path": "explanation/memory_and_simd.md"},
                     {"id": "explanation/estimator_traits", "title": "Estimator Traits & Polymorphism", "path": "explanation/estimator_traits.md"},
                     {"id": "explanation/tree_algorithms", "title": "Tree Splitting & Histograms", "path": "explanation/tree_algorithms.md"},
+                    {"id": "explanation/benchmarks", "title": "Performance Benchmarks", "path": "explanation/benchmarks.md"},
                 ]
             }
         ],

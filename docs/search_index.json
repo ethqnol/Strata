@@ -446,7 +446,7 @@
     "kind": "struct",
     "summary": "Container holding a sample distance and its training dataset row index.",
     "ref_file": "reference/neighbors/NeighborDistIdx",
-    "traits": "Comparable, Copyable, Movable",
+    "traits": "Comparable, Copyable, ImplicitlyCopyable, Movable",
     "file": "strata/neighbors/base.mojo"
   },
   {

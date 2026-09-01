@@ -1,4 +1,6 @@
+from std.math import sqrt
 from ..core.matrix import Matrix
+from ..core.linalg import gemm
 from ..utils.validation import (
     check_array,
     check_floating_dtype,
@@ -21,7 +23,7 @@ from .distance import (
 )
 
 
-struct NeighborDistIdx(Comparable, Copyable, Movable):
+struct NeighborDistIdx(Comparable, Copyable, ImplicitlyCopyable, Movable):
     """Container holding a sample distance and its training dataset row index.
     """
 
@@ -203,6 +205,74 @@ struct NearestNeighbors[compute_dtype: DType = DType.float64](
         self.fit_dtype = in_dtype
         self.is_fitted = True
 
+    def _query_top_k[
+        in_dtype: DType
+    ](
+        self,
+        X_query: Matrix[in_dtype],
+        query_row: Int,
+        k: Int,
+    ) raises -> List[
+        NeighborDistIdx
+    ]:
+        var top_k = List[NeighborDistIdx](capacity=k)
+        var n_samples = self.n_samples_fit_
+
+        for j in range(n_samples):
+            var d: Float64 = 0.0
+            if self.metric == "euclidean" or self.metric == "l2":
+                d = euclidean_distance(X_query, query_row, self._fit_X, j)
+            elif self.metric == "sqeuclidean":
+                d = sqeuclidean_distance(X_query, query_row, self._fit_X, j)
+            elif (
+                self.metric == "manhattan"
+                or self.metric == "cityblock"
+                or self.metric == "l1"
+            ):
+                d = manhattan_distance(X_query, query_row, self._fit_X, j)
+            elif (
+                self.metric == "chebyshev"
+                or self.metric == "infinity"
+                or self.metric == "max"
+            ):
+                d = chebyshev_distance(X_query, query_row, self._fit_X, j)
+            elif self.metric == "minkowski":
+                d = minkowski_distance(
+                    X_query, query_row, self._fit_X, j, self.p
+                )
+            elif self.metric == "cosine":
+                d = cosine_distance(X_query, query_row, self._fit_X, j)
+
+            var cur_len = len(top_k)
+            if cur_len < k:
+                var insert_idx = cur_len
+                for idx in range(cur_len):
+                    if d < top_k[idx].dist or (
+                        d == top_k[idx].dist and j < top_k[idx].idx
+                    ):
+                        insert_idx = idx
+                        break
+                top_k.insert(insert_idx, NeighborDistIdx(d, j))
+            else:
+                if d > top_k[k - 1].dist or (
+                    d == top_k[k - 1].dist and j >= top_k[k - 1].idx
+                ):
+                    continue
+
+                var insert_idx = k - 1
+                for idx in range(k - 1):
+                    if d < top_k[idx].dist or (
+                        d == top_k[idx].dist and j < top_k[idx].idx
+                    ):
+                        insert_idx = idx
+                        break
+
+                for s in range(k - 1, insert_idx, -1):
+                    top_k[s] = top_k[s - 1]
+                top_k[insert_idx] = NeighborDistIdx(d, j)
+
+        return top_k^
+
     def _query_point[
         in_dtype: DType
     ](
@@ -212,45 +282,9 @@ struct NearestNeighbors[compute_dtype: DType = DType.float64](
     ) raises -> List[
         NeighborDistIdx
     ]:
-        var pairs = List[NeighborDistIdx](capacity=self.n_samples_fit_)
-
-        if self.metric == "euclidean" or self.metric == "l2":
-            for j in range(self.n_samples_fit_):
-                var d = euclidean_distance(X_query, query_row, self._fit_X, j)
-                pairs.append(NeighborDistIdx(d, j))
-        elif self.metric == "sqeuclidean":
-            for j in range(self.n_samples_fit_):
-                var d = sqeuclidean_distance(X_query, query_row, self._fit_X, j)
-                pairs.append(NeighborDistIdx(d, j))
-        elif (
-            self.metric == "manhattan"
-            or self.metric == "cityblock"
-            or self.metric == "l1"
-        ):
-            for j in range(self.n_samples_fit_):
-                var d = manhattan_distance(X_query, query_row, self._fit_X, j)
-                pairs.append(NeighborDistIdx(d, j))
-        elif (
-            self.metric == "chebyshev"
-            or self.metric == "infinity"
-            or self.metric == "max"
-        ):
-            for j in range(self.n_samples_fit_):
-                var d = chebyshev_distance(X_query, query_row, self._fit_X, j)
-                pairs.append(NeighborDistIdx(d, j))
-        elif self.metric == "minkowski":
-            for j in range(self.n_samples_fit_):
-                var d = minkowski_distance(
-                    X_query, query_row, self._fit_X, j, self.p
-                )
-                pairs.append(NeighborDistIdx(d, j))
-        elif self.metric == "cosine":
-            for j in range(self.n_samples_fit_):
-                var d = cosine_distance(X_query, query_row, self._fit_X, j)
-                pairs.append(NeighborDistIdx(d, j))
-
-        sort(pairs)
-        return pairs^
+        return self._query_top_k[in_dtype](
+            X_query, query_row, self.n_samples_fit_
+        )
 
     def kneighbors[
         in_dtype: DType
@@ -309,11 +343,83 @@ struct NearestNeighbors[compute_dtype: DType = DType.float64](
         var dist_mat = Matrix[in_dtype](n_queries, k, 0)
         var idx_mat = Matrix[DType.int32](n_queries, k, 0)
 
+        var is_euclidean = self.metric == "euclidean" or self.metric == "l2"
+        var is_sqeuclidean = self.metric == "sqeuclidean"
+
+        if (is_euclidean or is_sqeuclidean) and self.n_samples_fit_ >= 50:
+            var X_comp = X.cast[Self.compute_dtype]()
+            var X_train_T = self._fit_X.transpose()
+            var G = gemm(X_comp, X_train_T)
+
+            var s_train = List[Scalar[Self.compute_dtype]](
+                capacity=self.n_samples_fit_
+            )
+            for i in range(self.n_samples_fit_):
+                var sum_val: Scalar[Self.compute_dtype] = 0.0
+                for j in range(self.n_features_in_):
+                    var v = self._fit_X[i, j]
+                    sum_val += v * v
+                s_train.append(sum_val)
+
+            var s_query = List[Scalar[Self.compute_dtype]](capacity=n_queries)
+            for q in range(n_queries):
+                var sum_val: Scalar[Self.compute_dtype] = 0.0
+                for j in range(self.n_features_in_):
+                    var v = X_comp[q, j]
+                    sum_val += v * v
+                s_query.append(sum_val)
+
+            var g_ptr = G.data.unsafe_ptr()
+            var s_ptr = s_train.unsafe_ptr()
+
+            var top_d = List[Float64](capacity=k)
+            var top_idx = List[Int](capacity=k)
+            for _ in range(k):
+                top_d.append(1e30)
+                top_idx.append(0)
+
+            for q in range(n_queries):
+                var sq = s_query[q]
+                var g_offset = q * self.n_samples_fit_
+                for j in range(k):
+                    top_d[j] = 1e30
+                    top_idx[j] = 0
+
+                for i in range(self.n_samples_fit_):
+                    var dot = g_ptr.unsafe_offset(g_offset + i).unsafe_load()
+                    var st = s_ptr.unsafe_offset(i).unsafe_load()
+                    var d2 = Float64(sq + st - 2.0 * dot)
+                    if d2 < 0.0:
+                        d2 = 0.0
+
+                    if d2 < top_d[k - 1] or (
+                        d2 == top_d[k - 1] and i < top_idx[k - 1]
+                    ):
+                        var ins = k - 1
+                        for idx in range(k - 1):
+                            if d2 < top_d[idx] or (
+                                d2 == top_d[idx] and i < top_idx[idx]
+                            ):
+                                ins = idx
+                                break
+                        for s in range(k - 1, ins, -1):
+                            top_d[s] = top_d[s - 1]
+                            top_idx[s] = top_idx[s - 1]
+                        top_d[ins] = d2
+                        top_idx[ins] = i
+
+                for j in range(k):
+                    var val = sqrt(top_d[j]) if is_euclidean else top_d[j]
+                    dist_mat[q, j] = Scalar[in_dtype](val)
+                    idx_mat[q, j] = Scalar[DType.int32](top_idx[j])
+
+            return dist_mat^, idx_mat^
+
         for q in range(n_queries):
-            var sorted_pairs = self._query_point[in_dtype](X, q)
+            var top_pairs = self._query_top_k[in_dtype](X, q, k)
             for j in range(k):
-                dist_mat[q, j] = Scalar[in_dtype](sorted_pairs[j].dist)
-                idx_mat[q, j] = Scalar[DType.int32](sorted_pairs[j].idx)
+                dist_mat[q, j] = Scalar[in_dtype](top_pairs[j].dist)
+                idx_mat[q, j] = Scalar[DType.int32](top_pairs[j].idx)
 
         return dist_mat^, idx_mat^
 
@@ -397,14 +503,40 @@ struct NearestNeighbors[compute_dtype: DType = DType.float64](
         var all_indices = List[List[Int]](capacity=n_queries)
 
         for q in range(n_queries):
-            var sorted_pairs = self._query_point[in_dtype](X, q)
-            var q_dists = List[Scalar[in_dtype]]()
-            var q_idxs = List[Int]()
+            var match_pairs = List[NeighborDistIdx]()
+            for j in range(self.n_samples_fit_):
+                var d: Float64 = 0.0
+                if self.metric == "euclidean" or self.metric == "l2":
+                    d = euclidean_distance(X, q, self._fit_X, j)
+                elif self.metric == "sqeuclidean":
+                    d = sqeuclidean_distance(X, q, self._fit_X, j)
+                elif (
+                    self.metric == "manhattan"
+                    or self.metric == "cityblock"
+                    or self.metric == "l1"
+                ):
+                    d = manhattan_distance(X, q, self._fit_X, j)
+                elif (
+                    self.metric == "chebyshev"
+                    or self.metric == "infinity"
+                    or self.metric == "max"
+                ):
+                    d = chebyshev_distance(X, q, self._fit_X, j)
+                elif self.metric == "minkowski":
+                    d = minkowski_distance(X, q, self._fit_X, j, self.p)
+                elif self.metric == "cosine":
+                    d = cosine_distance(X, q, self._fit_X, j)
 
-            for j in range(len(sorted_pairs)):
-                if sorted_pairs[j].dist <= r_val:
-                    q_dists.append(Scalar[in_dtype](sorted_pairs[j].dist))
-                    q_idxs.append(sorted_pairs[j].idx)
+                if d <= r_val:
+                    match_pairs.append(NeighborDistIdx(d, j))
+
+            sort(match_pairs)
+            var q_dists = List[Scalar[in_dtype]](capacity=len(match_pairs))
+            var q_idxs = List[Int](capacity=len(match_pairs))
+
+            for j in range(len(match_pairs)):
+                q_dists.append(Scalar[in_dtype](match_pairs[j].dist))
+                q_idxs.append(match_pairs[j].idx)
 
             all_dists.append(q_dists^)
             all_indices.append(q_idxs^)
