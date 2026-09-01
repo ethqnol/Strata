@@ -8,4 +8,4 @@ skills-lock.json
 __pycache__
 output/
 conda.recipe/
-recipe.yaml/
+recipe.yaml
