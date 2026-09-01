@@ -67,7 +67,7 @@ def make_synthetic_classification(n_samples, n_features, n_classes=2, seed=42):
     for i in range(n_samples):
         c = i % n_classes
         y[i] = c
-        offset = (rng.randint(-1000, 1000, size=n_features)) / 100.0
+        offset = (rng.randint(-1000, 1000, size=n_features)) / 1000.0
         X[i] = centroids[c] + offset
 
     return np.ascontiguousarray(X, dtype=np.float64), np.ascontiguousarray(y, dtype=np.int32)

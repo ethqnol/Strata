@@ -143,14 +143,68 @@ struct StandardScaler[compute_dtype: DType = DType.float64](
         check_array[in_dtype](X)
 
         var res = Matrix[in_dtype](X.rows, X.cols, 0)
-        for r in range(X.rows):
-            for c in range(X.cols):
-                var val = Scalar[Self.compute_dtype](X[r, c])
-                if self.with_mean:
-                    val -= self.mean_[c]
-                if self.with_std:
-                    val /= self.scale_[c]
-                res[r, c] = Scalar[in_dtype](val)
+        var n_rows = X.rows
+        var n_cols = X.cols
+
+        var scale_factor = List[Scalar[Self.compute_dtype]](capacity=n_cols)
+        var shift_factor = List[Scalar[Self.compute_dtype]](capacity=n_cols)
+
+        for c in range(n_cols):
+            var s: Scalar[Self.compute_dtype] = (
+                1.0 / self.scale_[c]
+            ) if self.with_std else 1.0
+            var m: Scalar[Self.compute_dtype] = (
+                self.mean_[c] * s
+            ) if self.with_mean else 0.0
+            scale_factor.append(s)
+            shift_factor.append(m)
+
+        comptime if in_dtype == Self.compute_dtype:
+            comptime simd_w = 4 if in_dtype == DType.float64 else 8
+            var x_ptr = X.data.unsafe_ptr()
+            var res_ptr = res.data.unsafe_ptr()
+            var scale_ptr = scale_factor.unsafe_ptr()
+            var shift_ptr = shift_factor.unsafe_ptr()
+
+            for r in range(n_rows):
+                var row_offset = r * n_cols
+                var c = 0
+                while c + simd_w <= n_cols:
+                    var x_simd = (
+                        x_ptr.unsafe_offset(row_offset + c)
+                        .unsafe_load[width=simd_w]()
+                        .cast[Self.compute_dtype]()
+                    )
+                    var s_simd = scale_ptr.unsafe_offset(c).unsafe_load[
+                        width=simd_w
+                    ]()
+                    var m_simd = shift_ptr.unsafe_offset(c).unsafe_load[
+                        width=simd_w
+                    ]()
+                    var out_simd = (x_simd * s_simd - m_simd).cast[in_dtype]()
+                    res_ptr.unsafe_offset(row_offset + c).unsafe_store(out_simd)
+                    c += simd_w
+
+                while c < n_cols:
+                    var val = (
+                        x_ptr.unsafe_offset(row_offset + c)
+                        .unsafe_load()
+                        .cast[Self.compute_dtype]()
+                        * scale_ptr.unsafe_offset(c).unsafe_load()
+                        - shift_ptr.unsafe_offset(c).unsafe_load()
+                    )
+                    res_ptr.unsafe_offset(row_offset + c).unsafe_store(
+                        val.cast[in_dtype]()
+                    )
+                    c += 1
+        else:
+            for r in range(n_rows):
+                for c in range(n_cols):
+                    var val = (
+                        Scalar[Self.compute_dtype](X[r, c]) * scale_factor[c]
+                        - shift_factor[c]
+                    )
+                    res[r, c] = Scalar[in_dtype](val)
         return res^
 
     def transform[
@@ -376,18 +430,82 @@ struct MinMaxScaler[compute_dtype: DType = DType.float64](
             )
 
         var res = Matrix[in_dtype](X.rows, X.cols, 0)
-        for r in range(X.rows):
-            for c in range(X.cols):
-                var val = (
-                    Scalar[Self.compute_dtype](X[r, c]) * self.scale_[c]
-                    + self.min_[c]
-                )
-                if self.clip:
-                    if val < self.feature_range_min:
-                        val = self.feature_range_min
-                    elif val > self.feature_range_max:
-                        val = self.feature_range_max
-                res[r, c] = Scalar[in_dtype](val)
+        var n_rows = X.rows
+        var n_cols = X.cols
+
+        comptime if in_dtype == Self.compute_dtype:
+            comptime simd_w = 4 if in_dtype == DType.float64 else 8
+            var x_ptr = X.data.unsafe_ptr()
+            var res_ptr = res.data.unsafe_ptr()
+            var scale_ptr = self.scale_.unsafe_ptr()
+            var min_ptr = self.min_.unsafe_ptr()
+
+            if not self.clip:
+                for r in range(n_rows):
+                    var row_offset = r * n_cols
+                    var c = 0
+                    while c + simd_w <= n_cols:
+                        var x_simd = (
+                            x_ptr.unsafe_offset(row_offset + c)
+                            .unsafe_load[width=simd_w]()
+                            .cast[Self.compute_dtype]()
+                        )
+                        var s_simd = scale_ptr.unsafe_offset(c).unsafe_load[
+                            width=simd_w
+                        ]()
+                        var m_simd = min_ptr.unsafe_offset(c).unsafe_load[
+                            width=simd_w
+                        ]()
+                        var out_simd = (x_simd * s_simd + m_simd).cast[
+                            in_dtype
+                        ]()
+                        res_ptr.unsafe_offset(row_offset + c).unsafe_store(
+                            out_simd
+                        )
+                        c += simd_w
+
+                    while c < n_cols:
+                        var val = (
+                            x_ptr.unsafe_offset(row_offset + c)
+                            .unsafe_load()
+                            .cast[Self.compute_dtype]()
+                            * scale_ptr.unsafe_offset(c).unsafe_load()
+                            + min_ptr.unsafe_offset(c).unsafe_load()
+                        )
+                        res_ptr.unsafe_offset(row_offset + c).unsafe_store(
+                            val.cast[in_dtype]()
+                        )
+                        c += 1
+            else:
+                for r in range(n_rows):
+                    for c in range(n_cols):
+                        var val = (
+                            x_ptr.unsafe_offset(r * n_cols + c)
+                            .unsafe_load()
+                            .cast[Self.compute_dtype]()
+                            * scale_ptr.unsafe_offset(c).unsafe_load()
+                            + min_ptr.unsafe_offset(c).unsafe_load()
+                        )
+                        if val < self.feature_range_min:
+                            val = self.feature_range_min
+                        elif val > self.feature_range_max:
+                            val = self.feature_range_max
+                        res_ptr.unsafe_offset(r * n_cols + c).unsafe_store(
+                            val.cast[in_dtype]()
+                        )
+        else:
+            for r in range(n_rows):
+                for c in range(n_cols):
+                    var val = (
+                        Scalar[Self.compute_dtype](X[r, c]) * self.scale_[c]
+                        + self.min_[c]
+                    )
+                    if self.clip:
+                        if val < self.feature_range_min:
+                            val = self.feature_range_min
+                        elif val > self.feature_range_max:
+                            val = self.feature_range_max
+                    res[r, c] = Scalar[in_dtype](val)
         return res^
 
     def transform[
@@ -619,11 +737,16 @@ struct RobustScaler[compute_dtype: DType = DType.float64](
         self.scale_ = List[Scalar[Self.compute_dtype]](capacity=n_cols)
 
         var col = List[Scalar[Self.compute_dtype]](capacity=n_rows)
+        var x_ptr = X.data.unsafe_ptr()
 
         for c in range(n_cols):
             col.clear()
             for r in range(n_rows):
-                col.append(Scalar[Self.compute_dtype](X[r, c]))
+                col.append(
+                    x_ptr.unsafe_offset(r * n_cols + c)
+                    .unsafe_load()
+                    .cast[Self.compute_dtype]()
+                )
             sort(col)
 
             self.center_.append(_quantile[Self.compute_dtype](col, 50.0))
@@ -665,14 +788,68 @@ struct RobustScaler[compute_dtype: DType = DType.float64](
             )
 
         var res = Matrix[in_dtype](X.rows, X.cols, 0)
-        for r in range(X.rows):
-            for c in range(X.cols):
-                var val = Scalar[Self.compute_dtype](X[r, c])
-                if self.with_centering:
-                    val -= self.center_[c]
-                if self.with_scaling:
-                    val /= self.scale_[c]
-                res[r, c] = Scalar[in_dtype](val)
+        var n_rows = X.rows
+        var n_cols = X.cols
+
+        var scale_factor = List[Scalar[Self.compute_dtype]](capacity=n_cols)
+        var shift_factor = List[Scalar[Self.compute_dtype]](capacity=n_cols)
+
+        for c in range(n_cols):
+            var s: Scalar[Self.compute_dtype] = (
+                1.0 / self.scale_[c]
+            ) if self.with_scaling else 1.0
+            var m: Scalar[Self.compute_dtype] = (
+                self.center_[c] * s
+            ) if self.with_centering else 0.0
+            scale_factor.append(s)
+            shift_factor.append(m)
+
+        comptime if in_dtype == Self.compute_dtype:
+            comptime simd_w = 4 if in_dtype == DType.float64 else 8
+            var x_ptr = X.data.unsafe_ptr()
+            var res_ptr = res.data.unsafe_ptr()
+            var scale_ptr = scale_factor.unsafe_ptr()
+            var shift_ptr = shift_factor.unsafe_ptr()
+
+            for r in range(n_rows):
+                var row_offset = r * n_cols
+                var c = 0
+                while c + simd_w <= n_cols:
+                    var x_simd = (
+                        x_ptr.unsafe_offset(row_offset + c)
+                        .unsafe_load[width=simd_w]()
+                        .cast[Self.compute_dtype]()
+                    )
+                    var s_simd = scale_ptr.unsafe_offset(c).unsafe_load[
+                        width=simd_w
+                    ]()
+                    var m_simd = shift_ptr.unsafe_offset(c).unsafe_load[
+                        width=simd_w
+                    ]()
+                    var out_simd = (x_simd * s_simd - m_simd).cast[in_dtype]()
+                    res_ptr.unsafe_offset(row_offset + c).unsafe_store(out_simd)
+                    c += simd_w
+
+                while c < n_cols:
+                    var val = (
+                        x_ptr.unsafe_offset(row_offset + c)
+                        .unsafe_load()
+                        .cast[Self.compute_dtype]()
+                        * scale_ptr.unsafe_offset(c).unsafe_load()
+                        - shift_ptr.unsafe_offset(c).unsafe_load()
+                    )
+                    res_ptr.unsafe_offset(row_offset + c).unsafe_store(
+                        val.cast[in_dtype]()
+                    )
+                    c += 1
+        else:
+            for r in range(n_rows):
+                for c in range(n_cols):
+                    var val = (
+                        Scalar[Self.compute_dtype](X[r, c]) * scale_factor[c]
+                        - shift_factor[c]
+                    )
+                    res[r, c] = Scalar[in_dtype](val)
         return res^
 
     def transform[

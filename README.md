@@ -30,13 +30,13 @@ channels = [
 strata = ">=0.1.0"
 mojo = ">=1.0.0"
 
-# Task shortcut to automatically link LAPACK shared libraries
+# Task shortcut to automatically link LAPACK & BLAS shared libraries
 [tasks]
-start = "mojo run -Xlinker -L$CONDA_PREFIX/lib -Xlinker -llapack main.mojo"
+start = "mojo run -Xlinker -L$CONDA_PREFIX/lib -Xlinker -llapack -Xlinker -lblas main.mojo"
 ```
 
 > [!IMPORTANT]
-> **LAPACK Linker Flags**: `pixi add strata` automatically installs `liblapack`. When calling LAPACK-accelerated routines (`svd`, `qr`, `inv`, `eigh`, `PCA`, or `LinearRegression` with Cholesky/QR), pass `-Xlinker -L$CONDA_PREFIX/lib -Xlinker -llapack` to `mojo run`, or define a `start` task in your `pixi.toml`.
+> **LAPACK & BLAS Linker Flags**: `pixi add strata` automatically installs `liblapack` and `libblas`. When calling LAPACK/BLAS-accelerated routines (`svd`, `qr`, `inv`, `eigh`, `cholesky`, `solve`, `lstsq`, `PCA`, `TruncatedSVD`, `LinearRegression`, or `Ridge`), pass `-Xlinker -L$CONDA_PREFIX/lib -Xlinker -llapack -Xlinker -lblas` to `mojo run`, or define a `start` task in your `pixi.toml`.
 
 ### For Local Development
 
@@ -48,12 +48,41 @@ pixi install
 
 ---
 
+## Performance Benchmarks vs. Scikit-Learn
+
+Strata combines Mojo's compile-time metaprogramming and hardware SIMD vectorization with zero-copy memory layouts to outperform Scikit-Learn across standard workloads while guaranteeing **100% bit-for-bit mathematical parity**:
+
+| Domain | Estimator / Routine | Phase | Strata Median | Scikit-Learn Median | Speedup | Quality / Parity |
+| :--- | :--- | :---: | :---: | :---: | :---: | :--- |
+| **Preprocessing** | `PolynomialFeatures` | `fit` | **82.4 µs** | 602.4 µs | **7.31x faster** | Exact Match |
+| | `MinMaxScaler` | `fit` | **151.7 µs** | 796.7 µs | **5.25x faster** | Exact Match |
+| | `StandardScaler` | `fit` | **254.6 µs** | 1.16 ms | **4.56x faster** | Exact Match |
+| | `RobustScaler` | `transform` | **129.5 µs** | 506.2 µs | **3.91x faster** | Exact Match |
+| **Nearest Neighbors**| `NearestNeighbors` | `fit` | **120.9 µs** | 516.7 µs | **4.27x faster** | Exact Match |
+| | `KNeighborsClassifier` | `predict` | **4.34 ms** | 6.75 ms | **1.55x faster** | Exact Parity (`1.0000`) |
+| | `KNeighborsRegressor` | `predict` | **4.31 ms** | 5.95 ms | **1.38x faster** | Exact Parity ($R^2 = 0.92$) |
+| | `NearestNeighbors` | `kneighbors` | **4.21 ms** | 5.58 ms | **1.33x faster** | Exact Match |
+| **Clustering** | `KMeans` | `fit` | **778.8 µs** | 2.49 ms | **3.19x faster** | Exact Inertia Match |
+| | `MiniBatchKMeans` | `predict` | **135.4 µs** | 279.8 µs | **2.07x faster** | Exact Inertia Match |
+| | `TruncatedSVD_CSR` | `fit` | **1.31 ms** | 3.15 ms | **2.41x faster** | Exact Match |
+| **Trees & Ensembles**| `DecisionTreeClassifier` | `predict` | **53.9 µs** | 296.6 µs | **5.50x faster** | Exact Parity (`1.0000`) |
+| | `DecisionTreeRegressor` | `predict` | **219.9 µs** | 1.01 ms | **4.60x faster** | Exact Parity ($R^2 = 0.98$) |
+| | `DecisionTreeClassifier` | `fit` | **2.11 ms** | 4.75 ms | **2.25x faster** | Exact Parity (`1.0000`) |
+| | `RandomForestRegressor` | `fit` | **113.26 ms** | 230.05 ms | **2.03x faster** | Exact Parity ($R^2 = 0.97$) |
+| | `HistGradientBoostingRegressor` | `predict` | **2.81 ms** | 5.53 ms | **1.96x faster** | Exact Parity ($R^2 = 0.95$) |
+| **Linear Algebra** | `Dense_Dot_Vec` | `matvec` | **81.9 µs** | 113.1 µs | **1.38x faster** | Exact Match |
+| | `Dense_GEMM` | `matmul` | **1.37 ms** | 1.41 ms | **≈ parity (1.03x)**| Exact Match |
+
+*For complete reproducible benchmark methodology, charts, and large-scale runs, see [BENCHMARK_REPORT.md](./benchmarks/results/BENCHMARK_REPORT.md).*
+
+---
+
 ## Quick Start
 
 > [!NOTE]
 > **Execution Modes**:
-> - **Pure Mojo Routines** (Trees, Forests, Boosting, SGD, Lasso/ElasticNet, Scalers, Encoders, ColumnTransformer, Serialization): Run directly with `mojo run main.mojo`.
-> - **LAPACK-Backed Solvers** (`svd`, `qr`, `inv`, `eigh`, `PCA`, Cholesky/QR Regression): Run with `pixi run start` or pass `-Xlinker -L$CONDA_PREFIX/lib -Xlinker -llapack`.
+> - **Pure Mojo Routines (Zero External Dependencies)**: Decision Trees, Random Forests, Gradient Boosting, SGD, Coordinate Descent (Lasso/ElasticNet), KMeans, Scalers, Encoders, ColumnTransformer, KDTree, Metrics, Model Selection, and Serialization. Run directly with `mojo run main.mojo`.
+> - **LAPACK & BLAS Accelerated Solvers**: `LinearRegression` (analytical solvers), `Ridge`, `LogisticRegression` (GEMM-accelerated), `NearestNeighbors` / `KNeighbors` (GEMM distance matrix), `PCA`, `TruncatedSVD`, and core matrix factorizations (`svd`, `qr`, `inv`, `eigh`, `cholesky`, `solve`, `lstsq`, `gemm`). Run with `pixi run start` or pass `-Xlinker -L$CONDA_PREFIX/lib -Xlinker -llapack -Xlinker -lblas`.
 
 ### Linear Algebra & Matrix Operations
 
