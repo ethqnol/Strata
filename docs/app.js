@@ -328,7 +328,9 @@
         let bqLines = [];
         let j = i;
         while (j < lines.length && lines[j].trim().startsWith('>')) {
-          bqLines.push(lines[j].trim().substring(1).trim());
+          let content = lines[j].trim().substring(1);
+          if (content.startsWith(' ')) content = content.substring(1);
+          bqLines.push(content);
           j++;
         }
         i = j - 1;
@@ -338,11 +340,13 @@
         if (calloutMatch) {
           let type = calloutMatch[1].toLowerCase();
           bqLines.shift();
-          html.push(`<div class="callout callout-${type}"><p>${bqLines.map(l => formatInline(l)).join('<br>')}</p></div>`);
+          const innerHtml = parseMarkdown(bqLines.join('\n'));
+          html.push(`<div class="callout callout-${type}"><div class="callout-header"><span class="callout-title">${type.toUpperCase()}</span></div><div class="callout-body">${innerHtml}</div></div>`);
         } else if (firstLine.includes('**Overload Note**:') || firstLine.includes('**Overloaded Method**:')) {
           html.push(`<div class="overload-note"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: var(--accent-primary);"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg><span>${bqLines.map(l => formatInline(l)).join(' ')}</span></div>`);
         } else {
-          html.push(`<blockquote><p>${bqLines.map(l => formatInline(l)).join('<br>')}</p></blockquote>`);
+          const innerHtml = parseMarkdown(bqLines.join('\n'));
+          html.push(`<blockquote>${innerHtml}</blockquote>`);
         }
         continue;
       }
@@ -435,30 +439,42 @@
 
   function formatInline(text) {
     if (!text) return '';
-    // Temporarily extract inline math to protect LaTeX symbols ($...$)
+
+    // 1. Temporarily extract inline code (`...`) to protect it from math or markdown regexes
+    const codeTokens = [];
+    let sanitized = text.replace(/`([^`]+)`/g, (_, code) => {
+      const idx = codeTokens.length;
+      codeTokens.push(`<code>${escapeHtml(code)}</code>`);
+      return `@@CODE_${idx}@@`;
+    });
+
+    // 2. Temporarily extract inline LaTeX math ($...$)
     const mathTokens = [];
-    let sanitized = text.replace(/\$([^\$\n]+)\$/g, (match) => {
+    sanitized = sanitized.replace(/\$([^\$\n\s][^\$\n]*?[^\$\n\s]|\S)\$/g, (match) => {
       const idx = mathTokens.length;
       mathTokens.push(match);
       return `@@MATH_${idx}@@`;
     });
 
+    // 3. Process markdown formatting
     sanitized = sanitized
-      .replace(/`([^`]+)`/g, '<code>$1</code>')
       .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
       .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
         if (url.startsWith('file:///')) {
           const parts = url.split('/');
           const filename = parts[parts.length - 1];
           return `<span class="file-ref"><code>${filename}</code></span>`;
         }
         const resolvedUrl = resolveMarkdownLink(url);
-        return `<a href="${resolvedUrl}">${text}</a>`;
+        return `<a href="${resolvedUrl}">${linkText}</a>`;
       });
 
-    // Restore inline math
-    sanitized = sanitized.replace(/@@MATH_(\d+)@@/g, (_, idx) => mathTokens[parseInt(idx, 10)] || '');
+    // 4. Restore math and code tokens
+    sanitized = sanitized
+      .replace(/@@MATH_(\d+)@@/g, (_, idx) => mathTokens[parseInt(idx, 10)] || '')
+      .replace(/@@CODE_(\d+)@@/g, (_, idx) => codeTokens[parseInt(idx, 10)] || '');
+
     return sanitized;
   }
 

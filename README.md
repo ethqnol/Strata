@@ -1,14 +1,44 @@
-[![CodeQL](https://github.com/ethqnol/Strata/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/ethqnol/Strata/actions/workflows/github-code-scanning/codeql) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![CodeQL](https://github.com/ethqnol/Strata/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/ethqnol/Strata/actions/workflows/github-code-scanning/codeql) [![Prefix.dev](https://img.shields.io/badge/prefix.dev-strata-purple)](https://prefix.dev/channels/modular-community/packages/strata) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 # Strata
 
-Strata is a native machine learning and linear algebra library written in [Mojo](https://docs.modular.com/mojo/). It provides scikit-learn-compatible estimators, dense and sparse matrix containers, and composable pipelines with native SIMD and LAPACK acceleration.
+Strata is a native machine learning and linear algebra library written in [Mojo](https://docs.modular.com/mojo/). It provides scikit-learn-compatible estimators, dense and sparse matrix containers, zero-copy binary serialization, and composable pipelines with native SIMD and LAPACK acceleration.
 
 ---
 
 ## Installation
 
-Strata uses [Pixi](https://pixi.sh/) for environment and dependency management.
+### In your Pixi Project
+
+Add Strata directly from the official Modular Community channel on [Prefix.dev](https://prefix.dev/channels/modular-community/packages/strata):
+
+```bash
+pixi add strata --channel https://repo.prefix.dev/modular-community
+```
+
+Or configure your `pixi.toml`:
+
+```toml
+[workspace]
+channels = [
+    "https://repo.prefix.dev/modular-community",
+    "https://conda.modular.com/max",
+    "conda-forge"
+]
+
+[dependencies]
+strata = ">=0.1.0"
+mojo = ">=1.0.0"
+
+# Task shortcut to automatically link LAPACK shared libraries
+[tasks]
+start = "mojo run -Xlinker -L$CONDA_PREFIX/lib -Xlinker -llapack main.mojo"
+```
+
+> [!IMPORTANT]
+> **LAPACK Linker Flags**: `pixi add strata` automatically installs `liblapack`. When calling LAPACK-accelerated routines (`svd`, `qr`, `inv`, `eigh`, `PCA`, or `LinearRegression` with Cholesky/QR), pass `-Xlinker -L$CONDA_PREFIX/lib -Xlinker -llapack` to `mojo run`, or define a `start` task in your `pixi.toml`.
+
+### For Local Development
 
 ```bash
 git clone https://github.com/ethqnol/Strata.git
@@ -19,6 +49,11 @@ pixi install
 ---
 
 ## Quick Start
+
+> [!NOTE]
+> **Execution Modes**:
+> - **Pure Mojo Routines** (Trees, Forests, Boosting, SGD, Lasso/ElasticNet, Scalers, Encoders, ColumnTransformer, Serialization): Run directly with `mojo run main.mojo`.
+> - **LAPACK-Backed Solvers** (`svd`, `qr`, `inv`, `eigh`, `PCA`, Cholesky/QR Regression): Run with `pixi run start` or pass `-Xlinker -L$CONDA_PREFIX/lib -Xlinker -llapack`.
 
 ### Linear Algebra & Matrix Operations
 
