@@ -58,3 +58,14 @@ generate-docs = "python scripts/generate_docs.py"
 build-docs = { depends-on = ["generate-docs"] }
 serve-docs = "python -m http.server 8000 --directory docs"
 pre-pr = { depends-on = ["format", "build", "test-runner", "generate-docs"] }
+benchmark = "python benchmarks/runner.py --suite all --scale small"
+benchmark-quick = "python benchmarks/runner.py --suite all --scale quick"
+benchmark-medium = "python benchmarks/runner.py --suite all --scale medium"
+benchmark-large = "python benchmarks/runner.py --suite all --scale large"
+benchmark-linear = "python benchmarks/runner.py --suite linear"
+benchmark-trees = "python benchmarks/runner.py --suite trees"
+benchmark-clustering = "python benchmarks/runner.py --suite clustering"
+benchmark-neighbors = "python benchmarks/runner.py --suite neighbors"
+benchmark-preprocessing = "python benchmarks/runner.py --suite preprocessing"
+benchmark-linalg = "python benchmarks/runner.py --suite linalg"
+
