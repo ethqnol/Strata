@@ -219,5 +219,4 @@ pixi run format
 pixi run build
 ```
 
-See [CONTRIBUTORS.md](./CONTRIBUTORS.md) for development setup and codebase conventions.
-See [ROADMAP.md](./ROADMAP.md) for planned features and progress.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup, coding conventions, and the project roadmap.
