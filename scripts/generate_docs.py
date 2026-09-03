@@ -75,6 +75,14 @@ MODULE_METADATA = {
             "ensemble/hist_gradient_boosting_classifier.mojo",
         ]
     },
+    "naive_bayes": {
+        "title": "Naive Bayes Classifiers",
+        "description": "GaussianNB for continuous features with adaptive variance smoothing, and MultinomialNB for discrete count data with dense and sparse CSR matrix acceleration.",
+        "files": [
+            "naive_bayes/gaussian.mojo",
+            "naive_bayes/multinomial.mojo",
+        ]
+    },
     "compose": {
         "title": "Composite Feature Pipelines",
         "description": "ColumnTransformer for routing heterogeneous feature column subsets to distinct transformers and horizontal concatenation.",

@@ -315,6 +315,24 @@
     "file": "strata/ensemble/hist_gradient_boosting_classifier.mojo"
   },
   {
+    "module": "naive_bayes",
+    "name": "GaussianNB",
+    "kind": "struct",
+    "summary": "Gaussian Naive Bayes classifier for continuous feature modeling.",
+    "ref_file": "reference/naive_bayes/GaussianNB",
+    "traits": "Classifier, Copyable, Movable, Serializable",
+    "file": "strata/naive_bayes/gaussian.mojo"
+  },
+  {
+    "module": "naive_bayes",
+    "name": "MultinomialNB",
+    "kind": "struct",
+    "summary": "Multinomial Naive Bayes classifier for multinomially distributed count data.",
+    "ref_file": "reference/naive_bayes/MultinomialNB",
+    "traits": "Classifier, Copyable, Movable, Serializable",
+    "file": "strata/naive_bayes/multinomial.mojo"
+  },
+  {
     "module": "compose",
     "name": "ColumnTransformer",
     "kind": "struct",

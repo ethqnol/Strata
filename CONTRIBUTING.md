@@ -201,6 +201,7 @@ Current implementation status and planned roadmap items:
 * **Neighbors & Clustering**: `NearestNeighbors`, `KDTree` (k-NN and radius queries), `KNeighborsClassifier`, `KNeighborsRegressor`, `KMeans`, `MiniBatchKMeans`.
 * **Dimensionality Reduction**: `PCA`, `TruncatedSVD` (dense and sparse).
 * **Preprocessing**: `StandardScaler`, `MinMaxScaler`, `RobustScaler`, `Normalizer`, `OneHotEncoder`, `OrdinalEncoder`, `LabelEncoder`, `SimpleImputer`, `Binarizer`, `PolynomialFeatures`.
+* **Naive Bayes**: `GaussianNB` (continuous features with adaptive variance smoothing), `MultinomialNB` (discrete count modeling with dense and sparse `CSRMatrix` acceleration).
 * **Model Selection & Metrics**: `train_test_split`, `KFold`, `StratifiedKFold`, `TimeSeriesSplit`, `ShuffleSplit`, `StratifiedShuffleSplit`, `GridSearchCV`, `RandomizedSearchCV`, `cross_val_score`, `cross_val_predict`, regression/classification/clustering metrics.
 
 ### Next Priorities
@@ -215,7 +216,7 @@ Current implementation status and planned roadmap items:
    - `LinearSVC` and `LinearSVR` (coordinate descent / LIBLINEAR style).
    - Kernel `SVC` / `SVR` with RBF / polynomial kernels.
 4. **Probabilistic Models**:
-   - Naive Bayes family (`GaussianNB`, `MultinomialNB`, `BernoulliNB`).
+   - `BernoulliNB`, `CategoricalNB`.
    - `GaussianMixture` (EM algorithm).
 5. **Meta-Estimators**:
    - `VotingClassifier`, `VotingRegressor`, `StackingClassifier`, `StackingRegressor`.
