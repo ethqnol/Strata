@@ -39,7 +39,7 @@ start = "mojo run -Xlinker -L$CONDA_PREFIX/lib -Xlinker -llapack -Xlinker -lblas
 
 You can also develop Strata locally:
 ```bash
-git clone https://github.com/ethqnol/Strata.git
+git clone https://github.com/ethqnol/strata-mojo.git
 cd Strata
 pixi install
 ```
