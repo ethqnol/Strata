@@ -1,4 +1,4 @@
-[![CodeQL](https://github.com/ethqnol/strata-mojo/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/ethqnol/strata-mojo/actions/workflows/github-code-scanning/codeql) [![Prefix.dev](https://img.shields.io/badge/prefix.dev-strata-purple)](https://prefix.dev/channels/modular-community/packages/strata) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Documentation](https://img.shields.io/badge/docs-passing-brightgreen?style=flat-square&logo=github)](https://ethqnol.github.io/strata-mojo)
+[![CodeQL](https://github.com/ethqnol/strata-mojo/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/ethqnol/strata-mojo/actions/workflows/github-code-scanning/codeql) [![Prefix.dev](https://img.shields.io/badge/prefix.dev-strata-purple)](https://prefix.dev/channels/modular-community/packages/strata) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Documentation](https://img.shields.io/badge/docs-passing-brightgreen?logo=github)](https://ethqnol.github.io/strata-mojo)
 
 # Strata
 
