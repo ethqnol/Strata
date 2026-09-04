@@ -18,6 +18,12 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 STRATA_DIR = ROOT_DIR / "strata"
 DOCS_DIR = ROOT_DIR / "docs"
 REF_DIR = DOCS_DIR / "reference"
+DOCS_BASE_URL = "https://ethqnol.github.io/strata-mojo"
+
+try:
+    from scripts.generate_sitemap import generate_sitemap
+except ImportError:
+    from generate_sitemap import generate_sitemap
 
 MODULE_METADATA = {
     "core": {
@@ -1141,6 +1147,20 @@ def main():
 
     # Build client-side static docs bundle
     build_docs_site_bundle(all_symbols_index, module_symbols_map)
+
+    # Sync static assets to docs/assets
+    src_assets = ROOT_DIR / "assets"
+    dst_assets = DOCS_DIR / "assets"
+    if src_assets.exists():
+        dst_assets.mkdir(parents=True, exist_ok=True)
+        for asset in src_assets.iterdir():
+            if asset.is_file():
+                shutil.copy2(asset, dst_assets / asset.name)
+        print(f"  ✓ Synced {src_assets.relative_to(ROOT_DIR)} to {dst_assets.relative_to(ROOT_DIR)}")
+
+    # Generate sitemap.xml for SEO
+    generate_sitemap(base_url=DOCS_BASE_URL, docs_dir=DOCS_DIR)
+
     print("✨ Documentation generation complete!")
 
 

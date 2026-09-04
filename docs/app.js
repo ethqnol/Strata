@@ -528,6 +528,24 @@
     renderNavTree();
     updateActiveNav();
 
+    // SEO: Dynamically update document title and canonical / Open Graph meta tags
+    const pageTitle = currentItem ? `${currentItem.title} | Strata Docs` : 'Strata Docs | Native Machine Learning in Pure Mojo';
+    document.title = pageTitle;
+
+    const pageUrl = `https://ethqnol.github.io/strata-mojo/#${currentDocId}`;
+    const canonicalEl = document.querySelector('link[rel="canonical"]');
+    if (canonicalEl) {
+      canonicalEl.setAttribute('href', pageUrl);
+    }
+    const ogTitleEl = document.querySelector('meta[property="og:title"]');
+    if (ogTitleEl && currentItem) {
+      ogTitleEl.setAttribute('content', `${currentItem.title} - Strata Mojo`);
+    }
+    const ogUrlEl = document.querySelector('meta[property="og:url"]');
+    if (ogUrlEl) {
+      ogUrlEl.setAttribute('content', pageUrl);
+    }
+
     // Breadcrumbs
     if (parentModule) {
       breadcrumbsEl.innerHTML = `
@@ -819,10 +837,14 @@
   });
 
   // ==========================================
-  // 6. Router (Hash-Based)
+  // 6. Router (Hash-Based with Query Parameter Fallback)
   // ==========================================
   function handleRoute() {
     let hash = window.location.hash.replace(/^#/, '');
+    if (!hash && window.location.search) {
+      const params = new URLSearchParams(window.location.search);
+      hash = params.get('page') || params.get('doc') || params.get('p') || '';
+    }
     if (!hash) {
       hash = 'tutorials/quickstart';
     }
@@ -835,6 +857,7 @@
   }
 
   window.addEventListener('hashchange', handleRoute);
+  window.addEventListener('popstate', handleRoute);
 
   // ==========================================
   // Initialization

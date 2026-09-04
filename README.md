@@ -2,6 +2,10 @@
 
 # Strata
 
+<p align="center">
+  <img src="assets/strata.jpg" alt="Strata — Machine Learning in Pure Mojo" width="100%">
+</p>
+
 Strata is a native machine learning and linear algebra library written in [Mojo](https://docs.modular.com/mojo/). It provides scikit-learn-compatible estimators, dense and sparse matrix containers, zero-copy binary serialization, and composable pipelines with native SIMD and LAPACK acceleration.
 
 ---
@@ -220,3 +224,8 @@ pixi run build
 ```
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup, coding conventions, and the project roadmap.
+
+---
+
+*The project logo was generated using AI assistance. The software code is licensed under the MIT License, but the logo artwork is distributed as-is without copyright protection.*
+

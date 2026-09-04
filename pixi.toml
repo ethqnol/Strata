@@ -56,9 +56,10 @@ format = "mojo format strata tests"
 format-check = "mojo format strata tests && git diff --exit-code -- strata tests"
 ci = { depends-on = ["format-check", "build", "test-all"] }
 generate-docs = "python scripts/generate_docs.py"
-build-docs = { depends-on = ["generate-docs"] }
+generate-sitemap = "python scripts/generate_sitemap.py"
+build-docs = { depends-on = ["generate-docs", "generate-sitemap"] }
 serve-docs = "pixi run build-docs && python -m http.server 8000 --directory docs"
-pre-pr = { depends-on = ["format", "build", "test-runner", "generate-docs"] }
+pre-pr = { depends-on = ["format", "build", "test-runner", "generate-docs", "generate-sitemap"] }
 benchmark = "python benchmarks/runner.py --suite all --scale small"
 benchmark-quick = "python benchmarks/runner.py --suite all --scale quick"
 benchmark-medium = "python benchmarks/runner.py --suite all --scale medium"

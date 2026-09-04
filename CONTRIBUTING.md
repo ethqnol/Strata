@@ -11,7 +11,7 @@ Strata uses [Pixi](https://pixi.sh/) to manage dependencies and compiler toolcha
 ### Linux / macOS
 
 ```bash
-git clone https://github.com/ethqnol/Strata.git
+git clone https://github.com/ethqnol/strata-mojo.git
 cd Strata
 pixi install
 ```
@@ -31,7 +31,7 @@ sudo apt update && sudo apt install -y curl git build-essential
 curl -fsSL https://pixi.sh/install.sh | bash
 source ~/.bashrc
 
-git clone https://github.com/ethqnol/Strata.git
+git clone https://github.com/ethqnol/strata-mojo.git
 cd Strata
 pixi install
 ```
